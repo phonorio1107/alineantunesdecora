@@ -53,6 +53,8 @@ export interface OrdemServico {
   status: StatusOS
   equipe: string[]
   checklist: { item: string; feito: boolean }[]
+  itens: { itemId: string; quantidade: number }[] // peças do acervo que vão para a festa
+  observacoes?: string
 }
 
 export type CategoriaItem = 'paineis' | 'mobiliario' | 'boleiras' | 'bandejas' | 'arranjos' | 'tecidos' | 'iluminacao' | 'consumo'

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Clock, MapPin, Users } from 'lucide-react'
-import { clientePorId, eventos } from '../data/demo'
+import { useStore } from '../data/store'
 import { statusEventoLabel, tipoEventoCor, tipoEventoLabel } from '../data/labels'
 import { capitalize, formatDate, toISODate } from '../lib/format'
 import { Badge, EmptyState, PageHeader } from '../components/ui'
@@ -8,6 +8,7 @@ import { Badge, EmptyState, PageHeader } from '../components/ui'
 const semana = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
 
 export default function Agenda() {
+  const { eventos, clientePorId } = useStore()
   const hoje = toISODate(new Date())
   const [mes, setMes] = useState(() => {
     const d = new Date()
@@ -24,7 +25,7 @@ export default function Agenda() {
     const map = new Map<string, typeof eventos>()
     for (const e of eventos) map.set(e.data, [...(map.get(e.data) ?? []), e])
     return map
-  }, [])
+  }, [eventos])
 
   const dias = useMemo(() => {
     const inicio = new Date(mes)

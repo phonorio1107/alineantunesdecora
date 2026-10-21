@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarHeart, ClipboardList, FileText, MapPin, Package, Plus, Wallet } from 'lucide-react'
-import { clientePorId, estoque, eventos, orcamentos, ordensServico, eventoPorId } from '../data/demo'
+import { estoque, orcamentos } from '../data/demo'
+import { useStore } from '../data/store'
 import { statusOSCor, statusOSLabel, tipoEventoCor, tipoEventoLabel } from '../data/labels'
 import { daysUntil, formatBRL, formatDate, parseDate, relativeDay } from '../lib/format'
 import { Badge } from '../components/ui'
@@ -13,6 +14,7 @@ function saudacao() {
 }
 
 export default function Dashboard() {
+  const { eventos, ordens: ordensServico, clientePorId, eventoPorId } = useStore()
   const proximas = eventos
     .filter((e) => daysUntil(e.data) >= 0 && daysUntil(e.data) <= 30 && e.status !== 'cancelado')
     .sort((a, b) => a.data.localeCompare(b.data))

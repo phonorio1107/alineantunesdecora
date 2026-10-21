@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CalendarDays, Plus } from 'lucide-react'
-import { clientePorId, orcamentos } from '../data/demo'
+import { orcamentos } from '../data/demo'
+import { useStore } from '../data/store'
 import { pacoteLabel, statusOrcamentoCor, statusOrcamentoLabel, tipoEventoLabel } from '../data/labels'
 import type { StatusOrcamento } from '../data/types'
 import { formatBRL, formatDate } from '../lib/format'
@@ -9,6 +10,7 @@ import { Badge, EmptyState, PageHeader, Tabs } from '../components/ui'
 type Filtro = 'todos' | StatusOrcamento
 
 export default function Orcamentos() {
+  const { clientePorId } = useStore()
   const [filtro, setFiltro] = useState<Filtro>('todos')
   const lista = orcamentos
     .filter((o) => filtro === 'todos' || o.status === filtro)

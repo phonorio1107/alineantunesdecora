@@ -40,7 +40,7 @@ export const orcamentos: Orcamento[] = [
 
 export const ordensServico: OrdemServico[] = [
   {
-    id: 'os1', numero: 312, eventoId: 'e1', status: 'separado', equipe: ['Aline', 'Bruna'],
+    id: 'os1', itens: [{ itemId: 'i1', quantidade: 1 }, { itemId: 'i3', quantidade: 1 }, { itemId: 'i5', quantidade: 3 }, { itemId: 'i7', quantidade: 6 }, { itemId: 'i8', quantidade: 4 }], numero: 312, eventoId: 'e1', status: 'separado', equipe: ['Aline', 'Bruna'],
     checklist: [
       { item: 'Separar painel redondo floral', feito: true },
       { item: 'Conferir boleiras e bandejas', feito: true },
@@ -49,7 +49,7 @@ export const ordensServico: OrdemServico[] = [
     ],
   },
   {
-    id: 'os2', numero: 313, eventoId: 'e2', status: 'a_preparar', equipe: ['Aline', 'Bruna', 'Carlos', 'Dani'],
+    id: 'os2', itens: [{ itemId: 'i2', quantidade: 1 }, { itemId: 'i4', quantidade: 2 }, { itemId: 'i9', quantidade: 12 }, { itemId: 'i10', quantidade: 8 }, { itemId: 'i8', quantidade: 20 }], numero: 313, eventoId: 'e2', status: 'a_preparar', equipe: ['Aline', 'Bruna', 'Carlos', 'Dani'],
     checklist: [
       { item: 'Confirmar flores com fornecedor', feito: true },
       { item: 'Separar castiçais e tecidos', feito: false },
@@ -57,16 +57,17 @@ export const ordensServico: OrdemServico[] = [
       { item: 'Conferir iluminação', feito: false },
       { item: 'Reunião final com os noivos', feito: false },
     ],
+    observacoes: 'Noivos pediram velas apenas nas mesas dos padrinhos. Acesso de carga pela rua lateral.',
   },
   {
-    id: 'os3', numero: 314, eventoId: 'e4', status: 'a_preparar', equipe: ['Aline', 'Carlos'],
+    id: 'os3', itens: [{ itemId: 'i1', quantidade: 2 }, { itemId: 'i6', quantidade: 4 }, { itemId: 'i10', quantidade: 4 }], numero: 314, eventoId: 'e4', status: 'a_preparar', equipe: ['Aline', 'Carlos'],
     checklist: [
-      { item: 'Separar Torre Eiffel decorativa', feito: false },
-      { item: 'Conferir letreiro neon', feito: false },
+      { item: 'Separar peças da composição Paris', feito: false },
+      { item: 'Montar arranjos florais da entrada', feito: false },
     ],
   },
   {
-    id: 'os4', numero: 309, eventoId: 'e6', status: 'concluida', equipe: ['Aline', 'Bruna'],
+    id: 'os4', itens: [{ itemId: 'i3', quantidade: 1 }, { itemId: 'i5', quantidade: 2 }], numero: 309, eventoId: 'e6', status: 'concluida', equipe: ['Aline', 'Bruna'],
     checklist: [
       { item: 'Montagem', feito: true },
       { item: 'Desmontagem e conferência de itens', feito: true },
@@ -88,6 +89,3 @@ export const estoque: ItemEstoque[] = [
   { id: 'i11', nome: 'Bichinhos de pelúcia Safari', categoria: 'arranjos', quantidade: 6, valorUnitario: 70, volumeLitros: 20, cor: 'Sortido', neutra: false, local: 'Caixa D2', conservacao: 'bom' },
   { id: 'i12', nome: 'Balões nº 9 (pacote 50 un.)', categoria: 'consumo', quantidade: 3, valorUnitario: 28, volumeLitros: 1, cor: 'Sortido', neutra: true, local: 'Armário E3', conservacao: 'otimo' },
 ]
-
-export const clientePorId = (id: string) => clientes.find((c) => c.id === id)
-export const eventoPorId = (id: string) => eventos.find((e) => e.id === id)

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { MapPin, MessageCircle, Plus, Search } from 'lucide-react'
-import { clientes, eventos } from '../data/demo'
+import { useStore } from '../data/store'
 import { EmptyState, PageHeader } from '../components/ui'
 
 const origemLabel = { instagram: 'Instagram', whatsapp: 'WhatsApp', indicacao: 'Indicação', site: 'Site', outro: 'Outro' }
 
 export default function Clientes() {
+  const { clientes, eventos } = useStore()
   const [busca, setBusca] = useState('')
   const termo = busca.trim().toLowerCase()
   const lista = clientes.filter((c) => !termo || c.nome.toLowerCase().includes(termo) || c.telefone.includes(termo))
