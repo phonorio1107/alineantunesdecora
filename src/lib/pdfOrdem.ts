@@ -14,19 +14,19 @@ const LINHA: [number, number, number] = [240, 214, 224]
 const A4 = { w: 210, h: 297 }
 const M = 16 // margem lateral
 
+// Carrega a logo como imagem e converte via canvas (sem fetch, que a página de teste bloqueia).
 async function carregarLogo(): Promise<{ data: string; w: number; h: number }> {
-  const blob = await (await fetch(logoUrl)).blob()
-  const data = await new Promise<string>((ok) => {
-    const r = new FileReader()
-    r.onload = () => ok(r.result as string)
-    r.readAsDataURL(blob)
-  })
-  const img = await new Promise<HTMLImageElement>((ok) => {
+  const img = await new Promise<HTMLImageElement>((ok, falha) => {
     const i = new Image()
     i.onload = () => ok(i)
-    i.src = data
+    i.onerror = () => falha(new Error('Não foi possível carregar a logo'))
+    i.src = logoUrl
   })
-  return { data, w: img.naturalWidth, h: img.naturalHeight }
+  const canvas = document.createElement('canvas')
+  canvas.width = img.naturalWidth
+  canvas.height = img.naturalHeight
+  canvas.getContext('2d')!.drawImage(img, 0, 0)
+  return { data: canvas.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight }
 }
 
 export async function gerarPdfOrdem(os: OrdemServico, evento: Evento, cliente: Cliente | undefined, acervo: ItemEstoque[]) {

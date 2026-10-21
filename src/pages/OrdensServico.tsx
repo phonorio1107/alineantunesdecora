@@ -30,7 +30,8 @@ export default function OrdensServico() {
       await salvarArquivo(nomeArquivo, blob)
     } catch (e) {
       const codigo = (e as { code?: string })?.code
-      if (codigo !== 'declined') avisar('Não foi possível baixar o PDF. Tente de novo.')
+      if (codigo === 'declined') return
+      avisar(codigo === 'unavailable' ? 'Este aparelho não permitiu baixar arquivos aqui.' : 'Não foi possível baixar o PDF. Tente de novo.')
     } finally {
       setGerando(null)
     }

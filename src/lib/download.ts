@@ -10,8 +10,10 @@ declare global {
 }
 
 export async function salvarArquivo(filename: string, data: Blob) {
-  const downloads = window.claude ? await window.claude.use('downloads') : null
-  if (downloads) {
+  if (window.claude) {
+    // Dentro da página do claude.ai um download comum não funciona, então não tenta.
+    const downloads = await window.claude.use('downloads')
+    if (!downloads) throw { code: 'unavailable' }
     await downloads.save({ filename, data })
     return
   }
