@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import logo from '../assets/logo.png'
 import { CalendarHeart, ClipboardList, FileText, Home, Package, Users } from 'lucide-react'
 
 const nav = [
@@ -18,7 +19,7 @@ export default function Layout() {
     <div className="min-h-dvh lg:flex">
       <aside className="hidden lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-brand-100 lg:bg-white/70 lg:backdrop-blur">
         <div className="px-6 pt-8 pb-6">
-          <img src="/logo.png" alt="Aline Antunes Decora" className="h-auto w-44" />
+          <img src={logo} alt="Aline Antunes Decora" className="h-auto w-44" />
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {nav.map(({ to, label, icon: Icon }) => (
@@ -45,7 +46,7 @@ export default function Layout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-brand-100 bg-white/85 px-4 py-3 backdrop-blur lg:hidden">
-          <img src="/logo.png" alt="Aline Antunes Decora" className="h-9 w-auto" />
+          <img src={logo} alt="Aline Antunes Decora" className="h-9 w-auto" />
           <NavLink to="/clientes" className="btn-ghost" aria-label="Clientes">
             <Users className="size-5" strokeWidth={1.8} />
           </NavLink>

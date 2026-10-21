@@ -1,4 +1,4 @@
-import type { CategoriaItem, Conservacao, StatusEvento, StatusOrcamento, StatusOS, TipoEvento } from './types'
+import type { CategoriaItem, Conservacao, Pacote, StatusEvento, StatusOrcamento, StatusOS, TipoEvento } from './types'
 
 export const tipoEventoLabel: Record<TipoEvento, string> = {
   infantil: 'Festa infantil',
@@ -63,7 +63,6 @@ export const categoriaLabel: Record<CategoriaItem, string> = {
   arranjos: 'Arranjos',
   tecidos: 'Tecidos',
   iluminacao: 'Iluminação',
-  letreiros: 'Letreiros',
   consumo: 'Consumo',
 }
 
@@ -71,4 +70,11 @@ export const conservacaoLabel: Record<Conservacao, string> = {
   otimo: 'Ótimo',
   bom: 'Bom',
   reparo: 'Precisa reparo',
+}
+
+export const pacoteLabel: Record<Pacote, string> = {
+  especial: 'Especial',
+  excepcional: 'Excepcional',
+  extraordinario: 'Extraordinário',
+  exclusivo: 'Exclusivo',
 }

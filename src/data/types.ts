@@ -25,6 +25,8 @@ export interface Evento {
   status: StatusEvento
 }
 
+export type Pacote = 'especial' | 'excepcional' | 'extraordinario' | 'exclusivo'
+
 export type StatusOrcamento = 'rascunho' | 'enviado' | 'aprovado' | 'recusado'
 
 export interface Orcamento {
@@ -32,6 +34,7 @@ export interface Orcamento {
   numero: number
   clienteId: string
   eventoId?: string
+  pacote: Pacote
   descricao: string
   tipo: TipoEvento
   dataEvento: string
@@ -52,7 +55,7 @@ export interface OrdemServico {
   checklist: { item: string; feito: boolean }[]
 }
 
-export type CategoriaItem = 'paineis' | 'mobiliario' | 'boleiras' | 'bandejas' | 'arranjos' | 'tecidos' | 'iluminacao' | 'letreiros' | 'consumo'
+export type CategoriaItem = 'paineis' | 'mobiliario' | 'boleiras' | 'bandejas' | 'arranjos' | 'tecidos' | 'iluminacao' | 'consumo'
 
 export type Conservacao = 'otimo' | 'bom' | 'reparo'
 
@@ -64,6 +67,7 @@ export interface ItemEstoque {
   valorUnitario: number
   volumeLitros: number // volume unitário, para planejar transporte
   cor: string
+  neutra: boolean // peça neutra (combina com vários temas) ou tematizada
   local: string
   conservacao: Conservacao
 }

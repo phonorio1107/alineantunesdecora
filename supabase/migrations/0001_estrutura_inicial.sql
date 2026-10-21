@@ -5,9 +5,10 @@ create extension if not exists "pgcrypto";
 
 create type tipo_evento as enum ('infantil', 'casamento', 'quinze_anos', 'cha', 'batizado', 'corporativo', 'outro');
 create type status_evento as enum ('confirmado', 'pendente', 'realizado', 'cancelado');
+create type pacote as enum ('especial', 'excepcional', 'extraordinario', 'exclusivo');
 create type status_orcamento as enum ('rascunho', 'enviado', 'aprovado', 'recusado');
 create type status_os as enum ('a_preparar', 'separado', 'em_montagem', 'concluida');
-create type categoria_item as enum ('paineis', 'mobiliario', 'boleiras', 'bandejas', 'arranjos', 'tecidos', 'iluminacao', 'letreiros', 'consumo');
+create type categoria_item as enum ('paineis', 'mobiliario', 'boleiras', 'bandejas', 'arranjos', 'tecidos', 'iluminacao', 'consumo');
 create type conservacao as enum ('otimo', 'bom', 'reparo');
 create type origem_cliente as enum ('instagram', 'whatsapp', 'indicacao', 'site', 'outro');
 
@@ -45,6 +46,7 @@ create table orcamentos (
   numero int not null unique default nextval('orcamento_numero_seq'),
   cliente_id uuid not null references clientes(id) on delete restrict,
   evento_id uuid references eventos(id) on delete set null,
+  pacote pacote not null default 'exclusivo',
   descricao text,
   tipo tipo_evento not null,
   data_evento date,
@@ -92,6 +94,7 @@ create table itens_estoque (
   valor_unitario numeric(12, 2) not null default 0,
   volume_litros numeric(10, 2) not null default 0,
   cor text,
+  neutra boolean not null default true,
   local text,
   conservacao conservacao not null default 'otimo',
   foto_url text,

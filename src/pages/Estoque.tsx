@@ -19,6 +19,7 @@ export default function Estoque() {
   const valorTotal = estoque.reduce((s, i) => s + i.quantidade * i.valorUnitario, 0)
   const volumeTotal = estoque.reduce((s, i) => s + i.quantidade * i.volumeLitros, 0) / 1000
   const reparo = estoque.filter((i) => i.conservacao === 'reparo').length
+  const pctNeutras = Math.round((estoque.filter((i) => i.neutra).length / estoque.length) * 100)
   const categorias = [...new Set(estoque.map((i) => i.categoria))]
 
   return (
@@ -29,7 +30,7 @@ export default function Estoque() {
         action={<button className="btn-primary"><Plus className="size-4" /> Novo item</button>}
       />
 
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="card p-4">
           <p className="text-xs text-ink-500">Valor do acervo</p>
           <p className="mt-1 text-base font-bold sm:text-xl">{formatBRL(valorTotal)}</p>
@@ -37,6 +38,10 @@ export default function Estoque() {
         <div className="card p-4">
           <p className="text-xs text-ink-500">Volume total</p>
           <p className="mt-1 text-base font-bold sm:text-xl">{volumeTotal.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} m³</p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs text-ink-500">Peças neutras</p>
+          <p className="mt-1 text-base font-bold sm:text-xl">{pctNeutras}%</p>
         </div>
         <div className="card p-4">
           <p className="text-xs text-ink-500">Precisam reparo</p>
@@ -66,7 +71,7 @@ export default function Estoque() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{i.nome}</p>
-                  <p className="text-xs text-ink-500">{categoriaLabel[i.categoria]} · {i.cor}</p>
+                  <p className="text-xs text-ink-500">{categoriaLabel[i.categoria]} · {i.cor} · {i.neutra ? 'Neutra' : 'Tematizada'}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xl leading-none font-bold">{i.quantidade}</p>

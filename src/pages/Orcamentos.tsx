@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CalendarDays, Plus } from 'lucide-react'
 import { clientePorId, orcamentos } from '../data/demo'
-import { statusOrcamentoCor, statusOrcamentoLabel, tipoEventoLabel } from '../data/labels'
+import { pacoteLabel, statusOrcamentoCor, statusOrcamentoLabel, tipoEventoLabel } from '../data/labels'
 import type { StatusOrcamento } from '../data/types'
 import { formatBRL, formatDate } from '../lib/format'
 import { Badge, EmptyState, PageHeader, Tabs } from '../components/ui'
@@ -41,7 +41,7 @@ export default function Orcamentos() {
             <div key={o.id} className="card p-4 sm:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-ink-400">Nº {o.numero} · {tipoEventoLabel[o.tipo]}</p>
+                  <p className="text-xs font-semibold text-ink-400">Nº {o.numero} · {tipoEventoLabel[o.tipo]} · Pacote {pacoteLabel[o.pacote]}</p>
                   <p className="mt-1 truncate font-semibold">{clientePorId(o.clienteId)?.nome}</p>
                   <p className="truncate text-sm text-ink-500">{o.descricao}</p>
                 </div>
