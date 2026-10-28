@@ -1,6 +1,6 @@
 # Fase 2: Telas, fluxos e modelo de dados (proposta)
 
-> Status: **proposta aguardando aprovação do Pedro** (28/10/2026)
+> Status: **aprovado pelo Pedro em 28/10/2026** (com parcelas editáveis e lista de inscritas nos workshops)
 > Princípio: liberdade financeira para a Aline, com lançamento fácil (menos de 1 minuto, pelo celular).
 
 ## 1. Os números que o sistema responde
@@ -22,7 +22,7 @@
 3. **Lançar** (feita para o celular): entrada ou saída → valor → categoria → (evento, opcional) → pago ou previsto. Data de hoje já preenchida.
 4. **Lançamentos**: lista do mês com filtros (tipo, categoria, conta, evento, pago/previsto), busca e exportação em CSV.
 5. **Eventos**: lista por data (próximos e realizados).
-6. **Evento (detalhe)**: cliente, data, fonte, valor fechado, quanto já recebeu e quanto falta, custos, **lucro e margem**.
+6. **Evento (detalhe)**: cliente, data, fonte, valor fechado, parcelas (recebidas e a receber), custos, **lucro e margem**. No workshop, mostra também a lista de inscritas, as vagas restantes e quem já pagou.
 7. **Clientes**: lista e cadastro (CPF/CNPJ mascarado na lista).
 8. **Relatórios**:
    - **Fechamento do mês**: entradas, saídas por categoria, lucro, retiradas e botão "Fechar mês"
@@ -32,7 +32,8 @@
 
 ## 3. Fluxos principais
 
-- **Fechar um evento**: cadastrar o evento com o valor fechado → o sistema cria as parcelas previstas (ex.: sinal + restante) → a Aline marca cada parcela como recebida quando o dinheiro cai.
+- **Fechar um evento**: cadastrar o evento com o valor fechado → o sistema sugere **sinal de 50% hoje + restante até a data do evento**, e a Aline ajusta os percentuais, as datas ou o número de parcelas → as parcelas viram lançamentos previstos → ela marca cada uma como recebida quando o dinheiro cai.
+- **Workshop**: cadastrar o workshop (evento da fonte workshop, sem cliente) com valor da inscrição e vagas → adicionar cada inscrita (nome e telefone) → ao marcar a inscrição como paga, o sistema cria a entrada no financeiro do workshop.
 - **Gastar com um evento**: em "Lançar", escolher saída → valor → categoria (flores, balões, frete…) → evento. O lucro do evento se atualiza na hora.
 - **Custos fixos**: cadastrados uma vez (aluguel, internet, imposto) → o sistema cria o lançamento previsto todo mês → a Aline só confirma o pagamento.
 - **Retirada**: categoria especial "Retirada da Aline". Não entra como custo no lucro, mas sai do saldo.
@@ -47,7 +48,8 @@ Toda tabela de negócio tem `id` (uuid), `empresa_id`, `criado_em`, `atualizado_
 | `empresas` | A empresa da Aline (e de futuros clientes do SaaS) | nome, logo, cor, reserva_meses_desejada |
 | `usuarios_empresas` | Quem acessa qual empresa e com que perfil | usuario_id, empresa_id, papel (administrador/usuario) |
 | `clientes` | Clientes das festas | nome, telefone, e-mail, endereço, cpf_cnpj |
-| `eventos` | Cada festa, assessoria ou workshop | cliente_id (opcional para workshop), titulo, data_evento, fonte (decoracao/assessoria/workshop), valor_fechado, status (confirmado/realizado/cancelado) |
+| `eventos` | Cada festa, assessoria ou workshop | cliente_id (opcional para workshop), titulo, data_evento, fonte (decoracao/assessoria/workshop), valor_fechado, vagas e valor_inscricao (só workshop), status (confirmado/realizado/cancelado) |
+| `inscricoes_workshop` | Alunas inscritas em cada workshop | evento_id, nome, telefone, valor, status (reservada/paga/cancelada), lancamento_id |
 | `contas` | Onde o dinheiro fica | nome (Nubank, Dinheiro…), saldo_inicial |
 | `categorias` | Classificação dos lançamentos | nome, tipo (entrada/saida), natureza (fixo/variavel/retirada) |
 | `lancamentos` | Toda entrada e saída de dinheiro | tipo, valor, data_vencimento, data_pagamento (vazia = previsto), conta_id, categoria_id, evento_id (opcional), recorrencia_id (opcional), descricao |
@@ -55,7 +57,7 @@ Toda tabela de negócio tem `id` (uuid), `empresa_id`, `criado_em`, `atualizado_
 | `fechamentos_mensais` | Meses fechados (trava os lançamentos) | mes_referencia, fechado_por, fechado_em, resumo (números congelados) |
 | `registros_atividades` | Quem mudou o quê (lançamentos, eventos, clientes, fechamentos) | tabela, registro_id, acao, usuario_id, quando, mudanças |
 
-Relações: um cliente tem vários eventos; um evento tem vários lançamentos; uma recorrência gera um lançamento por mês; cada lançamento pertence a uma conta e a uma categoria.
+Relações: um cliente tem vários eventos; um workshop tem várias inscritas, e cada inscrita paga gera um lançamento; um evento tem vários lançamentos; uma recorrência gera um lançamento por mês; cada lançamento pertence a uma conta e a uma categoria.
 
 **Categorias que já vêm prontas** (dá para editar):
 - Entradas: Decoração, Assessoria, Workshop, Outras entradas
@@ -72,6 +74,8 @@ Relações: um cliente tem vários eventos; um evento tem vários lançamentos; 
 | E-mail | Enviar contrato e recibo | Execução de contrato | 5 anos após o último evento |
 | Endereço | Local da montagem e contrato | Execução de contrato | 5 anos após o último evento |
 | CPF/CNPJ | Contrato e nota fiscal | Obrigação legal/fiscal (art. 7º, II) e contrato | 5 anos (prazo fiscal) |
+| Nome da aluna do workshop | Identificar a inscrição | Execução de contrato | 2 anos após o workshop |
+| Telefone da aluna | Avisos sobre o workshop | Execução de contrato | 2 anos após o workshop |
 | E-mail e nome dos usuários do sistema | Acesso | Execução de contrato | Enquanto tiver acesso + 6 meses (registro de acesso, Marco Civil) |
 
 Cuidados: CPF/CNPJ visível por completo só no detalhe do cliente; mascarado nas listas e exportações; nunca nos logs. Sem dados sensíveis (art. 11).

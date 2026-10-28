@@ -31,6 +31,8 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: o sistema guarda CPF/CNPJ das clientes (escolha do Pedro).
 - 28/10/2026: referências visuais oficiais são o site e o Instagram da Aline e o logo rosa e cinza.
 - 28/10/2026: endereço do sistema é `app.alineantunesdecora.com.br`.
+- 28/10/2026: recebimento de evento = sinal de 50% + restante até a data, editável.
+- 28/10/2026: workshops na v1 **com lista de inscritas** (nome e telefone).
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
 
 ---
@@ -56,12 +58,12 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Fase 2: Modelagem e protótipo
 > Proposta detalhada em [`docs/fase-2-modelagem.md`](docs/fase-2-modelagem.md)
 
-- [ ] Telas e fluxos listados
-- [ ] Modelo de dados (tabelas e relações) aprovado pelo Pedro
+- [x] Telas e fluxos listados (28/10/2026, `docs/fase-2-modelagem.md`)
+- [x] Modelo de dados aprovado pelo Pedro (28/10/2026)
 - [ ] Protótipo clicável com dados fictícios
 - [ ] Rodada de ajustes do protótipo
 - [ ] Aprovação do cliente por escrito
-- [ ] Mapa de dados pessoais (campo, finalidade, base legal, retenção)
+- [x] Mapa de dados pessoais (28/10/2026, rascunho; a base legal ainda precisa ser confirmada pela Aline)
 
 ## Fase 3: Contas e repositório
 - [ ] Repositório privado (a partir do `template-base`)
