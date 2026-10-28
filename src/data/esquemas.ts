@@ -9,7 +9,13 @@ export const valorEmReais = z
   .transform((v, ctx) => {
     if (typeof v === 'number') return Math.round(v * 100) / 100
     const limpo = v.replace(/[R$\s]/g, '')
-    const normalizado = limpo.includes(',') ? limpo.replace(/\./g, '').replace(',', '.') : limpo
+    // "1.250,50" e "3.100" usam ponto como separador de milhar (padrão brasileiro); "1250.50" usa ponto decimal.
+    const milharComPonto = /^\d{1,3}(\.\d{3})+$/.test(limpo)
+    const normalizado = limpo.includes(',')
+      ? limpo.replace(/\./g, '').replace(',', '.')
+      : milharComPonto
+        ? limpo.replace(/\./g, '')
+        : limpo
     const n = Number(normalizado)
     if (!Number.isFinite(n)) {
       ctx.addIssue({ code: 'custom', message: 'Informe um valor em reais.' })
@@ -95,6 +101,10 @@ export const esquemaEvento = z
     conta_id: z.uuid('Escolha a conta.'),
     vagas: z.number().int().positive().nullable(),
     valor_inscricao: valorEmReais.nullable(),
+    local_nome: z.string().trim().max(120).optional().transform((v) => v || null),
+    local_endereco: z.string().trim().max(200).optional().transform((v) => v || null),
+    entrega_em: z.string().optional().transform((v) => (v ? new Date(v).toISOString() : null)),
+    devolucao_em: z.string().optional().transform((v) => (v ? new Date(v).toISOString() : null)),
   })
   .refine((e) => e.fonte === 'workshop' || e.cliente_id, { message: 'Escolha a cliente.', path: ['cliente_id'] })
   .refine((e) => e.fonte !== 'workshop' || (e.valor_inscricao ?? 0) > 0, {

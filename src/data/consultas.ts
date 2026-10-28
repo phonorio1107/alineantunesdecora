@@ -6,7 +6,8 @@ import { verificar } from '../lib/erros'
 import { esquemaCliente, esquemaEvento, esquemaInscricao, esquemaLancamento } from './esquemas'
 import type { NovaInscricao, NovoCliente, NovoEvento, NovoLancamento } from './esquemas'
 import type {
-  Categoria, Cliente, Conta, Evento, InscricaoWorkshop, Lancamento, Recorrencia, ResultadoEvento, SaldoConta, Vinculo,
+  Categoria, Cliente, Conta, Contrato, DadosContrato, Empresa, Evento, FechamentoMensal, InscricaoWorkshop, Lancamento, Papel,
+  Recorrencia, ResultadoEvento, SaldoConta, Vinculo,
 } from './tipos'
 
 export const chaves = {
@@ -20,6 +21,10 @@ export const chaves = {
   resultados: (e: string) => ['resultados', e] as const,
   clientes: (e: string) => ['clientes', e] as const,
   inscricoes: (ev: string) => ['inscricoes', ev] as const,
+  fechamentos: (e: string) => ['fechamentos', e] as const,
+  documentos: (e: string) => ['documentos', e] as const,
+  contratos: (e: string) => ['contratos', e] as const,
+  equipe: (e: string) => ['equipe', e] as const,
 }
 
 /** Empresa e papel de quem está logado (o primeiro vínculo ativo). */
@@ -224,7 +229,13 @@ export function useCriarEvento(empresa: string) {
         p_vagas: e.vagas,
         p_valor_inscricao: e.valor_inscricao,
       })
-      return verificar('criar evento', r) as string
+      const id = verificar('criar evento', r) as string
+      if (e.local_nome || e.local_endereco || e.entrega_em || e.devolucao_em) {
+        verificar('logística do evento', await supabase.from('eventos').update({
+          local_nome: e.local_nome, local_endereco: e.local_endereco, entrega_em: e.entrega_em, devolucao_em: e.devolucao_em,
+        }).eq('id', id))
+      }
+      return id
     },
     onSuccess: () => invalidar('eventos', 'resultados', 'lancamentos'),
   })
@@ -259,4 +270,205 @@ export function useFecharMes(empresa: string) {
     },
     onSuccess: () => invalidar('fechamentos', 'lancamentos'),
   })
+}
+
+// ---------------------------------------------------------------------------
+// Parcelas e lançamentos
+// ---------------------------------------------------------------------------
+export function useAtualizarLancamento() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, ...campos }: { id: string; valor?: number; data_vencimento?: string; data_pagamento?: string | null; descricao?: string | null }) => {
+      verificar('atualizar lançamento', await supabase.from('lancamentos').update(campos).eq('id', id))
+    },
+    onSuccess: () => invalidar('lancamentos', 'saldos', 'resultados'),
+  })
+}
+
+export function useAtualizarEvento() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, ...campos }: Partial<Evento> & { id: string }) => {
+      verificar('atualizar evento', await supabase.from('eventos').update(campos).eq('id', id))
+    },
+    onSuccess: () => invalidar('eventos', 'resultados'),
+  })
+}
+
+/** Cria os lançamentos previstos dos custos fixos até a data (sem duplicar). Roda ao abrir o sistema. */
+export function useGerarRecorrencias(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (ate: string) => verificar('gerar custos fixos', await supabase.rpc('gerar_recorrencias', { p_empresa: empresa, p_ate: ate })) as number,
+    onSuccess: (criados) => (criados > 0 ? invalidar('lancamentos') : undefined),
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Fechamento do mês
+// ---------------------------------------------------------------------------
+export function useFechamentos(empresa: string) {
+  return useQuery({
+    queryKey: chaves.fechamentos(empresa),
+    queryFn: () =>
+      ativos<FechamentoMensal[]>('fechamentos')(
+        supabase.from('fechamentos_mensais').select('*').eq('empresa_id', empresa).is('excluido_em', null),
+      ),
+  })
+}
+
+export function useReabrirMes() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      verificar('reabrir mês', await supabase.from('fechamentos_mensais').update({ excluido_em: new Date().toISOString() }).eq('id', id))
+    },
+    onSuccess: () => invalidar('fechamentos', 'lancamentos'),
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Configurações
+// ---------------------------------------------------------------------------
+export function useAtualizarEmpresa(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (campos: Partial<Empresa>) => {
+      verificar('atualizar empresa', await supabase.from('empresas').update(campos).eq('id', empresa))
+    },
+    onSuccess: () => invalidar('vinculo'),
+  })
+}
+
+export function useCriarConta(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (c: { nome: string; saldo_inicial: number; data_saldo_inicial: string }) => {
+      verificar('criar conta', await supabase.from('contas').insert({ ...c, empresa_id: empresa }))
+    },
+    onSuccess: () => invalidar('contas', 'saldos'),
+  })
+}
+
+export function useCriarRecorrencia(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (r: { descricao: string; valor: number; dia_vencimento: number; categoria_id: string; conta_id: string }) => {
+      verificar('criar custo fixo', await supabase.from('recorrencias').insert({ ...r, empresa_id: empresa }))
+      // Já cria os meses seguintes, para aparecer na previsão do caixa.
+      verificar('gerar custos fixos', await supabase.rpc('gerar_recorrencias', { p_empresa: empresa, p_ate: proximosMeses(6) }))
+    },
+    onSuccess: () => invalidar('recorrencias', 'lancamentos'),
+  })
+}
+
+export function useDesativarRecorrencia() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      verificar('desativar custo fixo', await supabase.from('recorrencias').update({ ativa: false }).eq('id', id))
+    },
+    onSuccess: () => invalidar('recorrencias'),
+  })
+}
+
+export function useCriarCategoria(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (c: Pick<Categoria, 'nome' | 'tipo' | 'natureza'>) => {
+      verificar('criar categoria', await supabase.from('categorias').insert({ ...c, empresa_id: empresa }))
+    },
+    onSuccess: () => invalidar('categorias'),
+  })
+}
+
+export function useEquipe(empresa: string, ativo: boolean) {
+  return useQuery({
+    queryKey: chaves.equipe(empresa),
+    enabled: ativo,
+    queryFn: () =>
+      ativos<{ id: string; usuario_id: string; papel: Papel; financeiro_liberado: boolean }[]>('equipe')(
+        supabase.from('usuarios_empresas').select('id, usuario_id, papel, financeiro_liberado').eq('empresa_id', empresa).is('excluido_em', null),
+      ),
+  })
+}
+
+export function useAtualizarAcesso() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, financeiro_liberado }: { id: string; financeiro_liberado: boolean }) => {
+      verificar('atualizar acesso', await supabase.from('usuarios_empresas').update({ financeiro_liberado }).eq('id', id))
+    },
+    onSuccess: () => invalidar('equipe'),
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Documentos (CPF/CNPJ) e contratos: só a proprietária recebe dados
+// ---------------------------------------------------------------------------
+export function useDocumentos(empresa: string, ativo: boolean) {
+  return useQuery({
+    queryKey: chaves.documentos(empresa),
+    enabled: ativo,
+    queryFn: () =>
+      ativos<{ cliente_id: string; cpf_cnpj: string }[]>('documentos')(
+        supabase.from('clientes_documentos').select('cliente_id, cpf_cnpj').eq('empresa_id', empresa).is('excluido_em', null),
+      ),
+  })
+}
+
+export function useSalvarDocumento(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ cliente, cpf_cnpj }: { cliente: string; cpf_cnpj: string }) => {
+      verificar('salvar documento', await supabase.from('clientes_documentos').upsert({ cliente_id: cliente, empresa_id: empresa, cpf_cnpj }))
+    },
+    onSuccess: () => invalidar('documentos'),
+  })
+}
+
+export function useAtualizarCliente() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, ...campos }: Partial<Cliente> & { id: string }) => {
+      verificar('atualizar cliente', await supabase.from('clientes').update(campos).eq('id', id))
+    },
+    onSuccess: () => invalidar('clientes'),
+  })
+}
+
+export function useContratos(empresa: string, ativo: boolean) {
+  return useQuery({
+    queryKey: chaves.contratos(empresa),
+    enabled: ativo,
+    queryFn: () =>
+      ativos<Contrato[]>('contratos')(
+        supabase.from('contratos').select('*').eq('empresa_id', empresa).is('excluido_em', null).order('emitido_em', { ascending: false }),
+      ),
+  })
+}
+
+export function useEmitirContrato() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ evento, dados }: { evento: string; dados: DadosContrato }) =>
+      verificar('emitir contrato', await supabase.rpc('emitir_contrato', { p_evento: evento, p_dados: dados })) as Contrato,
+    onSuccess: () => invalidar('contratos'),
+  })
+}
+
+export function useAtualizarContrato() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, ...campos }: { id: string; assinado_em?: string | null; cancelado_em?: string | null }) => {
+      verificar('atualizar contrato', await supabase.from('contratos').update(campos).eq('id', id))
+    },
+    onSuccess: () => invalidar('contratos'),
+  })
+}
+
+function proximosMeses(n: number) {
+  const d = new Date()
+  d.setMonth(d.getMonth() + n + 1, 0)
+  return d.toISOString().slice(0, 10)
 }

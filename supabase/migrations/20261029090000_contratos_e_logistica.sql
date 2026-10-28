@@ -15,7 +15,8 @@ alter table public.empresas
   add column banco_agencia text check (length(banco_agencia) <= 20),
   add column banco_conta text check (length(banco_conta) <= 30),
   add column banco_favorecido text check (length(banco_favorecido) <= 120),
-  add column pix_chave text check (length(pix_chave) <= 120);
+  add column pix_chave text check (length(pix_chave) <= 120),
+  add column responsavel_nome text check (length(responsavel_nome) <= 120);
 
 -- ---------------------------------------------------------------------------
 -- Logística do evento (aparece no contrato)

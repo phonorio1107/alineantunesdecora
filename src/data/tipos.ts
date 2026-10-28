@@ -29,6 +29,18 @@ export interface Empresa {
   dias_saldo_antes_evento: number
   percentual_lucro_empresa: number | null
   percentual_lucro_proprietaria: number | null
+  razao_social: string | null
+  cnpj: string | null
+  telefones: string | null
+  email_contato: string | null
+  endereco: string | null
+  cidade_foro: string | null
+  banco_nome: string | null
+  banco_agencia: string | null
+  banco_conta: string | null
+  banco_favorecido: string | null
+  pix_chave: string | null
+  responsavel_nome: string | null
 }
 
 export interface Vinculo {
@@ -58,6 +70,10 @@ export interface Evento extends Padrao {
   vagas: number | null
   valor_inscricao: number | null
   status: StatusEvento
+  local_nome: string | null
+  local_endereco: string | null
+  entrega_em: string | null
+  devolucao_em: string | null
 }
 
 export interface Conta extends Padrao {
@@ -122,4 +138,34 @@ export interface ResultadoEvento {
   recebido: number
   a_receber: number
   custos: number
+}
+
+export interface FechamentoMensal extends Padrao {
+  mes_referencia: string
+  resumo: Record<string, number>
+}
+
+export interface Contrato extends Padrao {
+  evento_id: string
+  numero: string
+  versao: number
+  emitido_em: string
+  assinado_em: string | null
+  cancelado_em: string | null
+  dados: DadosContrato
+}
+
+/** Cópia congelada de tudo o que aparece no contrato no momento da emissão. */
+export interface DadosContrato {
+  modelo: string
+  data_pedido: string
+  atendente: string
+  /** Prazo do saldo antes do evento, citado na cláusula 3. */
+  dias_saldo: number
+  empresa: Pick<Empresa, 'nome' | 'razao_social' | 'cnpj' | 'telefones' | 'email_contato' | 'endereco' | 'cidade_foro' | 'banco_nome' | 'banco_agencia' | 'banco_conta' | 'banco_favorecido' | 'pix_chave'>
+  cliente: { nome: string; cpf_cnpj: string | null; telefone: string | null; endereco: string | null; cidade: string | null }
+  evento: { titulo: string; data_evento: string; local_nome: string | null; local_endereco: string | null; entrega_em: string | null; devolucao_em: string | null }
+  itens: { codigo: string; descricao: string; quantidade: number; valor_unitario: number }[]
+  parcelas: { vencimento: string; descricao: string; valor: number; situacao: 'Pago' | 'Pendente'; forma: string }[]
+  totais: { valor_servicos: number; extras: number; total: number; pago: number; pendente: number }
 }
