@@ -165,6 +165,8 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
+- 28/10/2026: termo da Fase 2 enviado à Aline pelo WhatsApp (aguardando resposta).
+- 28/10/2026: revisão do código da branch antiga em `docs/revisao-codigo-antigo.md`: compila, 0 vulnerabilidades, mas RLS com `using (true)` e sem financeiro; aproveitar estrutura e utilitários, reescrever banco e camada de dados.
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
 - 28/10/2026: ajuste 2 do protótipo: entrada de 30% e saldo 5 dias antes, categorias de custo da entrevista (freelancers, deslocamento, taxas de cartão, peças perdidas).
 - 28/10/2026: ajuste 1 do protótipo: fundo branco com confetes como no site e números sem quebrar no celular.
