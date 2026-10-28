@@ -3,7 +3,7 @@
 ## Dados do cliente
 - **Cliente:** Aline Antunes Decora (mãe do Pedro), **SaaS piloto**
 - **Prestador / operador:** Pedro Hoffman
-- **Repositório:** `phonorio1107/alineantunesdecora` (⚠️ **público**; tornar privado antes da Fase 4)
+- **Repositório:** `phonorio1107/alineantunesdecora` (privado desde 28/10/2026)
 - **Ramo:** decoração de festas (arranjos florais e balões, desde 2015; festa infantil é o carro-chefe), assessoria e coordenação de eventos, e **workshops** de arranjos florais
 - **Sede:** Louveira/SP; atende Jundiaí, Campinas, Valinhos, Vinhedo e São Paulo; cerca de 4 festas por mês
 - **Entrevista com a Aline:** [`.claude/skills/aline-antunes-decora/SKILL.md`](.claude/skills/aline-antunes-decora/SKILL.md) (fonte oficial das regras do negócio)
@@ -37,7 +37,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: endereço do sistema é `app.alineantunesdecora.com.br`.
 - ~~28/10/2026: recebimento de evento = sinal de 50% + restante até a data~~ → substituído: **entrada de 30% + saldo até 5 dias antes do evento**, editável (regra da entrevista, confirmada pelo Pedro em 28/10/2026).
 - 28/10/2026: a branch `claude/eager-ramanujan-xcz3om` (21/10) vira fonte: a entrevista é a referência do negócio e o código será reaproveitado na Fase 6, com revisão de segurança.
-- 28/10/2026: **repositório continua público por decisão do Pedro**, ciente do risco (código e documentos visíveis para qualquer pessoa). ⚠️ **Precisa ficar privado antes da Fase 4.** Lembrar o Pedro em todo resumo de fase.
+- 28/10/2026: **repositório continua público por decisão do Pedro**, ciente do risco (código e documentos visíveis para qualquer pessoa). → **Resolvido em 28/10/2026: repositório privado.**
 - 28/10/2026: workshops na v1 **com lista de inscritas** (nome e telefone).
 - 28/10/2026: **tema claro é o padrão** (fundo branco com confetes rosa, amarelo e azul, como no site), independente do tema do aparelho. O escuro fica como opção em Configurações → Aparência.
 - 28/10/2026: documentos do Pedro seguem o design system **Pedro Hoffman Degrau** (https://claude.ai/artifact/TTBKvP6xEKFKxHtrAiHGcp). Nos sistemas dos clientes, o rodapé "feito por Pedro Hoffman" usa o **símbolo de 12 px** do design system, no lugar do quadrado verde de 10 px da skill (atualizar a skill).
@@ -74,7 +74,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Mapa de dados pessoais (28/10/2026, rascunho; a base legal ainda precisa ser confirmada pela Aline)
 
 ## Fase 3: Contas e repositório
-- [ ] **Repositório privado** (bloqueia o início da Fase 4)
+- [x] **Repositório privado** (28/10/2026; API do GitHub confirma `visibility: private`)
 - [x] Repositório criado (28/10/2026): `phonorio1107/alineantunesdecora`. Como este é o piloto, o `template-base` nasce dele ao final do projeto.
 - [ ] `main` protegida (só por pull request) e branch `dev`
 - [ ] Dependabot e secret scanning ligados (se o plano permitir): `.github/dependabot.yml` pronto; falta ligar os alertas em Settings → Code security
@@ -82,7 +82,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Projeto Supabase de produção (org Pro, região São Paulo), senha do banco no gerenciador de senhas
 - [ ] Ambiente Supabase de desenvolvimento separado
 - [ ] Cloudflare Pages ligado: produção em `main`, prévia em `dev`, variáveis por ambiente
-- [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal
+- [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal (adiado pelo Pedro em 28/10/2026; obrigatório antes de qualquer dado real da Aline)
 
 ## Fase 4: Banco de dados e RLS
 - [x] Convenções aplicadas (28/10/2026, código; vale em produção quando a migração for aplicada)

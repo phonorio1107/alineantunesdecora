@@ -142,10 +142,6 @@ a{color:var(--link)}
     </div>
   </section>
 
-  <div class="alert" role="note">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
-    <p><b>O repositório no GitHub ainda está público.</b> Qualquer pessoa consegue ver o código e os documentos. Ele precisa ficar privado antes de o banco de dados ir para o ar.</p>
-  </div>
 
   <section class="sec-h" aria-labelledby="t-acoes">
     <h2 id="t-acoes">Próximos passos</h2>
@@ -155,8 +151,7 @@ a{color:var(--link)}
     <div class="col you">
       <h3>Você <small>Pedro</small></h3>
       <ol>
-        <li><b>Deixar o repositório privado</b><span>GitHub → Settings → General → Change visibility.</span></li>
-        <li><b>Ligar a verificação em duas etapas</b><span>No e-mail, GitHub, Supabase e Cloudflare. Protege tudo o que vem depois.</span></li>
+        <li><b>Ligar a verificação em duas etapas</b><span>No e-mail, GitHub, Supabase e Cloudflare. Pode ser depois, mas antes de entrar qualquer dado real.</span></li>
         <li><b>Criar os dois projetos no Supabase</b><span>Produção (organização Pro, região São Paulo) e desenvolvimento (organização gratuita).</span></li>
         <li><b>Autorizar a branch <code>dev</code></b><span>Onde o trabalho do dia a dia acontece antes de ir para o ar.</span></li>
       </ol>
@@ -174,7 +169,7 @@ a{color:var(--link)}
       <ol>
         <li><b>Construir as telas da v1</b><span>Início, Lançar, Eventos, Clientes, Relatórios e Configurações, a partir do protótipo.</span></li>
         <li><b>Ligar o app ao Supabase de testes</b><span>Assim que o projeto de desenvolvimento existir.</span></li>
-        <li><b>Aplicar o banco em produção</b><span>Só depois do repositório privado e da aprovação da Aline.</span></li>
+        <li><b>Aplicar o banco em produção</b><span>Repositório já está privado. Falta a aprovação da Aline.</span></li>
       </ol>
     </div>
   </div>
@@ -216,9 +211,9 @@ const FASES = [
   {n:2, nome:'Protótipo', titulo:'Modelagem e protótipo', s:'wait', feito:4, total:6, quem:'Esperando a Aline',
    o:'Desenhar as telas, montar o protótipo clicável e decidir que dados guardar.',
    agora:'Protótipo pronto e termo enviado. <b>Falta a resposta da Aline.</b>'},
-  {n:3, nome:'Contas', titulo:'Contas e repositório', s:'wait', feito:2, total:9, quem:'Esperando você',
+  {n:3, nome:'Contas', titulo:'Contas e repositório', s:'wait', feito:3, total:9, quem:'Esperando você',
    o:'Criar as contas onde o sistema vai rodar e proteger cada uma.',
-   agora:'Arquivos de configuração prontos. <b>Falta você criar o Supabase, ligar as duas etapas e fechar o repositório.</b>'},
+   agora:'Repositório privado e arquivos de configuração prontos. <b>Falta você criar o Supabase e ligar as duas etapas.</b>'},
   {n:4, nome:'Banco', titulo:'Banco de dados e segurança', s:'doing', feito:9, total:11, aqui:true,
    o:'Montar onde os dados ficam guardados e as regras de quem vê o quê.',
    agora:'Pronto e testado no código: 16 verificações passando. <b>Falta aplicar no Supabase de verdade.</b>'},
