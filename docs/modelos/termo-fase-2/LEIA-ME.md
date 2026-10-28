@@ -13,14 +13,16 @@ node docs/modelos/termo-fase-2/gerar.js docs/modelos/termo-fase-2/<cliente>.json
 
 Precisa do Playwright com Chromium (já instalado nas sessões em nuvem do Claude Code). A fonte é a Inter; sem ela, o navegador usa a sem serifa do sistema.
 
-## Identidade visual Pedro Hoffman (provisória)
+## Identidade visual
 
-- Preto `#111111` e branco, com detalhes em azul-marinho `#14284B` (fundo suave `#E8ECF3`)
-- Marca: quadrado azul-marinho + "PEDRO HOFFMAN" em caixa alta, espaçado
-- Tipografia: Inter (corpo) e Inter Display (título)
-- Numeração de seções em quadrado azul-marinho; caixas de concordância com borda azul-marinho à esquerda
+Segue o design system **Pedro Hoffman Degrau** (https://claude.ai/artifact/TTBKvP6xEKFKxHtrAiHGcp):
 
-Pendente: logo definitivo, contato (e-mail/WhatsApp) e se o quadrado da assinatura nos documentos do Pedro é azul-marinho ou o verde usado no rodapé dos sistemas.
+- Preto e branco em tudo; o marinho `#0B1F3A` é só para agir (aqui, as caixas de marcar e o link)
+- Tinta `#0E0E10`, texto secundário `#5A5A62`, bordas `#E6E6E8`, painéis `#F5F5F6`
+- Títulos em Inter Tight 600/700 com espaçamento negativo; texto em Inter com números tabulares
+- Logo horizontal em tinta no topo; símbolo no rodapé. Arquivos em `marca/pedro-hoffman/`
+
+As fontes vêm do Google Fonts; sem internet, o navegador usa a sem serifa do sistema.
 
 ## Trecho para a skill `novo-cliente-saas` (Fase 2)
 

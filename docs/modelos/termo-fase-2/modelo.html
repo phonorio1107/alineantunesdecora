@@ -3,28 +3,28 @@
 <head>
 <meta charset="utf-8">
 <title>Termo de aprovação · {{cliente}}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-  /* Identidade Pedro Hoffman: preto e branco, detalhes em azul-marinho */
+  /* Design system Pedro Hoffman Degrau: preto e branco em tudo, o marinho é para agir */
   :root{
-    --ink:#111111; --muted:#5B5F66; --line:#D9DCE1; --soft:#F4F5F7;
-    --navy:#14284B; --navy-soft:#E8ECF3;
+    --ink:#0E0E10; --grafite:#3A3A40; --muted:#5A5A62; --line:#E6E6E8; --soft:#F5F5F6;
+    --navy:#0B1F3A; --border-strong:#8A8A92;
+    --display:'Inter Tight',system-ui,sans-serif; --text:'Inter',system-ui,sans-serif;
   }
   @page{size:A4;margin:22mm 18mm 22mm 18mm}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:'Inter',system-ui,sans-serif;font-size:10pt;line-height:1.5;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:var(--text);font-variant-numeric:tabular-nums;font-size:10pt;line-height:1.5;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
   h1,h2,h3,p{margin:0}
 
-  .masthead{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:10pt;border-bottom:1.5pt solid var(--ink)}
-  .mark{display:flex;align-items:center;gap:8pt}
-  .mark i{width:9pt;height:9pt;background:var(--navy);display:block}
-  .mark b{font-size:11pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+  .masthead{display:flex;justify-content:space-between;align-items:center;padding-bottom:12pt;border-bottom:1.5pt solid var(--ink)}
+  .mark svg{height:17pt;width:auto;display:block}
   .doc-id{text-align:right;font-size:8pt;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;line-height:1.6}
   .doc-id strong{color:var(--navy);font-weight:600}
 
   .title{padding:22pt 0 16pt}
-  .eyebrow{font-size:8pt;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)}
-  h1{font-family:'Inter Display','Inter',sans-serif;font-size:22pt;line-height:1.15;font-weight:700;letter-spacing:-.015em;margin-top:6pt;max-width:15cm}
+  .eyebrow{font-size:7.5pt;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--navy)}
+  h1{font-family:var(--display);font-size:24pt;line-height:1.1;font-weight:700;letter-spacing:-.035em;margin-top:6pt;max-width:15cm}
   .lead{color:var(--muted);margin-top:8pt;max-width:15.5cm}
 
   .meta{display:grid;grid-template-columns:repeat(4,1fr);border-top:.75pt solid var(--line);border-bottom:.75pt solid var(--line)}
@@ -36,24 +36,24 @@
 
   section{margin-top:20pt;break-inside:auto}
   .sec-h{display:flex;align-items:baseline;gap:10pt;padding-bottom:6pt;border-bottom:.75pt solid var(--ink);margin-bottom:10pt;break-after:avoid}
-  .sec-h .n{font-size:9pt;font-weight:700;color:#fff;background:var(--navy);min-width:16pt;height:16pt;display:inline-flex;align-items:center;justify-content:center}
-  h2{font-size:12.5pt;font-weight:700;letter-spacing:-.005em}
+  .sec-h .n{font-family:var(--display);font-size:9pt;font-weight:700;color:#fff;background:var(--ink);min-width:16pt;height:16pt;border-radius:4pt;display:inline-flex;align-items:center;justify-content:center}
+  h2{font-family:var(--display);font-size:13pt;font-weight:600;letter-spacing:-.02em}
   .sec-h p{margin-left:auto;font-size:8.5pt;color:var(--muted)}
   .intro{color:var(--muted);margin-bottom:10pt}
 
   ol.q{list-style:none;padding:0;margin:0;counter-reset:q}
   ol.q li{counter-increment:q;padding:6pt 0 0 22pt;text-indent:-22pt;break-inside:avoid}
-  ol.q li::before{content:counter(q,decimal-leading-zero);display:inline-block;width:22pt;text-indent:0;font-size:8pt;font-weight:700;color:var(--navy);letter-spacing:.05em}
+  ol.q li::before{content:counter(q,decimal-leading-zero);display:inline-block;width:22pt;text-indent:0;font-size:8pt;font-weight:700;color:var(--muted);letter-spacing:.05em}
   .lines{margin:4pt 0 0;text-indent:0}
   .lines i{display:block;height:18pt;border-bottom:.6pt solid var(--line)}
 
-  .agree{display:flex;gap:10pt;align-items:flex-start;margin-top:12pt;padding:10pt 12pt;background:var(--navy-soft);border-left:2.5pt solid var(--navy);break-inside:avoid}
-  .box{flex:none;width:11pt;height:11pt;border:1.2pt solid var(--navy);background:#fff;margin-top:1.5pt}
+  .agree{display:flex;gap:10pt;align-items:flex-start;margin-top:12pt;padding:11pt 13pt;background:var(--soft);border:.75pt solid var(--line);border-radius:8pt;break-inside:avoid}
+  .box{flex:none;width:12pt;height:12pt;border:1.4pt solid var(--navy);border-radius:2.5pt;background:#fff;margin-top:1pt}
   .agree b{font-weight:600}
   .agree small{display:block;color:var(--muted);font-size:8.5pt;margin-top:2pt}
 
   table{width:100%;border-collapse:collapse;font-size:9pt}
-  th{font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);font-weight:700;text-align:left;padding:6pt 8pt 6pt 0;border-bottom:1.2pt solid var(--navy)}
+  th{font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);font-weight:600;text-align:left;padding:6pt 8pt 6pt 0;border-bottom:1.2pt solid var(--ink)}
   td{padding:7pt 8pt 7pt 0;border-bottom:.6pt solid var(--line);vertical-align:top}
   td:first-child{font-weight:600}
   tr{break-inside:avoid}
@@ -67,7 +67,7 @@
   .sign b{display:block;font-weight:600}
   .sign span{font-size:8.5pt;color:var(--muted)}
 
-  .registro{margin-top:24pt;padding:10pt 12pt;border:.75pt solid var(--line);break-inside:avoid}
+  .registro{margin-top:24pt;padding:11pt 13pt;border:.75pt solid var(--line);border-radius:8pt;break-inside:avoid}
   .registro h3{font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6pt}
   .registro table td{font-weight:400;color:var(--muted);border-bottom:.6pt dotted var(--line)}
   .registro table td:first-child{color:var(--ink);font-weight:500;width:46%}
@@ -78,7 +78,7 @@
 <body>
 
 <header class="masthead">
-  <div class="mark"><i></i><b>Pedro Hoffman</b></div>
+  <div class="mark">{{logo}}</div>
   <div class="doc-id"><strong>Fase 2 · Modelagem e protótipo</strong><br>Documento {{codigo}} · {{data_envio}}</div>
 </header>
 

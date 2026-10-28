@@ -18,7 +18,10 @@ async function main() {
     perguntas_negocio: d.perguntas_negocio.map((q) => `<li>${esc(q)}<div class="lines"><i></i><i></i></div></li>`).join(''),
     linhas_dados: d.linhas_dados.map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join(''),
     cuidados_dados: d.cuidados_dados.map((c) => `<li>${esc(c)}</li>`).join(''),
+    logo: fs.readFileSync(path.join(__dirname, '../../../marca/pedro-hoffman/logo-horizontal-tinta.svg'), 'utf8'),
   };
+  const simbolo = fs.readFileSync(path.join(__dirname, '../../../marca/pedro-hoffman/simbolo-tinta.svg'), 'utf8')
+    .replace('<svg ', '<svg style="height:8pt;width:auto;vertical-align:-1pt;margin-right:5pt" ');
   let html = fs.readFileSync(path.join(__dirname, 'modelo.html'), 'utf8');
   html = html.replace(/\{\{(\w+)\}\}/g, (_, k) => {
     if (k in listas) return listas[k];
@@ -28,15 +31,16 @@ async function main() {
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'load' });
+  await page.setContent(html, { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.fonts.ready);
   await page.pdf({
     path: saida,
     format: 'A4',
     printBackground: true,
     displayHeaderFooter: true,
     headerTemplate: '<span></span>',
-    footerTemplate: `<div style="width:100%;padding:0 18mm;font-family:Inter,sans-serif;font-size:7pt;color:#5B5F66;display:flex;justify-content:space-between;letter-spacing:.06em">
-      <span>PEDRO HOFFMAN · TERMO DE APROVAÇÃO · ${esc(d.cliente.toUpperCase())}</span>
+    footerTemplate: `<div style="width:100%;padding:0 18mm;font-family:Inter,sans-serif;font-size:7pt;color:#5A5A62;display:flex;justify-content:space-between;align-items:center;letter-spacing:.06em">
+      <span>${simbolo}TERMO DE APROVAÇÃO · ${esc(d.cliente.toUpperCase())}</span>
       <span>Página <span class="pageNumber"></span> de <span class="totalPages"></span></span></div>`,
     margin: { top: '22mm', bottom: '22mm', left: '18mm', right: '18mm' },
   });

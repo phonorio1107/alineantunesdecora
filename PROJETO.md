@@ -38,6 +38,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: **repositório continua público por decisão do Pedro**, ciente do risco (código e documentos visíveis para qualquer pessoa). ⚠️ **Precisa ficar privado antes da Fase 4.** Lembrar o Pedro em todo resumo de fase.
 - 28/10/2026: workshops na v1 **com lista de inscritas** (nome e telefone).
 - 28/10/2026: **tema claro é o padrão** (fundo branco com confetes rosa, amarelo e azul, como no site), independente do tema do aparelho. O escuro fica como opção em Configurações → Aparência.
+- 28/10/2026: documentos do Pedro seguem o design system **Pedro Hoffman Degrau** (https://claude.ai/artifact/TTBKvP6xEKFKxHtrAiHGcp). Nos sistemas dos clientes, o rodapé "feito por Pedro Hoffman" usa o **símbolo de 12 px** do design system, no lugar do quadrado verde de 10 px da skill (atualizar a skill).
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
 
 ---
@@ -116,7 +117,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Direção visual escolhida pelo Pedro (tom, densidade, cantos, gráficos)
 - [ ] Tokens de design e temas claro e escuro testados
 - [ ] Cor do cliente como destaque, contraste mínimo 4,5:1
-- [ ] Logo no topo; rodapé "feito por Pedro Hoffman" com quadrado verde de 10px
+- [ ] Logo no topo; rodapé "feito por Pedro Hoffman" com o símbolo Pedro Hoffman de 12px (design system Degrau)
 - [ ] Espaçamento 4/8/12/16/24/32/48/64; cantos 4/8/12/16; um botão principal por tela
 - [ ] Estados vazio, carregando e erro; confirmação em ação destrutiva; avisos de sucesso; erro junto ao campo
 - [ ] Celular (360px), teclado, foco visível, texto mínimo 14px, toque de 44px
