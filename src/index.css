@@ -35,7 +35,7 @@ body {
     @apply rounded-2xl bg-white border border-brand-100 shadow-[0_1px_2px_rgba(133,54,82,0.04),0_8px_24px_-12px_rgba(133,54,82,0.12)];
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-[0.98] disabled:opacity-60;
   }
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-ink-700 transition hover:bg-brand-50;

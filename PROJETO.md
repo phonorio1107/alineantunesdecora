@@ -75,7 +75,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] **Repositório privado** (bloqueia o início da Fase 4)
 - [x] Repositório criado (28/10/2026): `phonorio1107/alineantunesdecora`. Como este é o piloto, o `template-base` nasce dele ao final do projeto.
 - [ ] `main` protegida (só por pull request) e branch `dev`
-- [ ] Dependabot e secret scanning ligados (se o plano permitir)
+- [ ] Dependabot e secret scanning ligados (se o plano permitir): `.github/dependabot.yml` pronto; falta ligar os alertas em Settings → Code security
 - [x] `.env.example` sem segredos; `.gitignore` com `.env*` (28/10/2026; `git check-ignore .env.local` confirma)
 - [ ] Projeto Supabase de produção (org Pro, região São Paulo), senha do banco no gerenciador de senhas
 - [ ] Ambiente Supabase de desenvolvimento separado
@@ -83,16 +83,16 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal
 
 ## Fase 4: Banco de dados e RLS
-- [ ] Convenções aplicadas (`snake_case` pt-BR plural, `id` uuid, `empresa_id`, `criado_em`, `atualizado_em`, `criado_por`, índices, `excluido_em`)
-- [ ] Toda mudança por migração em `supabase/migrations`
-- [ ] RLS ativado em todas as tabelas do `public` (consulta `rowsecurity = false` vazia)
-- [ ] Políticas por `empresa_id` via `usuarios_empresas`, separadas por operação, `with check` em insert/update
-- [ ] Nenhuma política usa `user_metadata`
-- [ ] Nenhuma política `using (true)` em tabela de negócio
-- [ ] Views com `security_invoker = true`; `security definer` com `search_path = ''`
-- [ ] Storage: buckets privados, políticas por empresa, limite de tamanho e tipos
-- [ ] `service_role` fora do front-end e do repositório
-- [ ] Teste de isolamento entre empresas (script repetível)
+- [x] Convenções aplicadas (28/10/2026, código; vale em produção quando a migração for aplicada)
+- [x] Toda mudança por migração em `supabase/migrations` (`20261028120000_estrutura_v1.sql`)
+- [x] RLS ativado em todas as tabelas do `public`: verificado no item 0 do teste de isolamento (28/10/2026, código; vale em produção quando a migração for aplicada)
+- [x] Políticas por `empresa_id` via `usuarios_empresas`, uma por operação, `with check` em insert/update; perfis proprietária, assistente (financeiro só se liberado) e freelancer (28/10/2026, código; vale em produção quando a migração for aplicada)
+- [x] Nenhuma política usa `user_metadata` (28/10/2026)
+- [x] Nenhuma política `using (true)` (28/10/2026; a da branch antiga foi substituída)
+- [x] Views com `security_invoker = true`; `security definer` só no schema `privado`, com `search_path = ''` (28/10/2026)
+- [ ] Storage: buckets privados, políticas por empresa, limite de tamanho e tipos (a v1 não usa arquivos; vale quando entrar o primeiro bucket)
+- [x] `service_role` fora do front-end e do repositório (28/10/2026; busca no código vazia)
+- [x] Teste de isolamento entre empresas e perfis: `supabase/tests/isolamento.sql`, 16 verificações passando em Postgres 16 local; confirmado que acusa 4 furos abertos de propósito; roda no GitHub Actions a cada PR (28/10/2026)
 - [ ] Security Advisor zerado (ou justificado)
 
 ## Fase 5: Autenticação e permissões
@@ -107,11 +107,11 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Fase 6: Construir o sistema
 - [ ] Módulos-base: login por convite, empresas e usuários, painel, lista e cadastro padrão, configurações, registro de atividades
 - [ ] Telas próprias do cliente (uma a uma, aprovadas pelo Pedro)
-- [ ] TypeScript estrito; Zod em todo formulário; sem `dangerouslySetInnerHTML` com texto de usuário
-- [ ] Tratamento de erro em toda chamada ao banco
-- [ ] Logs sem dados pessoais
-- [ ] Nenhum segredo no código (só a chave anon)
-- [ ] Dependências atualizadas; `npm audit` sem críticas
+- [x] TypeScript estrito; esquemas Zod para lançamento, cliente, evento e inscrição; sem `dangerouslySetInnerHTML` (28/10/2026; vale também para as telas que vierem)
+- [x] Tratamento de erro em toda chamada ao banco (`src/lib/erros.ts`, 28/10/2026)
+- [x] Logs sem dados pessoais: console só com código do erro; registro de atividades só com nomes de colunas (28/10/2026)
+- [x] Nenhum segredo no código (só a chave anon) (28/10/2026)
+- [x] `npm audit` com 0 vulnerabilidades (28/10/2026); Dependabot semanal configurado
 
 ## Fase 7: Design
 - [ ] Direção visual escolhida pelo Pedro (tom, densidade, cantos, gráficos)
@@ -141,7 +141,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 ## Fase 10: Qualidade antes da entrega
 - [ ] `SECURITY_CHECKLIST.md` completo; isolamento passando; Advisor zerado
-- [ ] GitHub Actions em cada PR: tipos, lint e build
+- [x] GitHub Actions em cada PR: tipos, build, `npm audit` e teste de isolamento (`.github/workflows/verificacao.yml`, 28/10/2026). Falta o lint.
 - [ ] Roteiro manual no computador e no celular, nos dois temas
 - [ ] Backups: diário do Supabase, semanal no R2, restauração testada
 - [ ] Revisão de segurança do diff completo
@@ -166,6 +166,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
 - 28/10/2026: termo da Fase 2 enviado à Aline pelo WhatsApp (aguardando resposta).
+- 28/10/2026: com autorização do Pedro, problemas sérios do código antigo corrigidos antes da aprovação da Aline: banco reescrito com RLS e teste de isolamento, camada de dados no Supabase com TanStack Query e Zod, login por convite. A migração **não foi aplicada em nenhum Supabase**: só depois do repositório privado e da aprovação da Aline.
 - 28/10/2026: revisão do código da branch antiga em `docs/revisao-codigo-antigo.md`: compila, 0 vulnerabilidades, mas RLS com `using (true)` e sem financeiro; aproveitar estrutura e utilitários, reescrever banco e camada de dados.
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
 - 28/10/2026: ajuste 2 do protótipo: entrada de 30% e saldo 5 dias antes, categorias de custo da entrevista (freelancers, deslocamento, taxas de cartão, peças perdidas).

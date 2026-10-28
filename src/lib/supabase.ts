@@ -1,7 +1,11 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js'
 
+// Só a chave pública (anon) entra no front-end. A service_role nunca vem para cá.
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-// Enquanto o Supabase não estiver configurado, o app usa os dados de demonstração.
-export const supabase: SupabaseClient | null = url && anonKey ? createClient(url, anonKey) : null
+export const supabaseConfigurado = Boolean(url && anonKey)
+
+export const supabase = createClient(url ?? 'http://localhost:54321', anonKey ?? 'chave-ausente', {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+})

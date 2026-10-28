@@ -183,6 +183,33 @@ begin
   raise notice 'ok  2c. Registro de atividades guarda só nomes de colunas e não aceita escrita direta';
 end $$;
 
+-- 2d. Operações atômicas respeitam a empresa
+do $$
+declare v_ev uuid; n int; v_dt date;
+  a constant uuid := 'eeeeeeee-0000-0000-0000-00000000000a';
+begin
+  v_ev := public.criar_evento(a, 'Festa com parcelas', 'infantil', 'decoracao', 'cccccccc-0000-0000-0000-00000000000a',
+                              '2026-12-20', 'Louveira', 4000, 30, '2026-11-01', 'aaaaaaaa-0000-0000-0000-00000000000a');
+  select count(*) into n from public.lancamentos where evento_id = v_ev;
+  if n <> 2 then raise exception 'FALHOU: criar_evento gerou % parcela(s), esperado 2', n; end if;
+  select data_vencimento into v_dt from public.lancamentos where evento_id = v_ev and descricao = 'Saldo';
+  if v_dt <> date '2026-12-15' then raise exception 'FALHOU: saldo vence em %, esperado 15/12', v_dt; end if;
+  select count(*) into n from public.lancamentos where evento_id = v_ev and valor = 1200 and descricao = 'Entrada (30%)';
+  if n <> 1 then raise exception 'FALHOU: entrada de 30%% não é R$ 1.200'; end if;
+  begin
+    perform public.criar_evento('eeeeeeee-0000-0000-0000-00000000000b', 'Intrusa', 'infantil', 'decoracao',
+      'cccccccc-0000-0000-0000-00000000000b', '2026-12-20', null, 1000, 30, '2026-11-01', 'aaaaaaaa-0000-0000-0000-00000000000b');
+    raise exception 'FALHOU: A criou evento na B pela função';
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.pagar_inscricao((select id from public.inscricoes_workshop limit 1), 'aaaaaaaa-0000-0000-0000-00000000000a');
+    raise exception 'FALHOU: A pagou inscrição da B';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'ok  2d. criar_evento gera entrada de 30%% e saldo 5 dias antes; funções não atravessam empresas';
+end $$;
+
 -- ---------------------------------------------------------------------------
 -- 3. Assistente sem financeiro liberado
 -- ---------------------------------------------------------------------------

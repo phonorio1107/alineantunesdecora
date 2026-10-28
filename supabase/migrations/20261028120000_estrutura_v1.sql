@@ -503,3 +503,78 @@ revoke all on public.saldos_contas, public.resultado_eventos from anon;
 revoke all on all functions in schema privado from public;
 grant execute on function privado.eh_membro(uuid), privado.tem_papel(uuid, public.papel_usuario[]),
   privado.ve_financeiro(uuid), privado.mes_fechado(uuid, date) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Operações que precisam ser atômicas (rodam com a permissão de quem chama: security invoker)
+-- ---------------------------------------------------------------------------
+-- Cria o evento e as parcelas previstas: entrada (padrão 30%) e saldo até N dias antes (padrão 5).
+create function public.criar_evento(
+  p_empresa uuid, p_titulo text, p_tipo public.tipo_evento, p_fonte public.fonte_receita,
+  p_cliente uuid, p_data_evento date, p_cidade text, p_valor_fechado numeric,
+  p_entrada_percentual numeric, p_data_entrada date, p_conta uuid,
+  p_vagas int default null, p_valor_inscricao numeric default null
+) returns uuid language plpgsql security invoker set search_path = '' as $$
+declare
+  v_evento uuid;
+  v_categoria uuid;
+  v_dias int;
+  v_entrada numeric(12, 2);
+begin
+  insert into public.eventos (empresa_id, cliente_id, titulo, tipo, fonte, data_evento, cidade, valor_fechado, vagas, valor_inscricao)
+  values (p_empresa, p_cliente, p_titulo, p_tipo, p_fonte, p_data_evento, p_cidade, coalesce(p_valor_fechado, 0), p_vagas, p_valor_inscricao)
+  returning id into v_evento;
+
+  if p_fonte <> 'workshop' and coalesce(p_valor_fechado, 0) > 0 then
+    select id into v_categoria from public.categorias
+    where empresa_id = p_empresa and natureza = 'receita' and fonte = p_fonte and excluido_em is null
+    order by criado_em limit 1;
+    if v_categoria is null then
+      raise exception 'Categoria de receita não encontrada.' using errcode = '23503';
+    end if;
+    select dias_saldo_antes_evento into v_dias from public.empresas where id = p_empresa;
+    v_entrada := round(p_valor_fechado * least(greatest(p_entrada_percentual, 0), 100) / 100, 2);
+
+    if v_entrada > 0 then
+      insert into public.lancamentos (empresa_id, tipo, valor, data_vencimento, conta_id, categoria_id, evento_id, descricao)
+      values (p_empresa, 'entrada', v_entrada, p_data_entrada, p_conta, v_categoria, v_evento,
+              'Entrada (' || case when p_entrada_percentual = trunc(p_entrada_percentual) then trunc(p_entrada_percentual)::int::text else replace(round(p_entrada_percentual, 1)::text, '.', ',') end || '%)');
+    end if;
+    if p_valor_fechado - v_entrada > 0 then
+      insert into public.lancamentos (empresa_id, tipo, valor, data_vencimento, conta_id, categoria_id, evento_id, descricao)
+      values (p_empresa, 'entrada', p_valor_fechado - v_entrada, p_data_evento - coalesce(v_dias, 5), p_conta, v_categoria, v_evento, 'Saldo');
+    end if;
+  end if;
+  return v_evento;
+end;
+$$;
+
+-- Marca a inscrição como paga e lança a entrada no financeiro do workshop.
+create function public.pagar_inscricao(p_inscricao uuid, p_conta uuid, p_data date default current_date)
+returns uuid language plpgsql security invoker set search_path = '' as $$
+declare
+  v_insc public.inscricoes_workshop;
+  v_categoria uuid;
+  v_lanc uuid;
+begin
+  select * into v_insc from public.inscricoes_workshop where id = p_inscricao and excluido_em is null for update;
+  if not found then
+    raise exception 'Inscrição não encontrada.' using errcode = '42501';
+  end if;
+  if v_insc.status = 'paga' then
+    return v_insc.lancamento_id;
+  end if;
+  select id into v_categoria from public.categorias
+  where empresa_id = v_insc.empresa_id and natureza = 'receita' and fonte = 'workshop' and excluido_em is null
+  order by criado_em limit 1;
+  insert into public.lancamentos (empresa_id, tipo, valor, data_vencimento, data_pagamento, conta_id, categoria_id, evento_id, descricao)
+  values (v_insc.empresa_id, 'entrada', v_insc.valor, p_data, p_data, p_conta, v_categoria, v_insc.evento_id, 'Inscrição no workshop')
+  returning id into v_lanc;
+  update public.inscricoes_workshop set status = 'paga', lancamento_id = v_lanc where id = p_inscricao;
+  return v_lanc;
+end;
+$$;
+
+revoke all on function public.criar_evento(uuid, text, public.tipo_evento, public.fonte_receita, uuid, date, text, numeric, numeric, date, uuid, int, numeric),
+  public.pagar_inscricao(uuid, uuid, date) from public, anon;
+grant execute on function public.criar_evento(uuid, text, public.tipo_evento, public.fonte_receita, uuid, date, text, numeric, numeric, date, uuid, int, numeric),
+  public.pagar_inscricao(uuid, uuid, date) to authenticated;
