@@ -33,6 +33,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: endereço do sistema é `app.alineantunesdecora.com.br`.
 - 28/10/2026: recebimento de evento = sinal de 50% + restante até a data, editável.
 - 28/10/2026: workshops na v1 **com lista de inscritas** (nome e telefone).
+- 28/10/2026: **tema claro é o padrão** (fundo branco com confetes rosa, amarelo e azul, como no site), independente do tema do aparelho. O escuro fica como opção em Configurações → Aparência.
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
 
 ---
@@ -159,4 +160,5 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
+- 28/10/2026: ajuste 1 do protótipo: fundo branco com confetes como no site e números sem quebrar no celular.
 - 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.
