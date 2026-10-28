@@ -60,7 +60,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 - [x] Telas e fluxos listados (28/10/2026, `docs/fase-2-modelagem.md`)
 - [x] Modelo de dados aprovado pelo Pedro (28/10/2026)
-- [ ] Protótipo clicável com dados fictícios
+- [x] Protótipo clicável com dados fictícios (28/10/2026): `prototipo/index.html`, publicado em https://claude.ai/artifact/QohEXXEH6yXCXb3iiA4PNn (testado em 1280px e 375px, nos temas claro e escuro, sem erros no console e sem rolagem lateral)
 - [ ] Rodada de ajustes do protótipo
 - [ ] Aprovação do cliente por escrito
 - [x] Mapa de dados pessoais (28/10/2026, rascunho; a base legal ainda precisa ser confirmada pela Aline)
@@ -158,4 +158,5 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
+- 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
 - 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.
