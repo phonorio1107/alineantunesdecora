@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Termo de aprovação · {{cliente}}</title>
+<style>
+  /* Identidade Pedro Hoffman: preto e branco, detalhes em azul-marinho */
+  :root{
+    --ink:#111111; --muted:#5B5F66; --line:#D9DCE1; --soft:#F4F5F7;
+    --navy:#14284B; --navy-soft:#E8ECF3;
+  }
+  @page{size:A4;margin:22mm 18mm 22mm 18mm}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;font-size:10pt;line-height:1.5;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  h1,h2,h3,p{margin:0}
+
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:10pt;border-bottom:1.5pt solid var(--ink)}
+  .mark{display:flex;align-items:center;gap:8pt}
+  .mark i{width:9pt;height:9pt;background:var(--navy);display:block}
+  .mark b{font-size:11pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+  .doc-id{text-align:right;font-size:8pt;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;line-height:1.6}
+  .doc-id strong{color:var(--navy);font-weight:600}
+
+  .title{padding:22pt 0 16pt}
+  .eyebrow{font-size:8pt;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)}
+  h1{font-family:'Inter Display','Inter',sans-serif;font-size:22pt;line-height:1.15;font-weight:700;letter-spacing:-.015em;margin-top:6pt;max-width:15cm}
+  .lead{color:var(--muted);margin-top:8pt;max-width:15.5cm}
+
+  .meta{display:grid;grid-template-columns:repeat(4,1fr);border-top:.75pt solid var(--line);border-bottom:.75pt solid var(--line)}
+  .meta div{padding:8pt 10pt 8pt 0}
+  .meta span{display:block;font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .meta b{font-weight:600;font-size:9.5pt}
+  .meta .wide{grid-column:span 4;border-top:.75pt solid var(--line)}
+  .meta a{color:var(--navy);text-decoration:none;font-weight:600;word-break:break-all}
+
+  section{margin-top:20pt;break-inside:auto}
+  .sec-h{display:flex;align-items:baseline;gap:10pt;padding-bottom:6pt;border-bottom:.75pt solid var(--ink);margin-bottom:10pt;break-after:avoid}
+  .sec-h .n{font-size:9pt;font-weight:700;color:#fff;background:var(--navy);min-width:16pt;height:16pt;display:inline-flex;align-items:center;justify-content:center}
+  h2{font-size:12.5pt;font-weight:700;letter-spacing:-.005em}
+  .sec-h p{margin-left:auto;font-size:8.5pt;color:var(--muted)}
+  .intro{color:var(--muted);margin-bottom:10pt}
+
+  ol.q{list-style:none;padding:0;margin:0;counter-reset:q}
+  ol.q li{counter-increment:q;padding:6pt 0 0 22pt;text-indent:-22pt;break-inside:avoid}
+  ol.q li::before{content:counter(q,decimal-leading-zero);display:inline-block;width:22pt;text-indent:0;font-size:8pt;font-weight:700;color:var(--navy);letter-spacing:.05em}
+  .lines{margin:4pt 0 0;text-indent:0}
+  .lines i{display:block;height:18pt;border-bottom:.6pt solid var(--line)}
+
+  .agree{display:flex;gap:10pt;align-items:flex-start;margin-top:12pt;padding:10pt 12pt;background:var(--navy-soft);border-left:2.5pt solid var(--navy);break-inside:avoid}
+  .box{flex:none;width:11pt;height:11pt;border:1.2pt solid var(--navy);background:#fff;margin-top:1.5pt}
+  .agree b{font-weight:600}
+  .agree small{display:block;color:var(--muted);font-size:8.5pt;margin-top:2pt}
+
+  table{width:100%;border-collapse:collapse;font-size:9pt}
+  th{font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);font-weight:700;text-align:left;padding:6pt 8pt 6pt 0;border-bottom:1.2pt solid var(--navy)}
+  td{padding:7pt 8pt 7pt 0;border-bottom:.6pt solid var(--line);vertical-align:top}
+  td:first-child{font-weight:600}
+  tr{break-inside:avoid}
+  ul.notes{margin:10pt 0 0;padding-left:14pt;color:var(--muted);font-size:9pt}
+  ul.notes li{margin:2pt 0}
+  .other{margin-top:10pt;font-size:9pt;color:var(--muted)}
+  .other .lines{margin-left:0}
+
+  .sign{display:grid;grid-template-columns:1fr 1fr;gap:28pt;margin-top:34pt;break-inside:avoid}
+  .sign div{border-top:1pt solid var(--ink);padding-top:6pt}
+  .sign b{display:block;font-weight:600}
+  .sign span{font-size:8.5pt;color:var(--muted)}
+
+  .registro{margin-top:24pt;padding:10pt 12pt;border:.75pt solid var(--line);break-inside:avoid}
+  .registro h3{font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6pt}
+  .registro table td{font-weight:400;color:var(--muted);border-bottom:.6pt dotted var(--line)}
+  .registro table td:first-child{color:var(--ink);font-weight:500;width:46%}
+
+  .disclaimer{margin-top:14pt;font-size:8pt;color:var(--muted);line-height:1.45}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="mark"><i></i><b>Pedro Hoffman</b></div>
+  <div class="doc-id"><strong>Fase 2 · Modelagem e protótipo</strong><br>Documento {{codigo}} · {{data_envio}}</div>
+</header>
+
+<div class="title">
+  <span class="eyebrow">Termo de aprovação</span>
+  <h1>Aprovação do protótipo e do tratamento de dados pessoais</h1>
+  <p class="lead">{{saudacao}} Este documento registra que você viu o protótipo do seu sistema, aprovou o caminho e concorda com os dados que ele vai guardar. Leva cerca de 10 minutos. Você pode responder por escrito, por áudio ou assinar esta folha.</p>
+</div>
+
+<div class="meta">
+  <div><span>Cliente</span><b>{{cliente}}</b></div>
+  <div><span>Responsável</span><b>{{responsavel_cliente}}</b></div>
+  <div><span>Projeto</span><b>{{projeto}}</b></div>
+  <div><span>Prestador</span><b>Pedro Hoffman</b></div>
+  <div class="wide"><span>Protótipo (dados de exemplo)</span><a href="{{link_prototipo}}">{{link_prototipo}}</a></div>
+</div>
+
+<section>
+  <div class="sec-h"><span class="n">1</span><h2>O protótipo</h2><p>Aprovação de telas e fluxos</p></div>
+  <p class="intro">Abra o link no celular e experimente o que faria no dia a dia. {{roteiro_prototipo}}</p>
+  <ol class="q">
+    {{perguntas_prototipo}}
+  </ol>
+  <div class="agree"><span class="box"></span><div><b>Aprovo o protótipo para começar o sistema.</b><small>Os ajustes pedidos acima entram antes da construção.</small></div></div>
+</section>
+
+<section>
+  <div class="sec-h"><span class="n">2</span><h2>Dados pessoais</h2><p>LGPD · você é a controladora, Pedro é o operador</p></div>
+  <p class="intro">O sistema vai guardar apenas os dados abaixo, só pelo tempo indicado.</p>
+  <table>
+    <thead><tr><th style="width:34%">Dado</th><th style="width:38%">Para que serve</th><th>Por quanto tempo</th></tr></thead>
+    <tbody>
+      {{linhas_dados}}
+    </tbody>
+  </table>
+  <ul class="notes">
+    {{cuidados_dados}}
+  </ul>
+  <div class="agree"><span class="box"></span><div><b>Concordo com os dados e os prazos acima.</b><small>Se quiser outro prazo para algum item, escreva abaixo.</small></div></div>
+  <div class="other">Prazo diferente para algum item:<div class="lines"><i></i></div></div>
+</section>
+
+<section>
+  <div class="sec-h"><span class="n">3</span><h2>Informações para os cálculos</h2><p>Pode responder “ainda não sei”</p></div>
+  <ol class="q">
+    {{perguntas_negocio}}
+  </ol>
+</section>
+
+<div class="sign">
+  <div><b>{{responsavel_cliente}}</b><span>{{cliente}} · Data: ____/____/________</span></div>
+  <div><b>Pedro Hoffman</b><span>Prestador e operador dos dados · Data: ____/____/________</span></div>
+</div>
+
+<div class="registro">
+  <h3>Registro (preenchido pelo prestador)</h3>
+  <table>
+    <tr><td>Aprovação do protótipo recebida em</td><td>____/____/________ · por __________________</td></tr>
+    <tr><td>Concordância com dados e prazos recebida em</td><td>____/____/________ · por __________________</td></tr>
+    <tr><td>Comprovante guardado em</td><td>docs/aprovacoes/ no repositório do projeto</td></tr>
+  </table>
+</div>
+
+<p class="disclaimer">Os prazos de guarda são uma proposta baseada nos prazos fiscais e devem ser confirmados com o contador da cliente. A política de privacidade e os termos de uso do sistema são documentos separados, revisados por advogado antes da entrega.</p>
+
+</body>
+</html>

@@ -67,7 +67,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Modelo de dados aprovado pelo Pedro (28/10/2026)
 - [x] Protótipo clicável com dados fictícios (28/10/2026): `prototipo/index.html`, publicado em https://claude.ai/artifact/QohEXXEH6yXCXb3iiA4PNn (testado em 1280px e 375px, nos temas claro e escuro, sem erros no console e sem rolagem lateral)
 - [ ] Rodada de ajustes do protótipo
-- [ ] Aprovação do cliente por escrito (modelo em [`docs/termo-aprovacao-fase-2.md`](docs/termo-aprovacao-fase-2.md); respostas em `docs/aprovacoes/`)
+- [ ] Aprovação do cliente por escrito (PDF em [`docs/termo-aprovacao-fase-2.pdf`](docs/termo-aprovacao-fase-2.pdf), gerado do modelo em `docs/modelos/termo-fase-2/`; respostas em `docs/aprovacoes/`)
 - [x] Mapa de dados pessoais (28/10/2026, rascunho; a base legal ainda precisa ser confirmada pela Aline)
 
 ## Fase 3: Contas e repositório

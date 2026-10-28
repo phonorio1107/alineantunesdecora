@@ -1,0 +1,31 @@
+{
+  "codigo": "AAD-02",
+  "data_envio": "28/10/2026",
+  "cliente": "Aline Antunes Decora",
+  "responsavel_cliente": "Aline Antunes",
+  "projeto": "Gestão financeira · v1",
+  "saudacao": "Aline, que bom ter você como a primeira cliente deste projeto.",
+  "link_prototipo": "https://claude.ai/artifact/QohEXXEH6yXCXb3iiA4PNn",
+  "roteiro_prototipo": "Lance uma entrada e um custo, abra um evento, veja o fechamento de outubro e o fluxo de caixa.",
+  "perguntas_prototipo": [
+    "Algo está faltando ou deveria ser diferente? Se sim, o quê?",
+    "Os números do início (saldo, lucro do mês, quanto sobrou para você e fôlego em meses) respondem o que você queria saber?",
+    "Lançar uma entrada ou uma saída ficou fácil?"
+  ],
+  "linhas_dados": [
+    ["Nome, telefone, e-mail e endereço da cliente", "Identificar o evento, falar com a cliente, contrato", "5 anos depois do último evento"],
+    ["CPF ou CNPJ da cliente", "Contrato e nota fiscal", "5 anos (prazo dos documentos fiscais)"],
+    ["Nome e telefone da aluna do workshop", "Identificar a inscrição e avisar sobre o workshop", "2 anos depois do workshop"],
+    ["Nome e e-mail de quem usa o sistema", "Acesso ao sistema", "Enquanto tiver acesso, mais 6 meses"]
+  ],
+  "cuidados_dados": [
+    "O CPF/CNPJ aparece mascarado nas listas e nunca vai para registros técnicos.",
+    "O sistema não guarda dados sensíveis (saúde, religião, biometria e afins).",
+    "Se uma cliente pedir, você consegue exportar ou apagar os dados dela pelo sistema."
+  ],
+  "perguntas_negocio": [
+    "Custos fixos por mês: quais são e quanto custa cada um (aluguel, internet, impostos, assinaturas)?",
+    "Divisão do lucro: de cada R$ 100 de lucro, quanto fica na empresa e quanto você quer retirar?",
+    "Retirada mínima: qual valor você precisa tirar todo mês? (No protótipo está R$ 2.500 como exemplo.)"
+  ]
+}
