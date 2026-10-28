@@ -6,7 +6,8 @@ const dir = 'dist-demo'
 const html = readFileSync(join(dir, 'index.html'), 'utf8')
 const css = [...html.matchAll(/<link rel="stylesheet"[^>]*href="\.\/([^"]+)"/g)].map((m) => readFileSync(join(dir, m[1]), 'utf8'))
 const js = [...html.matchAll(/<script type="module"[^>]*src="\.\/([^"]+)"/g)].map((m) => readFileSync(join(dir, m[1]), 'utf8'))
-const seguro = (code) => code.replace(/<\/script/gi, '<\\/script')
+// U+FFFD vira o escape \\uFFFD (mesmo valor no JavaScript), para o arquivo não parecer corrompido a quem o lê.
+const seguro = (code) => code.replace(/<\/script/gi, '<\\/script').replace(/\uFFFD/g, '\\uFFFD')
 
 const pagina = `<!doctype html>
 <html lang="pt-BR">
