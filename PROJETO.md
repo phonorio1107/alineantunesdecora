@@ -8,7 +8,7 @@
 - **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Hoje gasta **pouco tempo** com isso, e de forma analógica. A dor é falta de **visibilidade** e de controle, não horas perdidas.
 - **Usuários:** Aline (administradora) + 1 ou 2 pessoas (perfis administrador e usuário)
 - **Site atual:** https://www.alineantunesdecora.com.br/ · **Instagram:** https://www.instagram.com/alineantunesdecora/
-- **Domínio do sistema:** sugestão `sistema.alineantunesdecora.com.br` (_aguardando confirmação do Pedro_)
+- **Domínio do sistema:** `app.alineantunesdecora.com.br` (CNAME para o Cloudflare Pages)
 - **Logo:** "Aline Antunes" em letra cursiva rosa, com "Decora." em cinza, sem serifa, logo abaixo (arquivo em `marca/logo-aline-antunes-decora.png`: PNG 1689×484 com fundo transparente; rosa `#DE799B`, cinza `#696969`)
 - **Identidade do site (amostrada dos prints em 28/10/2026):**
   - Rosa da marca `#DA6F9A` (botões em pílula, palavras em itálico de destaque)
@@ -21,7 +21,7 @@
 - **Início:** 28/10/2026
 
 ## Fase atual
-**Fase 1: Descoberta e escopo** (em andamento)
+**Fase 2: Modelagem e protótipo** (Fase 1 concluída em 28/10/2026)
 
 ## Decisões
 _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
@@ -30,6 +30,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: escopo v1 = financeiro + eventos simples; orçamentos e agenda na v2.
 - 28/10/2026: o sistema guarda CPF/CNPJ das clientes (escolha do Pedro).
 - 28/10/2026: referências visuais oficiais são o site e o Instagram da Aline e o logo rosa e cinza.
+- 28/10/2026: endereço do sistema é `app.alineantunesdecora.com.br`.
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
 
 ---
@@ -48,7 +49,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Dados pessoais (28/10/2026): das clientes finais, nome, telefone, e-mail, endereço e **CPF/CNPJ**; dados financeiros da empresa. Não há dados sensíveis (art. 11 da LGPD), mas o CPF exige cuidado: acesso restrito, mascarado nas listas e fora dos logs.
 - [x] Logo e cor do cliente (28/10/2026): cores tiradas do logo enviado pelo Pedro; referências visuais são o site e o Instagram
   - Contraste medido: branco sobre `#DA6F9A` dá 3,12:1 e **reprova** para texto. Proposta para a Fase 7: botões e links em `#B24A77` no tema claro (branco sobre ele dá 5,07:1), `#DA6F9A` como decoração e no tema escuro (sobre `#222220` dá 5,10:1). Texto de corpo `#796B70` sobre o fundo dá 4,99:1 e passa.
-- [ ] Domínio desejado
+- [x] Domínio desejado (28/10/2026): `app.alineantunesdecora.com.br`
 - [x] Escopo cortado para o menor sistema que resolve a dor (28/10/2026)
 - [x] Contrato e 50% do setup: **dispensado** (28/10/2026). Justificativa do Pedro: cliente piloto é a mãe dele, sem cobrança.
 
@@ -153,3 +154,4 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
+- 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.
