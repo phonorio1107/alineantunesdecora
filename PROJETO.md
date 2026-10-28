@@ -5,11 +5,11 @@
 - **Prestador / operador:** Pedro Hoffman
 - **Repositório:** `phonorio1107/alineantunesdecora`
 - **Ramo:** decoração de festas (arranjos florais e balões, desde 2015), assessoria e coordenação de eventos, e **workshops** de arranjos florais
-- **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Valor em horas ou R$/mês: _a estimar_
+- **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Hoje gasta **pouco tempo** com isso, e de forma analógica. A dor é falta de **visibilidade** e de controle, não horas perdidas.
 - **Usuários:** Aline (administradora) + 1 ou 2 pessoas (perfis administrador e usuário)
 - **Site atual:** https://www.alineantunesdecora.com.br/ · **Instagram:** https://www.instagram.com/alineantunesdecora/
 - **Domínio do sistema:** sugestão `sistema.alineantunesdecora.com.br` (_aguardando confirmação do Pedro_)
-- **Logo:** "Aline Antunes" em letra cursiva rosa, com "Decora." em cinza, sem serifa, logo abaixo (arquivo original _pendente de envio ao repositório_)
+- **Logo:** "Aline Antunes" em letra cursiva rosa, com "Decora." em cinza, sem serifa, logo abaixo (arquivo em `marca/logo-aline-antunes-decora.png`: PNG 1689×484 com fundo transparente; rosa `#DE799B`, cinza `#696969`)
 - **Identidade do site (amostrada dos prints em 28/10/2026):**
   - Rosa da marca `#DA6F9A` (botões em pílula, palavras em itálico de destaque)
   - Rosa claro `#FBD6E5` / `#FFF8FA` (sombras e fundos de seção)
@@ -36,7 +36,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 ## Fase 1: Descoberta e escopo
 - [x] Nome e ramo do cliente (28/10/2026, resposta do Pedro)
-- [ ] Dor principal (em horas ou reais por mês)
+- [x] Dor principal (28/10/2026): pouco tempo gasto, controle analógico. **Medida de sucesso:** a Aline lança cada entrada e saída em menos de 1 minuto pelo celular e sabe, sem fazer conta, o lucro do mês, o líquido dela e o fôlego de caixa.
 - [x] Quem usa e quantos usuários (28/10/2026): Aline + 1 ou 2 pessoas
 - [x] O que precisa existir na primeira versão (28/10/2026): **financeiro + eventos simples**
   - Eventos: cliente, data, valor fechado
