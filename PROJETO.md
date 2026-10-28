@@ -54,6 +54,8 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Contrato e 50% do setup: **dispensado** (28/10/2026). Justificativa do Pedro: cliente piloto é a mãe dele, sem cobrança.
 
 ## Fase 2: Modelagem e protótipo
+> Proposta detalhada em [`docs/fase-2-modelagem.md`](docs/fase-2-modelagem.md)
+
 - [ ] Telas e fluxos listados
 - [ ] Modelo de dados (tabelas e relações) aprovado pelo Pedro
 - [ ] Protótipo clicável com dados fictícios
