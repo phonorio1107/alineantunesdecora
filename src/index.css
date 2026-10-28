@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* Cores da marca extraídas da logo: rosa #DE799B e cinza #696969 */
+@theme {
+  --color-brand-50: #fff5f8;
+  --color-brand-100: #fde8ef;
+  --color-brand-200: #f9d0de;
+  --color-brand-300: #f0abc3;
+  --color-brand-400: #e690ae;
+  --color-brand-500: #de799b;
+  --color-brand-600: #c75b80;
+  --color-brand-700: #a84467;
+  --color-brand-800: #853652;
+  --color-ink-400: #9a9597;
+  --color-ink-500: #696969;
+  --color-ink-700: #4a4547;
+  --color-ink-900: #2b2729;
+  --color-canvas: #fff8fa;
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+}
+
+html, body, #root { min-height: 100%; }
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-white border border-brand-100 shadow-[0_1px_2px_rgba(133,54,82,0.04),0_8px_24px_-12px_rgba(133,54,82,0.12)];
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-ink-700 transition hover:bg-brand-50;
+  }
+  .input {
+    @apply w-full rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-ink-400 focus:border-brand-300 focus:ring-4 focus:ring-brand-100;
+  }
+}
+
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
