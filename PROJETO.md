@@ -4,13 +4,20 @@
 - **Cliente:** Aline Antunes Decora (mãe do Pedro), **SaaS piloto**
 - **Prestador / operador:** Pedro Hoffman
 - **Repositório:** `phonorio1107/alineantunesdecora`
-- **Ramo:** decoração de festas e assessoria de eventos
+- **Ramo:** decoração de festas (arranjos florais e balões, desde 2015), assessoria e coordenação de eventos, e **workshops** de arranjos florais
 - **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Valor em horas ou R$/mês: _a estimar_
 - **Usuários:** Aline (administradora) + 1 ou 2 pessoas (perfis administrador e usuário)
 - **Site atual:** https://www.alineantunesdecora.com.br/ · **Instagram:** https://www.instagram.com/alineantunesdecora/
 - **Domínio do sistema:** sugestão `sistema.alineantunesdecora.com.br` (_aguardando confirmação do Pedro_)
 - **Logo:** "Aline Antunes" em letra cursiva rosa, com "Decora." em cinza, sem serifa, logo abaixo (arquivo original _pendente de envio ao repositório_)
-- **Cores tiradas do logo (aproximadas):** rosa `#DD7A9A`, cinza `#6B6B6B`
+- **Identidade do site (amostrada dos prints em 28/10/2026):**
+  - Rosa da marca `#DA6F9A` (botões em pílula, palavras em itálico de destaque)
+  - Rosa claro `#FBD6E5` / `#FFF8FA` (sombras e fundos de seção)
+  - Amarelo creme `#FEF7D9` (cards de novidade)
+  - Fundo off-white `#FFFDFC`; título `#222220`; corpo `#796B70`; card escuro `#241F1F`
+  - Confetes em rosa, amarelo e azul-claro como decoração de fundo
+  - Tipografia: títulos em serifa de alto contraste (parece Playfair Display, com itálico rosa) e corpo sem serifa geométrica (parece DM Sans). _Confirmar as fontes quando o site estiver acessível._
+  - Cantos bem arredondados, fotos em formato de arco, botões em pílula, tom acolhedor ("Feito com carinho")
 - **Início:** 28/10/2026
 
 ## Fase atual
@@ -36,10 +43,11 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
   - Lançamentos de entrada e saída (custos fixos e por evento), com categorias
   - Fechamento mensal, fluxo de caixa, lucro por evento, valor líquido que sobra para a Aline
   - Fôlego de caixa: quantos meses a empresa aguenta sem receita
+  - Fontes de receita a separar: decoração, assessoria/coordenação e workshops
 - [x] O que fica para depois (28/10/2026): orçamentos completos e agenda completa (v2)
 - [x] Dados pessoais (28/10/2026): das clientes finais, nome, telefone, e-mail, endereço e **CPF/CNPJ**; dados financeiros da empresa. Não há dados sensíveis (art. 11 da LGPD), mas o CPF exige cuidado: acesso restrito, mascarado nas listas e fora dos logs.
 - [x] Logo e cor do cliente (28/10/2026): cores tiradas do logo enviado pelo Pedro; referências visuais são o site e o Instagram
-  - Contraste medido: branco sobre `#DD7A9A` dá 2,87:1 e **reprova**. Proposta para a Fase 7: destaque `#B04A6F` no tema claro (branco sobre ele dá 5,18:1) e `#DD7A9A` no tema escuro (sobre `#18151A` dá 6,31:1)
+  - Contraste medido: branco sobre `#DA6F9A` dá 3,12:1 e **reprova** para texto. Proposta para a Fase 7: botões e links em `#B24A77` no tema claro (branco sobre ele dá 5,07:1), `#DA6F9A` como decoração e no tema escuro (sobre `#222220` dá 5,10:1). Texto de corpo `#796B70` sobre o fundo dá 4,99:1 e passa.
 - [ ] Domínio desejado
 - [x] Escopo cortado para o menor sistema que resolve a dor (28/10/2026)
 - [x] Contrato e 50% do setup: **dispensado** (28/10/2026). Justificativa do Pedro: cliente piloto é a mãe dele, sem cobrança.
