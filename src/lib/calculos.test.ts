@@ -69,6 +69,11 @@ describe('fluxo de caixa', () => {
     expect(f[0]).toMatchObject({ ym: '2026-09', saldoFinal: 4500, previsto: false })
     expect(f[1]).toMatchObject({ ym: '2026-10', saldoFinal: 4000, previsto: false })
   })
+  it('não desconta do histórico pagamentos anteriores ao saldo inicial da conta', () => {
+    const g = fluxoDeCaixa({ lancamentos: ls, saldoHoje: 4000, hoje: '2026-10-28', mesesAntes: 2, mesesDepois: 0, retiradaMinima: 0, inicioContas: new Map([['c', '2026-10-01']]) })
+    // O saldo inicial (1º/10) já inclui a entrada de setembro: antes de outubro o saldo é 4500 (só desfaz a saída de outubro).
+    expect(g.map((m) => m.saldoFinal)).toEqual([4500, 4500, 4000])
+  })
   it('projeta o futuro com previstos e retirada mínima', () => {
     expect(f[2]).toMatchObject({ ym: '2026-11', entradas: 3000, saidas: 1000, saldoFinal: 6000, previsto: true })
     expect(f[3]).toMatchObject({ ym: '2026-12', saidas: 2200, saldoFinal: 3800 })

@@ -71,6 +71,7 @@ export const esquemaLancamento = z.object({
   descricao: z.string().trim().max(120, 'Use até 120 caracteres.').optional(),
 })
 export type NovoLancamento = z.input<typeof esquemaLancamento>
+export type LancamentoValido = z.output<typeof esquemaLancamento>
 
 export const esquemaCliente = z.object({
   nome: z.string().trim().min(3, 'Informe o nome completo.').max(120),
@@ -86,6 +87,7 @@ export const esquemaCliente = z.object({
   cpf_cnpj: cpfCnpj,
 })
 export type NovoCliente = z.input<typeof esquemaCliente>
+export type ClienteValido = z.output<typeof esquemaCliente>
 
 export const esquemaEvento = z
   .object({
@@ -113,9 +115,11 @@ export const esquemaEvento = z
   })
   .refine((e) => e.fonte === 'workshop' || e.valor_fechado > 0, { message: 'Informe o valor fechado.', path: ['valor_fechado'] })
 export type NovoEvento = z.input<typeof esquemaEvento>
+export type EventoValido = z.output<typeof esquemaEvento>
 
 export const esquemaInscricao = z.object({
   nome: z.string().trim().min(3, 'Informe o nome da aluna.').max(120),
   telefone: telefone.refine((v) => v !== null, 'Informe o telefone com DDD.'),
 })
 export type NovaInscricao = z.input<typeof esquemaInscricao>
+export type InscricaoValida = z.output<typeof esquemaInscricao>

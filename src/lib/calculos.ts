@@ -87,9 +87,12 @@ export function fluxoDeCaixa(params: {
   mesesAntes: number
   mesesDepois: number
   retiradaMinima: number
+  /** Data do saldo inicial de cada conta: pagamentos anteriores a ela já estão dentro do saldo inicial. */
+  inicioContas?: Map<string, string>
 }): MesFluxo[] {
-  const { lancamentos, saldoHoje, hoje, mesesAntes, mesesDepois, retiradaMinima } = params
+  const { lancamentos, saldoHoje, hoje, mesesAntes, mesesDepois, retiradaMinima, inicioContas } = params
   const ativos = lancamentos.filter((l) => !l.excluido_em)
+  const entraNoSaldo = (l: Lancamento) => !inicioContas?.get(l.conta_id) || (l.data_pagamento ?? '') >= inicioContas.get(l.conta_id)!
   const sinal = (l: Lancamento) => (l.tipo === 'entrada' ? Number(l.valor) : -Number(l.valor))
   const mesAtual = mesDe(hoje)
   const out: MesFluxo[] = []
@@ -97,7 +100,7 @@ export function fluxoDeCaixa(params: {
   for (let k = -mesesAntes; k <= 0; k++) {
     const ym = addMes(mesAtual, k)
     const pagos = ativos.filter((l) => l.data_pagamento && mesDe(l.data_pagamento) === ym)
-    const depois = ativos.filter((l) => l.data_pagamento && mesDe(l.data_pagamento) > ym)
+    const depois = ativos.filter((l) => l.data_pagamento && mesDe(l.data_pagamento) > ym && entraNoSaldo(l))
     let saldoFinal = saldoHoje - soma(depois, sinal)
     let entradas = soma(pagos.filter((l) => l.tipo === 'entrada'), (l) => Number(l.valor))
     let saidas = soma(pagos.filter((l) => l.tipo === 'saida'), (l) => Number(l.valor))

@@ -1,55 +1,86 @@
+import { useMemo } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useSessao } from './auth/Sessao'
 import Entrar from './auth/Entrar'
+import NovaSenha from './auth/NovaSenha'
 import { supabaseConfigurado } from './lib/supabase'
-import { useSaldos, useVinculo } from './data/consultas'
+import { useVinculo } from './data/consultas'
 import { mensagemErro } from './lib/erros'
-import { formatBRL } from './lib/format'
+import { AvisoProvider, EmpresaProvider, FolhasProvider } from './app/contexto'
+import Layout from './components/Layout'
+import Inicio from './paginas/Inicio'
+import Lancamentos from './paginas/Lancamentos'
+import Eventos, { EventoDetalhe } from './paginas/Eventos'
+import Clientes from './paginas/Clientes'
+import Contratos from './paginas/Contratos'
+import Relatorios from './paginas/Relatorios'
+import Configuracoes from './paginas/Configuracoes'
+import Mais from './paginas/Mais'
 
-// Casca da v1: login e um início mínimo para provar a ligação com o banco.
-// As telas do protótipo entram aqui na Fase 6 (Início, Lançar, Lançamentos, Eventos, Clientes, Relatórios, Configurações).
 export default function App() {
   const { sessao, carregando } = useSessao()
+  const { pathname } = useLocation()
   if (!supabaseConfigurado) return <Aviso titulo="Sistema não configurado" texto="Faltam as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY. Veja o .env.example." />
   if (carregando) return <Aviso titulo="Carregando…" />
+  if (pathname === '/nova-senha') return <NovaSenha />
   if (!sessao) return <Entrar />
-  return <Inicio />
+  return <ComEmpresa usuarioId={sessao.user.id} />
 }
 
-function Inicio() {
-  const { sair } = useSessao()
-  const vinculo = useVinculo()
-  const empresa = vinculo.data?.empresa_id ?? ''
-  const saldos = useSaldos(empresa)
-
+function ComEmpresa({ usuarioId }: { usuarioId: string }) {
+  const vinculo = useVinculo(usuarioId)
+  const v = vinculo.data
+  const valor = useMemo(() => v && {
+    empresa: v.empresas,
+    empresaId: v.empresa_id,
+    papel: v.papel,
+    ehProprietaria: v.papel === 'proprietaria',
+    veFinanceiro: v.papel === 'proprietaria' || (v.papel === 'assistente' && v.financeiro_liberado),
+  }, [v])
   if (vinculo.isPending) return <Aviso titulo="Carregando…" />
   if (vinculo.isError) return <Aviso titulo="Não foi possível abrir" texto={mensagemErro(vinculo.error)} />
-  if (!vinculo.data) return <Aviso titulo="Sem acesso a nenhuma empresa" texto="Peça para a proprietária enviar um convite." />
-
-  const total = (saldos.data ?? []).reduce((t, s) => t + Number(s.saldo), 0)
+  if (!valor) return <Aviso titulo="Sem acesso a nenhuma empresa" texto="Peça para a proprietária enviar um convite." />
+  const fin = valor.veFinanceiro
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="font-display text-3xl font-semibold">Olá!</h1>
-        <button className="btn-ghost min-h-11" onClick={() => sair()}>Sair</button>
-      </header>
-      <section className="card p-5">
-        <p className="text-sm text-ink-500">Saldo hoje</p>
-        {saldos.isError ? (
-          <p className="text-sm text-red-800">{mensagemErro(saldos.error)}</p>
-        ) : (
-          <p className="text-3xl font-semibold tabular-nums">{saldos.isPending ? '…' : formatBRL(total)}</p>
-        )}
-      </section>
-    </main>
+    <EmpresaProvider valor={valor}>
+      <AvisoProvider>
+        <FolhasProvider>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<Inicio />} />
+              <Route path="lancamentos" element={fin ? <Lancamentos /> : <Navigate to="/" replace />} />
+              <Route path="eventos" element={<Eventos />} />
+              <Route path="eventos/:id" element={<EventoDetalhe />} />
+              <Route path="clientes" element={<Clientes />} />
+              <Route path="contratos" element={<Contratos />} />
+              <Route path="relatorios" element={fin ? <Relatorios /> : <Navigate to="/" replace />} />
+              <Route path="configuracoes" element={<Configuracoes />} />
+              <Route path="mais" element={<Mais />} />
+              <Route path="*" element={<NaoEncontrada />} />
+            </Route>
+          </Routes>
+        </FolhasProvider>
+      </AvisoProvider>
+    </EmpresaProvider>
+  )
+}
+
+function NaoEncontrada() {
+  return (
+    <div className="vazio">
+      <b>Página não encontrada.</b>
+      O endereço pode ter mudado.
+      <a className="btn btn-s" href="/">Voltar para o início</a>
+    </div>
   )
 }
 
 function Aviso({ titulo, texto }: { titulo: string; texto?: string }) {
   return (
-    <main className="min-h-dvh grid place-items-center px-4">
-      <div className="card max-w-sm p-6 text-center flex flex-col gap-2">
-        <h1 className="font-display text-xl font-semibold">{titulo}</h1>
-        {texto && <p className="text-sm text-ink-700">{texto}</p>}
+    <main className="conteudo" style={{ minHeight: '100dvh', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="cartao" style={{ maxWidth: 380, textAlign: 'center' }}>
+        <h1 style={{ fontSize: 22 }}>{titulo}</h1>
+        {texto ? <p className="muted">{texto}</p> : null}
       </div>
     </main>
   )

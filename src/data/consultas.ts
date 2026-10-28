@@ -3,8 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { verificar } from '../lib/erros'
-import { esquemaCliente, esquemaEvento, esquemaInscricao, esquemaLancamento } from './esquemas'
-import type { NovaInscricao, NovoCliente, NovoEvento, NovoLancamento } from './esquemas'
+// Os formulários validam com os esquemas Zod (./esquemas); aqui chegam só dados já validados.
+import type { ClienteValido, EventoValido, InscricaoValida, LancamentoValido } from './esquemas'
 import type {
   Categoria, Cliente, Conta, Contrato, DadosContrato, Empresa, Evento, FechamentoMensal, InscricaoWorkshop, Lancamento, Papel,
   Recorrencia, ResultadoEvento, SaldoConta, Vinculo,
@@ -27,15 +27,21 @@ export const chaves = {
   equipe: (e: string) => ['equipe', e] as const,
 }
 
-/** Empresa e papel de quem está logado (o primeiro vínculo ativo). */
-export function useVinculo() {
+/**
+ * Empresa e papel de quem está logado. Filtra pelo próprio usuário: a proprietária enxerga os vínculos
+ * da equipe inteira, então sem esse filtro o sistema poderia carregar o perfil de outra pessoa.
+ */
+export function useVinculo(usuarioId: string) {
   return useQuery({
-    queryKey: chaves.vinculo,
+    queryKey: [...chaves.vinculo, usuarioId],
+    enabled: !!usuarioId,
     queryFn: async () => {
       const r = await supabase
         .from('usuarios_empresas')
         .select('empresa_id, papel, financeiro_liberado, empresas(*)')
+        .eq('usuario_id', usuarioId)
         .is('excluido_em', null)
+        .order('criado_em')
         .limit(1)
         .maybeSingle()
       return verificar('vinculo', r) as unknown as Vinculo | null
@@ -153,8 +159,7 @@ function useInvalidar() {
 export function useCriarLancamento(empresa: string) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (entrada: NovoLancamento) => {
-      const l = esquemaLancamento.parse(entrada)
+    mutationFn: async (l: LancamentoValido) => {
       const r = await supabase.from('lancamentos').insert({
         empresa_id: empresa,
         tipo: l.tipo,
@@ -196,8 +201,7 @@ export function useExcluirLancamento() {
 export function useCriarCliente(empresa: string) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (entrada: NovoCliente) => {
-      const { cpf_cnpj, ...dados } = esquemaCliente.parse(entrada)
+    mutationFn: async ({ cpf_cnpj, ...dados }: ClienteValido) => {
       const r = await supabase.from('clientes').insert({ ...dados, empresa_id: empresa }).select('id').single()
       const { id } = verificar('criar cliente', r) as { id: string }
       if (cpf_cnpj) {
@@ -212,8 +216,7 @@ export function useCriarCliente(empresa: string) {
 export function useCriarEvento(empresa: string) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (entrada: NovoEvento) => {
-      const e = esquemaEvento.parse(entrada)
+    mutationFn: async (e: EventoValido) => {
       const r = await supabase.rpc('criar_evento', {
         p_empresa: empresa,
         p_titulo: e.titulo,
@@ -244,8 +247,7 @@ export function useCriarEvento(empresa: string) {
 export function useCriarInscricao(empresa: string, evento: string, valor: number) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (entrada: NovaInscricao) => {
-      const i = esquemaInscricao.parse(entrada)
+    mutationFn: async (i: InscricaoValida) => {
       verificar('criar inscrição', await supabase.from('inscricoes_workshop').insert({ ...i, empresa_id: empresa, evento_id: evento, valor }))
     },
     onSuccess: () => invalidar('inscricoes'),

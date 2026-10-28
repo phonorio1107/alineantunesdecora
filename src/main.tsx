@@ -1,9 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { SessaoProvider } from './auth/Sessao'
 import './index.css'
+
+// Tema escolhido em Configurações (o claro é o padrão).
+try {
+  if (localStorage.getItem('tema') === 'escuro') document.documentElement.classList.add('escuro')
+} catch {
+  /* sem armazenamento: fica no tema claro */
+}
 
 // Cache só em memória: nada de dado de cliente salvo no aparelho.
 const queryClient = new QueryClient({
@@ -17,7 +25,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <SessaoProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </SessaoProvider>
     </QueryClientProvider>
   </StrictMode>,

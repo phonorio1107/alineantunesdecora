@@ -94,7 +94,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Views com `security_invoker = true`; `security definer` só no schema `privado`, com `search_path = ''` (28/10/2026)
 - [ ] Storage: buckets privados, políticas por empresa, limite de tamanho e tipos (a v1 não usa arquivos; vale quando entrar o primeiro bucket)
 - [x] `service_role` fora do front-end e do repositório (28/10/2026; busca no código vazia)
-- [x] Teste de isolamento entre empresas e perfis: `supabase/tests/isolamento.sql`, 16 verificações passando em Postgres 16 local; confirmado que acusa 4 furos abertos de propósito; roda no GitHub Actions a cada PR (28/10/2026)
+- [x] Teste de isolamento entre empresas e perfis: `supabase/tests/isolamento.sql`, 17 verificações passando em Postgres 16 local (inclui contratos e custos fixos); confirmado que acusa 4 furos abertos de propósito; roda no GitHub Actions a cada PR (28/10/2026)
 - [ ] Security Advisor zerado (ou justificado)
 
 ## Fase 5: Autenticação e permissões
@@ -103,12 +103,12 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Redirect URLs só de produção e prévias
 - [ ] 2FA disponível (obrigatório para admin se o cliente aceitar)
 - [ ] Perfis administrador e usuário, checados no banco
-- [ ] Recuperar senha, trocar senha, sair de todos os dispositivos
+- [ ] Recuperar senha, trocar senha, sair de todos os dispositivos (telas prontas em 28/10/2026; falta testar com o Supabase de verdade)
 - [ ] E-mails com remetente do domínio, em português
 
 ## Fase 6: Construir o sistema
-- [ ] Módulos-base: login por convite, empresas e usuários, painel, lista e cadastro padrão, configurações, registro de atividades
-- [ ] Telas próprias do cliente (uma a uma, aprovadas pelo Pedro)
+- [x] Módulos-base (28/10/2026): login por convite, empresa e equipe, painel, listas com busca e filtros, exportação Excel/CSV, configurações, registro de atividades no banco
+- [ ] Telas próprias do cliente (uma a uma, aprovadas pelo Pedro): **construídas em 28/10/2026** (Início, Lançar, Lançamentos, Eventos, Evento, Workshop, Clientes, Contratos, Relatórios, Configurações) e testadas no navegador com banco simulado. **Falta a aprovação do Pedro e o teste com o Supabase de desenvolvimento.**
 - [x] TypeScript estrito; esquemas Zod para lançamento, cliente, evento e inscrição; sem `dangerouslySetInnerHTML` (28/10/2026; vale também para as telas que vierem)
 - [x] Tratamento de erro em toda chamada ao banco (`src/lib/erros.ts`, 28/10/2026)
 - [x] Logs sem dados pessoais: console só com código do erro; registro de atividades só com nomes de colunas (28/10/2026)
@@ -121,7 +121,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Cor do cliente como destaque, contraste mínimo 4,5:1
 - [ ] Logo no topo; rodapé "feito por Pedro Hoffman" com o símbolo Pedro Hoffman de 12px (design system Degrau)
 - [ ] Espaçamento 4/8/12/16/24/32/48/64; cantos 4/8/12/16; um botão principal por tela
-- [ ] Estados vazio, carregando e erro; confirmação em ação destrutiva; avisos de sucesso; erro junto ao campo
+- [x] Estados vazio, carregando e erro; confirmação em ação destrutiva; avisos de sucesso; erro junto ao campo (28/10/2026, em todas as telas da v1)
 - [ ] Celular (360px), teclado, foco visível, texto mínimo 14px, toque de 44px
 - [ ] Textos curtos no infinitivo; datas, moeda e números no formato brasileiro
 - [ ] Ícones, favicon, título da aba, 404 e tela de erro com a marca
@@ -168,6 +168,8 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
 - 28/10/2026: termo da Fase 2 enviado à Aline pelo WhatsApp (aguardando resposta).
+- 28/10/2026: exportação em **Excel formatado + CSV**; PDFs de **contrato, recibo, fechamento do mês, fluxo de caixa e resumo do evento**, com a marca da Aline; aba **Contratos** (só a proprietária) usando o contrato que ela já usa, palavra por palavra. Pontos do contrato para advogado em `docs/contrato-observacoes.md`.
+- 28/10/2026: dados da empresa para documentos (CNPJ, banco, PIX, foro, responsável) ficam em Configurações, no banco, nunca no código. Dados reais da cliente do PDF de exemplo não entraram no repositório.
 - 28/10/2026: com autorização do Pedro, problemas sérios do código antigo corrigidos antes da aprovação da Aline: banco reescrito com RLS e teste de isolamento, camada de dados no Supabase com TanStack Query e Zod, login por convite. A migração **não foi aplicada em nenhum Supabase**: só depois do repositório privado e da aprovação da Aline.
 - 28/10/2026: revisão do código da branch antiga em `docs/revisao-codigo-antigo.md`: compila, 0 vulnerabilidades, mas RLS com `using (true)` e sem financeiro; aproveitar estrutura e utilitários, reescrever banco e camada de dados.
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.

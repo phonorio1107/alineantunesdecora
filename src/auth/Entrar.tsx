@@ -43,37 +43,37 @@ export default function Entrar() {
   }
 
   return (
-    <main className="min-h-dvh grid place-items-center px-4 py-12">
-      <div className="card w-full max-w-sm p-6 flex flex-col gap-6">
-        <img src={logo} alt="Aline Antunes Decora" className="h-14 w-auto self-center" />
-        <form onSubmit={entrar} className="flex flex-col gap-4" noValidate>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold">
+    <main className="conteudo" style={{ minHeight: '100dvh', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="cartao" style={{ width: '100%', maxWidth: 380 }}>
+        <img src={logo} alt="Aline Antunes Decora" style={{ height: 56, alignSelf: 'center' }} />
+        <form onSubmit={entrar} style={{ display: 'flex', flexDirection: 'column', gap: 16 }} noValidate>
+          <label className="campo">
             E-mail
-            <input type="email" autoComplete="email" className="input" aria-invalid={!!formState.errors.email} {...register('email')} />
-            {formState.errors.email && <span className="text-sm font-medium text-red-700">{formState.errors.email.message}</span>}
+            <input type="email" autoComplete="email" aria-invalid={!!formState.errors.email} {...register('email')} />
+            {formState.errors.email && <span className="erro">{formState.errors.email.message}</span>}
           </label>
           {modo === 'entrar' && (
-            <label className="flex flex-col gap-1.5 text-sm font-semibold">
+            <label className="campo">
               Senha
-              <input type="password" autoComplete="current-password" className="input" aria-invalid={!!formState.errors.senha} {...register('senha')} />
-              {formState.errors.senha && <span className="text-sm font-medium text-red-700">{formState.errors.senha.message}</span>}
+              <input type="password" autoComplete="current-password" aria-invalid={!!formState.errors.senha} {...register('senha')} />
+              {formState.errors.senha && <span className="erro">{formState.errors.senha.message}</span>}
             </label>
           )}
-          {erro && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-800" role="alert">{erro}</p>}
-          {aviso && <p className="rounded-xl bg-brand-50 px-4 py-3 text-sm" role="status">{aviso}</p>}
+          {erro && <p className="erro-caixa" role="alert">{erro}</p>}
+          {aviso && <p className="previa" role="status">{aviso}</p>}
           {modo === 'entrar' ? (
             <>
-              <button className="btn-primary min-h-11" disabled={formState.isSubmitting}>Entrar</button>
-              <button type="button" className="btn-ghost min-h-11" onClick={() => { setModo('recuperar'); setErro(null) }}>Esqueci a senha</button>
+              <button className="btn btn-p" disabled={formState.isSubmitting}>Entrar</button>
+              <button type="button" className="btn btn-g" onClick={() => { setModo('recuperar'); setErro(null) }}>Esqueci a senha</button>
             </>
           ) : (
             <>
-              <button type="button" className="btn-primary min-h-11" onClick={recuperar}>Enviar link</button>
-              <button type="button" className="btn-ghost min-h-11" onClick={() => { setModo('entrar'); setAviso(null) }}>Voltar</button>
+              <button type="button" className="btn btn-p" onClick={recuperar}>Enviar link</button>
+              <button type="button" className="btn btn-g" onClick={() => { setModo('entrar'); setAviso(null) }}>Voltar</button>
             </>
           )}
         </form>
-        <p className="text-center text-sm text-ink-500">O acesso é por convite. Fale com a Aline.</p>
+        <p className="muted" style={{ textAlign: 'center', fontSize: 14 }}>O acesso é por convite. Fale com a Aline.</p>
       </div>
     </main>
   )
