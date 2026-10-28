@@ -7,8 +7,10 @@
 - **Ramo:** decoração de festas e assessoria de eventos
 - **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Valor em horas ou R$/mês: _a estimar_
 - **Usuários:** Aline (administradora) + 1 ou 2 pessoas (perfis administrador e usuário)
-- **Domínio desejado:** _a confirmar_
-- **Logo e cor:** _a confirmar_
+- **Site atual:** https://www.alineantunesdecora.com.br/ · **Instagram:** https://www.instagram.com/alineantunesdecora/
+- **Domínio do sistema:** sugestão `sistema.alineantunesdecora.com.br` (_aguardando confirmação do Pedro_)
+- **Logo:** "Aline Antunes" em letra cursiva rosa, com "Decora." em cinza, sem serifa, logo abaixo (arquivo original _pendente de envio ao repositório_)
+- **Cores tiradas do logo (aproximadas):** rosa `#DD7A9A`, cinza `#6B6B6B`
 - **Início:** 28/10/2026
 
 ## Fase atual
@@ -20,6 +22,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: contrato e cobrança dispensados (piloto familiar). Os documentos de LGPD da Fase 9 continuam valendo.
 - 28/10/2026: escopo v1 = financeiro + eventos simples; orçamentos e agenda na v2.
 - 28/10/2026: o sistema guarda CPF/CNPJ das clientes (escolha do Pedro).
+- 28/10/2026: referências visuais oficiais são o site e o Instagram da Aline e o logo rosa e cinza.
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
 
 ---
@@ -35,7 +38,8 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
   - Fôlego de caixa: quantos meses a empresa aguenta sem receita
 - [x] O que fica para depois (28/10/2026): orçamentos completos e agenda completa (v2)
 - [x] Dados pessoais (28/10/2026): das clientes finais, nome, telefone, e-mail, endereço e **CPF/CNPJ**; dados financeiros da empresa. Não há dados sensíveis (art. 11 da LGPD), mas o CPF exige cuidado: acesso restrito, mascarado nas listas e fora dos logs.
-- [ ] Logo e cor do cliente
+- [x] Logo e cor do cliente (28/10/2026): cores tiradas do logo enviado pelo Pedro; referências visuais são o site e o Instagram
+  - Contraste medido: branco sobre `#DD7A9A` dá 2,87:1 e **reprova**. Proposta para a Fase 7: destaque `#B04A6F` no tema claro (branco sobre ele dá 5,18:1) e `#DD7A9A` no tema escuro (sobre `#18151A` dá 6,31:1)
 - [ ] Domínio desejado
 - [x] Escopo cortado para o menor sistema que resolve a dor (28/10/2026)
 - [x] Contrato e 50% do setup: **dispensado** (28/10/2026). Justificativa do Pedro: cliente piloto é a mãe dele, sem cobrança.
