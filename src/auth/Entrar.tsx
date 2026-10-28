@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { supabase } from '../lib/supabase'
+import { modoDemo, supabase } from '../lib/supabase'
 import { registrarErro } from '../lib/erros'
 import logo from '../assets/logo.png'
 
@@ -73,7 +73,14 @@ export default function Entrar() {
             </>
           )}
         </form>
-        <p className="muted" style={{ textAlign: 'center', fontSize: 14 }}>O acesso é por convite. Fale com a Aline.</p>
+        {modoDemo ? (
+          <div className="previa">
+            <b>Prévia com dados fictícios</b>
+            <span>Entre com qualquer e-mail e senha. Use <b>aline@demo.com</b> para ver tudo, ou <b>assistente@demo.com</b> para ver como a assistente enxerga (sem o financeiro e sem CPF).</span>
+          </div>
+        ) : (
+          <p className="muted" style={{ textAlign: 'center', fontSize: 14 }}>O acesso é por convite. Fale com a Aline.</p>
+        )}
       </div>
     </main>
   )

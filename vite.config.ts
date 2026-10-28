@@ -2,17 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// "demo" gera uma versão com tudo embutido para publicar como página de teste.
+// "demo" gera a prévia: tudo embutido num arquivo só, com banco simulado (src/demo/banco.ts).
 export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   base: mode === 'demo' ? './' : '/',
   build: mode === 'demo'
     ? {
         outDir: 'dist-demo',
-        assetsInlineLimit: 1_000_000,
+        assetsInlineLimit: 10_000_000,
         cssCodeSplit: false,
         modulePreload: false,
+        chunkSizeWarningLimit: 10_000,
         rollupOptions: { output: { inlineDynamicImports: true } },
       }
-    : undefined,
+    : { chunkSizeWarningLimit: 1500 },
 }))

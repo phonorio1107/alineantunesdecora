@@ -25,6 +25,8 @@ export interface Aba {
 }
 
 export function baixarArquivo(conteudo: Blob, nome: string) {
+  // Na prévia, mostra o arquivo na tela também: algumas páginas de teste bloqueiam downloads.
+  if (import.meta.env.MODE === 'demo') window.dispatchEvent(new CustomEvent('demo-arquivo', { detail: { blob: conteudo, nome } }))
   const url = URL.createObjectURL(conteudo)
   const a = document.createElement('a')
   a.href = url

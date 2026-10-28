@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useSessao } from './auth/Sessao'
 import Entrar from './auth/Entrar'
 import NovaSenha from './auth/NovaSenha'
@@ -20,6 +20,11 @@ import Mais from './paginas/Mais'
 export default function App() {
   const { sessao, carregando } = useSessao()
   const { pathname } = useLocation()
+  const navegar = useNavigate()
+  // Ao sair, a próxima pessoa que entrar começa pelo Início (e não na última tela de quem saiu).
+  useEffect(() => {
+    if (!carregando && !sessao && pathname !== '/' && pathname !== '/nova-senha') navegar('/', { replace: true })
+  }, [carregando, sessao, pathname, navegar])
   if (!supabaseConfigurado) return <Aviso titulo="Sistema não configurado" texto="Faltam as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY. Veja o .env.example." />
   if (carregando) return <Aviso titulo="Carregando…" />
   if (pathname === '/nova-senha') return <NovaSenha />

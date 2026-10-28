@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { CalendarDays, ChartColumn, FileSignature, House, List, Menu, Plus, SlidersHorizontal, Users } from 'lucide-react'
 import logo from '../assets/logo.png'
@@ -7,6 +7,11 @@ import { periodoCarregado } from '../app/dados'
 import { useGerarRecorrencias } from '../data/consultas'
 import { Credito } from './ui'
 import Folhas from './Folhas'
+import { modoDemo } from '../lib/supabase'
+import { useQueryClient } from '@tanstack/react-query'
+
+// Só existe na prévia: carregado sob demanda para não entrar no build de produção.
+const ArquivoGerado = modoDemo ? lazy(() => import('../demo/ArquivoGerado')) : () => null
 
 // Confetes do site da Aline: posições fixas (sempre iguais), em rosa, amarelo e azul.
 function Confete() {
@@ -34,6 +39,7 @@ function Confete() {
 export default function Layout() {
   const { empresaId, veFinanceiro, ehProprietaria } = useEmpresa()
   const { abrir } = useFolhas()
+  const qc = useQueryClient()
   const gerar = useGerarRecorrencias(empresaId)
   const { mutate } = gerar
 
@@ -73,11 +79,13 @@ export default function Layout() {
             </button>
           ) : null}
           <div className="espaco" />
+          {modoDemo ? <SeloDemo aoRecomecar={async () => { (await import('../demo/banco')).recomecar(); qc.invalidateQueries(); mutate(periodoCarregado().ate) }} /> : null}
           <Credito />
         </aside>
         <div className="principal">
           <header className="topo">
             <img className="logo" src={logo} alt="Aline Antunes Decora" />
+            {modoDemo ? <span className="pill atencao">Prévia</span> : null}
           </header>
           <main className="conteudo" id="conteudo">
             <Outlet />
@@ -104,6 +112,17 @@ export default function Layout() {
         </nav>
       </div>
       <Folhas />
+      {modoDemo ? <Suspense fallback={null}><ArquivoGerado /></Suspense> : null}
     </>
+  )
+}
+
+function SeloDemo({ aoRecomecar }: { aoRecomecar: () => void }) {
+  return (
+    <div className="previa">
+      <b>Prévia · dados fictícios</b>
+      <span>Nada é salvo: ao recarregar a página, tudo volta ao início.</span>
+      <button type="button" className="btn btn-g btn-sm" style={{ alignSelf: 'flex-start', paddingLeft: 0 }} onClick={aoRecomecar}>Recomeçar do zero</button>
+    </div>
   )
 }

@@ -2,24 +2,31 @@
 import { Document, Font, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 import type { ReactNode } from 'react'
 import logoUrl from '../assets/logo.png'
+import dmRegular from '../assets/fonts/DMSans-Regular.ttf?url'
+import dmItalic from '../assets/fonts/DMSans-Italic.ttf?url'
+import dmMedium from '../assets/fonts/DMSans-Medium.ttf?url'
+import dmBold from '../assets/fonts/DMSans-Bold.ttf?url'
+import pfSemi from '../assets/fonts/PlayfairDisplay-SemiBold.ttf?url'
+import pfBold from '../assets/fonts/PlayfairDisplay-Bold.ttf?url'
+import pfItalic from '../assets/fonts/PlayfairDisplay-MediumItalic.ttf?url'
 import type { Empresa } from '../data/tipos'
 import { formatDoc } from '../lib/format'
 
 Font.register({
   family: 'DM Sans',
   fonts: [
-    { src: '/fonts/DMSans-Regular.ttf', fontWeight: 400 },
-    { src: '/fonts/DMSans-Italic.ttf', fontWeight: 400, fontStyle: 'italic' },
-    { src: '/fonts/DMSans-Medium.ttf', fontWeight: 500 },
-    { src: '/fonts/DMSans-Bold.ttf', fontWeight: 700 },
+    { src: dmRegular, fontWeight: 400 },
+    { src: dmItalic, fontWeight: 400, fontStyle: 'italic' },
+    { src: dmMedium, fontWeight: 500 },
+    { src: dmBold, fontWeight: 700 },
   ],
 })
 Font.register({
   family: 'Playfair Display',
   fonts: [
-    { src: '/fonts/PlayfairDisplay-SemiBold.ttf', fontWeight: 600 },
-    { src: '/fonts/PlayfairDisplay-Bold.ttf', fontWeight: 700 },
-    { src: '/fonts/PlayfairDisplay-MediumItalic.ttf', fontWeight: 500, fontStyle: 'italic' },
+    { src: pfSemi, fontWeight: 600 },
+    { src: pfBold, fontWeight: 700 },
+    { src: pfItalic, fontWeight: 500, fontStyle: 'italic' },
   ],
 })
 // Sem hifenização automática: palavras inteiras, como num documento revisado.
