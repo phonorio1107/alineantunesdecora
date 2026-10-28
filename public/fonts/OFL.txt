@@ -1,0 +1,2 @@
+DM Sans e Playfair Display: Google Fonts, licença SIL Open Font License 1.1 (https://openfontlicense.org).
+Usadas nos PDFs do sistema. Arquivos estáticos baixados de fonts.googleapis.com em 28/10/2026.

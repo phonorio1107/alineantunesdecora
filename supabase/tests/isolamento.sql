@@ -55,6 +55,9 @@ values ('eeeeeeee-0000-0000-0000-00000000000b', 'dddddddd-0000-0000-0000-0000000
 insert into public.fechamentos_mensais (empresa_id, mes_referencia)
 values ('eeeeeeee-0000-0000-0000-00000000000b', '2026-08-01');
 
+insert into public.contratos (empresa_id, evento_id, numero, dados)
+values ('eeeeeeee-0000-0000-0000-00000000000b', 'dddddddd-0000-0000-0000-00000000000b', '261121/001', '{"cliente":{"cpf_cnpj":"11144477735"}}');
+
 -- 0. RLS ligado em todas as tabelas do public
 do $$
 declare n int;
@@ -77,13 +80,13 @@ declare
 begin
   foreach t in array array['clientes', 'clientes_documentos', 'eventos', 'contas', 'categorias', 'recorrencias', 'lancamentos',
                            'inscricoes_workshop', 'fechamentos_mensais', 'registros_atividades', 'usuarios_empresas',
-                           'saldos_contas', 'resultado_eventos'] loop
+                           'contratos', 'saldos_contas', 'resultado_eventos'] loop
     execute format('select count(*) from public.%I where empresa_id = $1', t) into n using b;
     if n <> 0 then raise exception 'FALHOU: A leu % linha(s) da B em %', n, t; end if;
   end loop;
   select count(*) into n from public.empresas where id = b;
   if n <> 0 then raise exception 'FALHOU: A leu a empresa B'; end if;
-  raise notice 'ok  1a. A não lê nada da B (13 tabelas e views + empresas)';
+  raise notice 'ok  1a. A não lê nada da B (14 tabelas e views + empresas)';
 
   begin
     insert into public.clientes (empresa_id, nome) values (b, 'Intrusa');
@@ -210,6 +213,34 @@ begin
   raise notice 'ok  2d. criar_evento gera entrada de 30%% e saldo 5 dias antes; funções não atravessam empresas';
 end $$;
 
+-- 2e. Contratos e custos fixos
+do $$
+declare c public.contratos; n int;
+  a constant uuid := 'eeeeeeee-0000-0000-0000-00000000000a';
+begin
+  c := public.emitir_contrato('dddddddd-0000-0000-0000-00000000000a', '{"modelo":"teste"}');
+  if c.numero <> '261120/001' or c.versao <> 1 then raise exception 'FALHOU: contrato saiu % V.%, esperado 261120/001 V.1', c.numero, c.versao; end if;
+  c := public.emitir_contrato('dddddddd-0000-0000-0000-00000000000a', '{"modelo":"teste"}');
+  if c.numero <> '261120/001' or c.versao <> 2 then raise exception 'FALHOU: reemissão saiu % V.%, esperado V.2', c.numero, c.versao; end if;
+  begin
+    perform public.emitir_contrato('dddddddd-0000-0000-0000-00000000000b', '{}');
+    raise exception 'FALHOU: A emitiu contrato de evento da B';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'ok  2e. Contrato numerado AAMMDD/NNN, reemissão sobe a versão, sem atravessar empresas';
+
+  n := public.gerar_recorrencias(a, (current_date + 60));
+  if n < 2 then raise exception 'FALHOU: gerar_recorrencias criou % lançamento(s), esperado ao menos 2', n; end if;
+  n := public.gerar_recorrencias(a, (current_date + 60));
+  if n <> 0 then raise exception 'FALHOU: gerar_recorrencias duplicou % lançamento(s)', n; end if;
+  begin
+    perform public.gerar_recorrencias('eeeeeeee-0000-0000-0000-00000000000b', current_date + 60);
+    raise exception 'FALHOU: A gerou custos fixos na B';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'ok  2f. Custos fixos gerados uma vez por mês, sem duplicar, só na própria empresa';
+end $$;
+
 -- ---------------------------------------------------------------------------
 -- 3. Assistente sem financeiro liberado
 -- ---------------------------------------------------------------------------
@@ -227,6 +258,13 @@ begin
   if n <> 0 then raise exception 'FALHOU: assistente sem liberação vê contas'; end if;
   select count(*) into n from public.registros_atividades;
   if n <> 0 then raise exception 'FALHOU: assistente vê o registro de atividades'; end if;
+  select count(*) into n from public.contratos;
+  if n <> 0 then raise exception 'FALHOU: assistente vê contratos (que têm CPF)'; end if;
+  begin
+    perform public.emitir_contrato('dddddddd-0000-0000-0000-00000000000a', '{}');
+    raise exception 'FALHOU: assistente emitiu contrato';
+  exception when insufficient_privilege then null;
+  end;
   begin
     insert into public.lancamentos (empresa_id, tipo, valor, data_vencimento, conta_id, categoria_id)
     values (a, 'saida', 10, '2026-10-01', 'aaaaaaaa-0000-0000-0000-00000000000a',
@@ -241,7 +279,7 @@ begin
   delete from public.clientes where empresa_id = a;
   get diagnostics n = row_count;
   if n <> 0 then raise exception 'FALHOU: assistente apagou cliente'; end if;
-  raise notice 'ok  3a. Assistente vê clientes, mas não CPF, financeiro nem log; não se promove nem apaga';
+  raise notice 'ok  3a. Assistente vê clientes, mas não CPF, contratos, financeiro nem log; não se promove nem apaga';
 end $$;
 
 reset role;
@@ -264,7 +302,7 @@ do $$ begin perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000
 do $$
 declare t text; n int;
 begin
-  foreach t in array array['clientes', 'clientes_documentos', 'eventos', 'lancamentos', 'contas', 'inscricoes_workshop', 'resultado_eventos'] loop
+  foreach t in array array['clientes', 'clientes_documentos', 'eventos', 'lancamentos', 'contas', 'inscricoes_workshop', 'contratos', 'resultado_eventos'] loop
     execute format('select count(*) from public.%I', t) into n;
     if n <> 0 then raise exception 'FALHOU: freelancer leu % linha(s) de %', n, t; end if;
   end loop;
@@ -302,7 +340,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['empresas', 'usuarios_empresas', 'clientes', 'clientes_documentos', 'eventos', 'lancamentos',
-                           'contas', 'categorias', 'saldos_contas', 'resultado_eventos'] loop
+                           'contas', 'categorias', 'contratos', 'saldos_contas', 'resultado_eventos'] loop
     begin
       execute format('select count(*) from public.%I', t);
       raise exception 'FALHOU: anon conseguiu consultar %', t;
