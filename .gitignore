@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-demo
+.wrangler
+*.tsbuildinfo
+.DS_Store
+
+# Segredos: nenhum arquivo .env vai para o repositório (só o modelo)
+.env*
+!.env.example

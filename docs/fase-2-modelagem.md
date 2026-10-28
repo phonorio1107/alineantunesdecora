@@ -1,6 +1,7 @@
 # Fase 2: Telas, fluxos e modelo de dados (proposta)
 
 > Status: **aprovado pelo Pedro em 28/10/2026** (com parcelas editáveis e lista de inscritas nos workshops)
+> Fonte do negócio: entrevista com a Aline em [`.claude/skills/aline-antunes-decora/SKILL.md`](../.claude/skills/aline-antunes-decora/SKILL.md) (trazida da branch `claude/eager-ramanujan-xcz3om` em 28/10/2026).
 > Princípio: liberdade financeira para a Aline, com lançamento fácil (menos de 1 minuto, pelo celular).
 
 ## 1. Os números que o sistema responde
@@ -32,9 +33,9 @@
 
 ## 3. Fluxos principais
 
-- **Fechar um evento**: cadastrar o evento com o valor fechado → o sistema sugere **sinal de 50% hoje + restante até a data do evento**, e a Aline ajusta os percentuais, as datas ou o número de parcelas → as parcelas viram lançamentos previstos → ela marca cada uma como recebida quando o dinheiro cai.
+- **Fechar um evento**: cadastrar o evento com o valor fechado → o sistema sugere **entrada de 30% para reservar a data + saldo até 5 dias antes do evento** (regra da Aline), e a Aline ajusta os percentuais, as datas ou o número de parcelas → as parcelas viram lançamentos previstos → ela marca cada uma como recebida quando o dinheiro cai.
 - **Workshop**: cadastrar o workshop (evento da fonte workshop, sem cliente) com valor da inscrição e vagas → adicionar cada inscrita (nome e telefone) → ao marcar a inscrição como paga, o sistema cria a entrada no financeiro do workshop.
-- **Gastar com um evento**: em "Lançar", escolher saída → valor → categoria (flores, balões, frete…) → evento. O lucro do evento se atualiza na hora.
+- **Gastar com um evento**: em "Lançar", escolher saída → valor → categoria (flores, balões, freelancers, deslocamento…) → evento. O lucro do evento se atualiza na hora.
 - **Custos fixos**: cadastrados uma vez (aluguel, internet, imposto) → o sistema cria o lançamento previsto todo mês → a Aline só confirma o pagamento.
 - **Retirada**: categoria especial "Retirada da Aline". Não entra como custo no lucro, mas sai do saldo.
 - **Fechar o mês**: conferir o resumo → "Fechar mês" → os lançamentos daquele mês ficam travados (só um administrador reabre, e isso fica registrado).
@@ -45,10 +46,10 @@ Toda tabela de negócio tem `id` (uuid), `empresa_id`, `criado_em`, `atualizado_
 
 | Tabela | Para que serve | Campos principais |
 |---|---|---|
-| `empresas` | A empresa da Aline (e de futuros clientes do SaaS) | nome, logo, cor, reserva_meses_desejada |
-| `usuarios_empresas` | Quem acessa qual empresa e com que perfil | usuario_id, empresa_id, papel (administrador/usuario) |
-| `clientes` | Clientes das festas | nome, telefone, e-mail, endereço, cpf_cnpj |
-| `eventos` | Cada festa, assessoria ou workshop | cliente_id (opcional para workshop), titulo, data_evento, fonte (decoracao/assessoria/workshop), valor_fechado, vagas e valor_inscricao (só workshop), status (confirmado/realizado/cancelado) |
+| `empresas` | A empresa da Aline (e de futuros clientes do SaaS) | nome, logo, cor, reserva_meses_desejada, entrada_percentual (30), dias_saldo_antes_evento (5), percentual_lucro_empresa e percentual_lucro_aline (a definir) |
+| `usuarios_empresas` | Quem acessa qual empresa e com que perfil | usuario_id, empresa_id, papel (proprietaria/assistente; o perfil freelancer, sem valores, chega com a agenda na v2) |
+| `clientes` | Clientes das festas | nome, telefone, e-mail, endereço, cidade, cpf_cnpj, origem (Instagram/indicação/outra) |
+| `eventos` | Cada festa, assessoria ou workshop | cliente_id (opcional para workshop), titulo, data_evento, cidade, fonte (decoracao/assessoria/workshop), tipo_evento (festa infantil, casamento, 15 anos, chá, batizado, corporativo), valor_fechado, vagas e valor_inscricao (só workshop), status (confirmado/realizado/cancelado) |
 | `inscricoes_workshop` | Alunas inscritas em cada workshop | evento_id, nome, telefone, valor, status (reservada/paga/cancelada), lancamento_id |
 | `contas` | Onde o dinheiro fica | nome (Nubank, Dinheiro…), saldo_inicial |
 | `categorias` | Classificação dos lançamentos | nome, tipo (entrada/saida), natureza (fixo/variavel/retirada) |
@@ -61,7 +62,7 @@ Relações: um cliente tem vários eventos; um workshop tem várias inscritas, e
 
 **Categorias que já vêm prontas** (dá para editar):
 - Entradas: Decoração, Assessoria, Workshop, Outras entradas
-- Saídas variáveis: Flores, Balões, Materiais, Frete, Ajudantes, Aluguel de peças
+- Saídas variáveis (custo da festa): Flores, Balões, Material de consumo, Deslocamento, Freelancers, Taxas de cartão, Peças perdidas ou quebradas
 - Saídas fixas: Aluguel, Internet e telefone, Impostos (DAS), Ferramentas
 - Retirada da Aline
 
@@ -79,3 +80,11 @@ Relações: um cliente tem vários eventos; um workshop tem várias inscritas, e
 | E-mail e nome dos usuários do sistema | Acesso | Execução de contrato | Enquanto tiver acesso + 6 meses (registro de acesso, Marco Civil) |
 
 Cuidados: CPF/CNPJ visível por completo só no detalhe do cliente; mascarado nas listas e exportações; nunca nos logs. Sem dados sensíveis (art. 11).
+
+## 6. Ajustes depois da entrevista com a Aline (28/10/2026)
+
+- Pagamento: entrada de **30%** e saldo **até 5 dias antes** (substitui os 50% da primeira proposta). Cartão em até 10x com juros repassados à cliente.
+- Custo da festa inclui freelancers, material de consumo, deslocamento, taxas de cartão e peças perdidas ou quebradas. **Não há aluguel de peças para a cliente.**
+- Distribuição do lucro em percentuais (empresa x Aline), configurável; valores **a definir** com a Aline.
+- Origem da cliente e tipo de evento registrados desde a v1, porque alimentam os relatórios.
+- Continuam para a v2, como já decidido: orçamentos com PDF e pacotes (Especial, Excepcional, Extraordinário), agenda com alerta de festas no mesmo dia, ordens de serviço com check-in de peças e acervo. O código-base da branch antiga será reaproveitado na Fase 6, passando pelo checklist de segurança.

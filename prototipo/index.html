@@ -331,8 +331,8 @@ const S={
  contas:[{id:'nubank',nome:'Nubank',ini:3400},{id:'caixa',nome:'Caixa Econômica',ini:1200},{id:'dinheiro',nome:'Dinheiro',ini:330}],
  cats:[
   {id:'decoracao',nome:'Decoração',tipo:'e'},{id:'assessoria',nome:'Assessoria',tipo:'e'},{id:'workshop',nome:'Workshop',tipo:'e'},{id:'outras',nome:'Outras entradas',tipo:'e'},
-  {id:'flores',nome:'Flores',tipo:'s',nat:'variavel'},{id:'baloes',nome:'Balões',tipo:'s',nat:'variavel'},{id:'materiais',nome:'Materiais',tipo:'s',nat:'variavel'},
-  {id:'frete',nome:'Frete',tipo:'s',nat:'variavel'},{id:'ajudantes',nome:'Ajudantes',tipo:'s',nat:'variavel'},{id:'pecas',nome:'Aluguel de peças',tipo:'s',nat:'variavel'},
+  {id:'flores',nome:'Flores',tipo:'s',nat:'variavel'},{id:'baloes',nome:'Balões',tipo:'s',nat:'variavel'},{id:'materiais',nome:'Material de consumo',tipo:'s',nat:'variavel'},
+  {id:'frete',nome:'Deslocamento',tipo:'s',nat:'variavel'},{id:'ajudantes',nome:'Freelancers',tipo:'s',nat:'variavel'},{id:'taxas',nome:'Taxas de cartão',tipo:'s',nat:'variavel'},{id:'perdas',nome:'Peças perdidas ou quebradas',tipo:'s',nat:'variavel'},
   {id:'aluguel',nome:'Aluguel',tipo:'s',nat:'fixo'},{id:'internet',nome:'Internet e telefone',tipo:'s',nat:'fixo'},{id:'impostos',nome:'Impostos (DAS)',tipo:'s',nat:'fixo'},{id:'ferramentas',nome:'Ferramentas',tipo:'s',nat:'fixo'},
   {id:'retirada',nome:'Retirada da Aline',tipo:'s',nat:'retirada'}],
  rec:[{id:'r1',desc:'Aluguel do ateliê',valor:1200,dia:5,cat:'aluguel',conta:'nubank'},{id:'r2',desc:'Internet e celular',valor:180,dia:10,cat:'internet',conta:'nubank'},
@@ -342,40 +342,49 @@ const S={
   {id:'c2',nome:'Sofia Martins',tel:'(11) 97654-3210',email:'sofia.m@exemplo.com',doc:'98765432100'},
   {id:'c3',nome:'Juliana Costa',tel:'(11) 96543-2109',email:'ju.costa@exemplo.com',doc:'45678912300'},
   {id:'c4',nome:'Patrícia Almeida',tel:'(11) 95432-1098',email:'patricia.a@exemplo.com',doc:'32165498700'},
-  {id:'c5',nome:'Marcos Ribeiro',tel:'(11) 94321-0987',email:'marcos.r@exemplo.com',doc:'11222333000181'}],
+  {id:'c5',nome:'Marcos Ribeiro',tel:'(11) 94321-0987',email:'marcos.r@exemplo.com',doc:'11222333000181'},
+  {id:'c6',nome:'Renata Oliveira',tel:'(19) 99876-5432',email:'renata.o@exemplo.com',doc:'52998224725'}],
  eventos:[
   {id:'e1',titulo:'Aniversário de 1 ano · Maria Luísa',cli:'c1',fonte:'decoracao',data:'2026-10-04',valor:3800,status:'realizado'},
   {id:'e2',titulo:'Chá revelação · Sofia e Bruno',cli:'c2',fonte:'decoracao',data:'2026-10-12',valor:2600,status:'realizado'},
   {id:'e3',titulo:'Casamento · Juliana e Rafael',cli:'c3',fonte:'assessoria',data:'2026-10-24',valor:5500,status:'realizado'},
   {id:'e4',titulo:'3º Workshop Flores à Mesa',cli:null,fonte:'workshop',data:'2026-11-08',valor:0,vagas:12,insc:280,status:'confirmado'},
   {id:'e5',titulo:'15 anos · Isabela',cli:'c4',fonte:'decoracao',data:'2026-11-21',valor:6200,status:'confirmado'},
-  {id:'e6',titulo:'Bodas de ouro · Helena e Carlos',cli:'c5',fonte:'decoracao',data:'2026-12-06',valor:4200,status:'confirmado'}],
+  {id:'e6',titulo:'Bodas de ouro · Helena e Carlos',cli:'c5',fonte:'decoracao',data:'2026-12-06',valor:4200,status:'confirmado'},
+  {id:'e7',titulo:'Aniversário de 4 anos · Theo',cli:'c6',fonte:'decoracao',data:'2026-10-31',valor:3200,status:'confirmado'}],
  insc:[], L:[], fechados:{},
  cfg:{reservaMeses:3,retiradaMin:2500},
  ui:{mes:MES,tipo:'todos',busca:'',evTab:'proximos',relTab:'fechamento'}
 };
 const lc=(tipo,valor,venc,pago,conta,cat,ev,desc,x={})=>S.L.push({id:nid('l'),tipo,valor,venc,pago,conta,cat,ev,desc,...x});
 // parcelas e custos dos eventos
-lc('e',1900,'2026-09-10','2026-09-10','nubank','decoracao','e1','Sinal');
-lc('e',1900,'2026-10-04','2026-10-04','nubank','decoracao','e1','Restante');
+lc('e',1140,'2026-08-20','2026-08-20','nubank','decoracao','e1','Entrada (30%)');
+lc('e',2660,'2026-09-29','2026-09-29','nubank','decoracao','e1','Saldo');
 lc('s',620,'2026-10-02','2026-10-02','nubank','flores','e1','Flores do painel');
 lc('s',480,'2026-10-02','2026-10-02','nubank','baloes','e1','Arco de balões');
-lc('s',150,'2026-10-04','2026-10-04','dinheiro','frete','e1','Frete de ida e volta');
-lc('s',200,'2026-10-04','2026-10-04','dinheiro','ajudantes','e1','Ajudante de montagem');
-lc('e',1300,'2026-09-20','2026-09-20','nubank','decoracao','e2','Sinal');
-lc('e',1300,'2026-10-12','2026-10-12','nubank','decoracao','e2','Restante');
+lc('s',150,'2026-10-04','2026-10-04','dinheiro','frete','e1','Deslocamento Louveira–Jundiaí');
+lc('s',400,'2026-10-04','2026-10-04','dinheiro','ajudantes','e1','2 freelancers de montagem');
+lc('s',90,'2026-10-06','2026-10-06','nubank','perdas','e1','Bandeja de vidro quebrada');
+lc('e',780,'2026-09-01','2026-09-01','nubank','decoracao','e2','Entrada (30%)');
+lc('e',1820,'2026-10-07','2026-10-07','nubank','decoracao','e2','Saldo');
 lc('s',380,'2026-10-10','2026-10-10','nubank','flores','e2','Flores e folhagens');
 lc('s',410,'2026-10-10','2026-10-10','nubank','baloes','e2','Balões rosa e azul');
-lc('s',120,'2026-10-12','2026-10-12','dinheiro','frete','e2','Frete');
-lc('e',2750,'2026-08-15','2026-08-15','caixa','assessoria','e3','Sinal');
-lc('e',2750,'2026-10-20','2026-10-20','caixa','assessoria','e3','Restante');
+lc('s',120,'2026-10-12','2026-10-12','dinheiro','frete','e2','Deslocamento Louveira–Vinhedo');
+lc('s',200,'2026-10-12','2026-10-12','dinheiro','ajudantes','e2','Freelancer de montagem');
+lc('e',1650,'2026-08-15','2026-08-15','caixa','assessoria','e3','Entrada (30%)');
+lc('e',3850,'2026-10-19','2026-10-19','caixa','assessoria','e3','Saldo');
 lc('s',600,'2026-10-24','2026-10-24','caixa','ajudantes','e3','Equipe de coordenação');
 lc('s',350,'2026-10-22','2026-10-22','nubank','materiais','e4','Vasos, espuma e fitas');
 lc('s',900,'2026-11-06',null,'nubank','flores','e4','Flores para 12 alunas');
-lc('e',3100,'2026-10-15','2026-10-15','nubank','decoracao','e5','Sinal');
-lc('e',3100,'2026-11-21',null,'nubank','decoracao','e5','Restante');
-lc('e',2100,'2026-10-20','2026-10-20','nubank','decoracao','e6','Sinal');
-lc('e',2100,'2026-12-06',null,'nubank','decoracao','e6','Restante');
+lc('e',1860,'2026-10-15','2026-10-15','nubank','decoracao','e5','Entrada (30%)');
+lc('e',4340,'2026-11-16',null,'nubank','decoracao','e5','Saldo');
+lc('s',178,'2026-10-15','2026-10-15','nubank','taxas','e5','Taxa do cartão (entrada em 3x)');
+lc('e',1260,'2026-10-20','2026-10-20','nubank','decoracao','e6','Entrada (30%)');
+lc('e',2940,'2026-12-01',null,'nubank','decoracao','e6','Saldo');
+lc('e',960,'2026-09-25','2026-09-25','nubank','decoracao','e7','Entrada (30%)');
+lc('e',2240,'2026-10-26','2026-10-26','nubank','decoracao','e7','Saldo');
+lc('s',450,'2026-10-27','2026-10-27','nubank','baloes','e7','Balões e fitas');
+lc('s',400,'2026-10-31',null,'dinheiro','ajudantes','e7','2 freelancers de montagem');
 // inscritas do workshop
 [['Ana Paula Rocha','(11) 99812-3344','paga','2026-10-05'],['Beatriz Lima','(11) 99723-4455','paga','2026-10-07'],['Carla Souza','(11) 99634-5566','paga','2026-10-11'],
  ['Daniela Prado','(11) 99545-6677','paga','2026-10-16'],['Elaine Moraes','(11) 99456-7788','paga','2026-10-21'],['Fernanda Melo','(11) 99367-8899','paga','2026-10-26'],
@@ -554,7 +563,7 @@ function vEvento(e){
   ${ws?vInscritas(e,ins,ocup):`<section class="card"><div class="card-h"><h2>Parcelas</h2><span class="muted">${parc.length} parcelas</span></div>
     <div class="rows">${parc.map(l=>`<div class="row"><span class="dot e">+</span><span class="grow"><span class="t">${esc(l.desc)}</span><span class="s">${l.pago?'recebido em '+dmy(l.pago):'vence em '+dmy(l.venc)} · ${esc(conta(l.conta).nome)}</span></span><span class="v num">${brl(l.valor)}</span>${btnP(l)}</div>`).join('')}</div></section>`}
   <section class="card"><div class="card-h"><h2>Custos do evento</h2><button class="btn btn-g btn-sm" type="button" data-act="lancar" data-ev="${e.id}" data-tipo="s">${ic('plus',18)}Lançar custo</button></div>
-    <div class="rows">${f.sai.length?f.sai.map(l=>linhaL(l,statusL(l))).join(''):`<div class="empty"><b>Nenhum custo lançado.</b>Lance flores, balões, frete e ajudantes para ver o lucro real.</div>`}</div></section>`;
+    <div class="rows">${f.sai.length?f.sai.map(l=>linhaL(l,statusL(l))).join(''):`<div class="empty"><b>Nenhum custo lançado.</b>Lance flores, balões, freelancers e deslocamento para ver o lucro real.</div>`}</div></section>`;
 }
 function vInscritas(e,ins,ocup){
   const st=i=>i.status==='paga'?'<span class="pill good">Paga</span>':i.status==='reservada'?`<button class="btn btn-s btn-sm" type="button" data-act="inscPaga" data-id="${i.id}">Marcar paga</button>`:'<span class="pill line">Cancelada</span>';
@@ -726,9 +735,9 @@ function sheetNovoEv(){
     ${ws?`<div class="field"><label for="n-vagas">Vagas</label><input id="n-vagas" type="number" min="1" value="${esc(d.vagas)}"></div>`
         :`<div class="field"><label for="n-valor">Valor fechado</label><input id="n-valor" inputmode="decimal" placeholder="R$ 0,00" value="${esc(d.valor)}"><span class="err" id="n-valor-err" hidden></span></div>`}</div>
    ${ws?`<div class="field"><label for="n-insc">Valor da inscrição</label><input id="n-insc" inputmode="decimal" placeholder="R$ 0,00" value="${esc(d.insc)}"><span class="err" id="n-insc-err" hidden></span></div>`
-   :`<div class="f2"><div class="field"><label for="n-sinal">Sinal (%)</label><input id="n-sinal" type="number" min="0" max="100" value="${esc(d.sinal)}"></div>
-     <div class="field"><label for="n-dsinal">Data do sinal</label><input id="n-dsinal" type="date" value="${d.dsinal}"></div></div>
-    <div class="preview" id="n-prev"><b>Parcelas previstas</b><span class="num">Sinal ${brl(sv)} em ${d.dsinal?dm(d.dsinal):'—'}</span><span class="num">Restante ${brl(rv)} em ${d.data?dm(d.data):'—'}</span><span class="muted">Depois de salvar, dá para mudar valores e datas de cada parcela.</span></div>`}
+   :`<div class="f2"><div class="field"><label for="n-sinal">Entrada (%)</label><input id="n-sinal" type="number" min="0" max="100" value="${esc(d.sinal)}"></div>
+     <div class="field"><label for="n-dsinal">Data da entrada</label><input id="n-dsinal" type="date" value="${d.dsinal}"></div></div>
+    <div class="preview" id="n-prev"><b>Parcelas previstas</b><span class="num">Entrada ${brl(sv)} em ${d.dsinal?dm(d.dsinal):'—'}</span><span class="num">Saldo ${brl(rv)} até ${d.data?dm(addDias(d.data,-5)):'—'} (5 dias antes)</span><span class="muted">Depois de salvar, dá para mudar valores e datas de cada parcela.</span></div>`}
    <div class="actions"><button class="btn btn-s" type="button" data-act="fechar">Cancelar</button><button class="btn btn-p" type="button" data-act="salvarEv">${ic('check',18)}Salvar evento</button></div>`);
 }
 function syncEv(){const g=id=>document.getElementById(id),d=evDraft;if(!d)return;
@@ -747,8 +756,8 @@ function salvarEv(){
   if(ws){S.eventos.push({id,titulo:d.titulo.trim(),cli:null,fonte:'workshop',data:d.data,valor:0,vagas:Math.max(1,+d.vagas||10),insc:parseBRL(d.insc),status:'confirmado'})}
   else{const v=parseBRL(d.valor),sv=Math.round(v*Math.min(100,Math.max(0,+d.sinal||0)))/100;
     S.eventos.push({id,titulo:d.titulo.trim(),cli:d.cli,fonte:d.fonte,data:d.data,valor:v,status:'confirmado'});
-    if(sv>0)lc('e',sv,d.dsinal||HOJE,null,'nubank',d.fonte,id,'Sinal');
-    if(v-sv>0)lc('e',Math.round((v-sv)*100)/100,d.data,null,'nubank',d.fonte,id,'Restante')}
+    if(sv>0)lc('e',sv,d.dsinal||HOJE,null,'nubank',d.fonte,id,'Entrada ('+(+d.sinal)+'%)');
+    if(v-sv>0)lc('e',Math.round((v-sv)*100)/100,addDias(d.data,-5),null,'nubank',d.fonte,id,'Saldo')}
   fechar();toast('Evento salvo');location.hash='evento-'+id;
 }
 function sheetNovoCli(){
@@ -798,7 +807,7 @@ const A={
  fechCancel:()=>{S.ui.confirmFech=false;rerender()},
  fechOk:()=>{S.fechados[MES]={em:HOJE};S.ui.confirmFech=false;toast('Outubro fechado');rerender()},
  reabrir:()=>{delete S.fechados[MES];toast('Outubro reaberto (registrado no histórico)');rerender()},
- novoEv:()=>{evDraft={titulo:'',fonte:'decoracao',cli:'',data:'',valor:'',sinal:'50',dsinal:HOJE,vagas:'12',insc:''};sheetNovoEv()},
+ novoEv:()=>{evDraft={titulo:'',fonte:'decoracao',cli:'',data:'',valor:'',sinal:'30',dsinal:HOJE,vagas:'12',insc:''};sheetNovoEv()},
  nFonte:ds=>{syncEv();evDraft.fonte=ds.v;sheetNovoEv()},
  salvarEv:()=>salvarEv(),
  novoCli:()=>sheetNovoCli(),
@@ -819,7 +828,7 @@ document.addEventListener('input',e=>{
   if(e.target.id==='busca'){S.ui.busca=e.target.value;const pos=e.target.selectionStart;rerender();const b=document.getElementById('busca');b.focus();b.setSelectionRange(pos,pos)}
   if(evDraft&&['n-valor','n-sinal','n-dsinal','n-data'].includes(e.target.id)&&document.getElementById('n-prev')){
     syncEv();const v=parseBRL(evDraft.valor),sv=Math.round(v*Math.min(100,Math.max(0,+evDraft.sinal||0)))/100;
-    document.getElementById('n-prev').innerHTML=`<b>Parcelas previstas</b><span class="num">Sinal ${brl(sv)} em ${evDraft.dsinal?dm(evDraft.dsinal):'—'}</span><span class="num">Restante ${brl(Math.round((v-sv)*100)/100)} em ${evDraft.data?dm(evDraft.data):'—'}</span><span class="muted">Depois de salvar, dá para mudar valores e datas de cada parcela.</span>`}
+    document.getElementById('n-prev').innerHTML=`<b>Parcelas previstas</b><span class="num">Entrada ${brl(sv)} em ${evDraft.dsinal?dm(evDraft.dsinal):'—'}</span><span class="num">Saldo ${brl(Math.round((v-sv)*100)/100)} até ${evDraft.data?dm(addDias(evDraft.data,-5)):'—'} (5 dias antes)</span><span class="muted">Depois de salvar, dá para mudar valores e datas de cada parcela.</span>`}
 });
 document.addEventListener('submit',e=>{
   if(e.target.id!=='f-insc')return;e.preventDefault();

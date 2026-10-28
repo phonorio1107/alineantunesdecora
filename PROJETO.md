@@ -3,8 +3,10 @@
 ## Dados do cliente
 - **Cliente:** Aline Antunes Decora (mãe do Pedro), **SaaS piloto**
 - **Prestador / operador:** Pedro Hoffman
-- **Repositório:** `phonorio1107/alineantunesdecora`
-- **Ramo:** decoração de festas (arranjos florais e balões, desde 2015), assessoria e coordenação de eventos, e **workshops** de arranjos florais
+- **Repositório:** `phonorio1107/alineantunesdecora` (⚠️ **público**; tornar privado antes da Fase 4)
+- **Ramo:** decoração de festas (arranjos florais e balões, desde 2015; festa infantil é o carro-chefe), assessoria e coordenação de eventos, e **workshops** de arranjos florais
+- **Sede:** Louveira/SP; atende Jundiaí, Campinas, Valinhos, Vinhedo e São Paulo; cerca de 4 festas por mês
+- **Entrevista com a Aline:** [`.claude/skills/aline-antunes-decora/SKILL.md`](.claude/skills/aline-antunes-decora/SKILL.md) (fonte oficial das regras do negócio)
 - **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Hoje gasta **pouco tempo** com isso, e de forma analógica. A dor é falta de **visibilidade** e de controle, não horas perdidas.
 - **Usuários:** Aline (administradora) + 1 ou 2 pessoas (perfis administrador e usuário)
 - **Site atual:** https://www.alineantunesdecora.com.br/ · **Instagram:** https://www.instagram.com/alineantunesdecora/
@@ -31,7 +33,9 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: o sistema guarda CPF/CNPJ das clientes (escolha do Pedro).
 - 28/10/2026: referências visuais oficiais são o site e o Instagram da Aline e o logo rosa e cinza.
 - 28/10/2026: endereço do sistema é `app.alineantunesdecora.com.br`.
-- 28/10/2026: recebimento de evento = sinal de 50% + restante até a data, editável.
+- ~~28/10/2026: recebimento de evento = sinal de 50% + restante até a data~~ → substituído: **entrada de 30% + saldo até 5 dias antes do evento**, editável (regra da entrevista, confirmada pelo Pedro em 28/10/2026).
+- 28/10/2026: a branch `claude/eager-ramanujan-xcz3om` (21/10) vira fonte: a entrevista é a referência do negócio e o código será reaproveitado na Fase 6, com revisão de segurança.
+- 28/10/2026: **repositório continua público por decisão do Pedro**, ciente do risco (código e documentos visíveis para qualquer pessoa). ⚠️ **Precisa ficar privado antes da Fase 4.** Lembrar o Pedro em todo resumo de fase.
 - 28/10/2026: workshops na v1 **com lista de inscritas** (nome e telefone).
 - 28/10/2026: **tema claro é o padrão** (fundo branco com confetes rosa, amarelo e azul, como no site), independente do tema do aparelho. O escuro fica como opção em Configurações → Aparência.
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
@@ -67,10 +71,11 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Mapa de dados pessoais (28/10/2026, rascunho; a base legal ainda precisa ser confirmada pela Aline)
 
 ## Fase 3: Contas e repositório
-- [ ] Repositório privado (a partir do `template-base`)
+- [ ] **Repositório privado** (bloqueia o início da Fase 4)
+- [x] Repositório criado (28/10/2026): `phonorio1107/alineantunesdecora`. Como este é o piloto, o `template-base` nasce dele ao final do projeto.
 - [ ] `main` protegida (só por pull request) e branch `dev`
 - [ ] Dependabot e secret scanning ligados (se o plano permitir)
-- [ ] `.env.example` sem segredos; `.gitignore` com `.env*`
+- [x] `.env.example` sem segredos; `.gitignore` com `.env*` (28/10/2026; `git check-ignore .env.local` confirma)
 - [ ] Projeto Supabase de produção (org Pro, região São Paulo), senha do banco no gerenciador de senhas
 - [ ] Ambiente Supabase de desenvolvimento separado
 - [ ] Cloudflare Pages ligado: produção em `main`, prévia em `dev`, variáveis por ambiente
@@ -160,5 +165,6 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Histórico
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
+- 28/10/2026: ajuste 2 do protótipo: entrada de 30% e saldo 5 dias antes, categorias de custo da entrevista (freelancers, deslocamento, taxas de cartão, peças perdidas).
 - 28/10/2026: ajuste 1 do protótipo: fundo branco com confetes como no site e números sem quebrar no celular.
 - 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.
