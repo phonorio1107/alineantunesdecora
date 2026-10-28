@@ -1,0 +1,272 @@
+<title>Projeto Aline Antunes Decora</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: as 12 fases como uma escada (o "degrau" da marca Pedro Hoffman), depois o detalhe de cada degrau. Tokens do design system Pedro Hoffman Degrau. */
+:root{
+  --surface:#FFFFFF; --surface-alt:#F5F5F6; --ink:#0E0E10; --ink-muted:#5A5A62; --border:#E6E6E8; --border-strong:#8A8A92;
+  --marinho:#0B1F3A; --link:#0B1F3A; --on-action:#FFFFFF;
+  --success:#067647; --success-bg:#E7F4EE; --warning:#B54708; --warning-bg:#FDF0E5; --info:#0B1F3A; --info-bg:#E8EDF5;
+  --step-done:#0E0E10; --step-doing:#0B1F3A; --step-wait:#B54708; --step-wait-ink:#FFFFFF; --step-todo:#E6E6E8;
+  --display:'Inter Tight',system-ui,sans-serif; --text:'Inter',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --surface:#0E0E10; --surface-alt:#1C1C21; --ink:#FFFFFF; --ink-muted:#B8B8C0; --border:#2A2A30; --border-strong:#6A6A72;
+  --marinho:#1E3F73; --link:#A9C1EA;
+  --success:#47CD89; --success-bg:#12291F; --warning:#FDB022; --warning-bg:#2E2210; --info:#A9C1EA; --info-bg:#16243A;
+  --step-done:#FFFFFF; --step-doing:#4A6EA8; --step-wait:#FDB022; --step-wait-ink:#0E0E10; --step-todo:#2A2A30; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --surface:#0E0E10; --surface-alt:#1C1C21; --ink:#FFFFFF; --ink-muted:#B8B8C0; --border:#2A2A30; --border-strong:#6A6A72;
+  --marinho:#1E3F73; --link:#A9C1EA;
+  --success:#47CD89; --success-bg:#12291F; --warning:#FDB022; --warning-bg:#2E2210; --info:#A9C1EA; --info-bg:#16243A;
+  --step-done:#FFFFFF; --step-doing:#4A6EA8; --step-wait:#FDB022; --step-wait-ink:#0E0E10; --step-todo:#2A2A30; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--surface);color:var(--ink);font:400 16px/1.55 var(--text);-webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-family:var(--display);text-wrap:balance}
+a{color:var(--link)}
+:focus-visible{outline:2px solid var(--link);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:48px}
+
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font:600 15px var(--display);letter-spacing:-.02em}
+.brand svg{width:22px;height:22px}
+.brand b{font-weight:700}
+.updated{font-size:14px;color:var(--ink-muted)}
+.caption{font:600 12px/16px var(--text);letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted)}
+
+.hero{display:flex;flex-direction:column;gap:16px;max-width:720px}
+.hero h1{font-size:clamp(32px,6vw,48px);line-height:1.05;font-weight:700;letter-spacing:-.035em}
+.hero p{font-size:18px;line-height:28px;color:var(--ink-muted)}
+.hero p b{color:var(--ink);font-weight:600}
+
+/* A escada */
+.stairs-box{display:flex;flex-direction:column;gap:16px}
+.stairs{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:end;gap:6px;height:220px}
+.step{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:6px;height:100%;min-width:0;text-decoration:none;color:inherit}
+.step .area{flex:1;display:flex;align-items:flex-end;min-height:0}
+.step .blk{width:100%;border-radius:6px 6px 2px 2px;background:var(--step-todo);display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font:700 13px var(--display);color:var(--ink-muted);transition:transform .15s}
+.step:hover .blk{transform:translateY(-3px)}
+.step[data-s="done"] .blk{background:var(--step-done);color:var(--surface)}
+.step[data-s="doing"] .blk{background:var(--step-doing);color:#FFFFFF}
+.step[data-s="wait"] .blk{background:var(--step-wait);color:var(--step-wait-ink)}
+.step .lbl{font-size:12px;line-height:14px;text-align:center;color:var(--ink-muted);overflow-wrap:anywhere;min-height:28px}
+.here{position:relative}
+.here::after{content:"estamos aqui";position:absolute;left:50%;transform:translateX(-50%);top:-22px;white-space:nowrap;font:600 11px var(--text);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--ink-muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+@media (max-width:600px){.stairs{height:170px;gap:3px}.step .lbl{display:none}.step .blk{font-size:11px}}
+
+/* Próximas ações */
+.who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.who{grid-template-columns:minmax(0,1fr)}}
+.col{background:var(--surface-alt);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.col h3{font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.col h3 small{font:500 14px var(--text);color:var(--ink-muted);letter-spacing:0}
+.col ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:12px}
+.col li{padding-left:4px}
+.col li b{font-weight:600}
+.col li span{display:block;font-size:14px;line-height:20px;color:var(--ink-muted)}
+.col.you{background:var(--marinho);color:#FFFFFF}
+.col.you h3 small,.col.you li span{color:#C9D5EA}
+
+/* Fases */
+.sec-h{display:flex;flex-direction:column;gap:8px}
+.sec-h h2{font-size:32px;line-height:38px;font-weight:600;letter-spacing:-.03em}
+.sec-h p{color:var(--ink-muted);max-width:640px}
+.phases{display:flex;flex-direction:column}
+.ph{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:16px 20px;padding:24px 0;border-top:1px solid var(--border);scroll-margin-top:16px}
+.ph:last-child{border-bottom:1px solid var(--border)}
+.num{font:700 28px/1 var(--display);letter-spacing:-.04em;color:var(--ink-muted)}
+.ph[data-s="done"] .num{color:var(--ink)}
+.body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.body h3{font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.02em}
+.body .what{color:var(--ink-muted)}
+.body .now{font-size:15px}
+.body .now b{font-weight:600}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;text-align:right}
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 13px/1 var(--text);padding:6px 10px;border-radius:999px;white-space:nowrap}
+.pill.done{background:var(--success-bg);color:var(--success)}
+.pill.doing{background:var(--info-bg);color:var(--info)}
+.pill.wait{background:var(--warning-bg);color:var(--warning)}
+.pill.todo{background:var(--surface-alt);color:var(--ink-muted)}
+.count{font-size:14px;color:var(--ink-muted);font-variant-numeric:tabular-nums}
+.bar{width:120px;height:6px;border-radius:999px;background:var(--step-todo);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--step-done)}
+@media (max-width:600px){
+  .ph{grid-template-columns:40px minmax(0,1fr)}
+  .side{grid-column:2;flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start;text-align:left}
+  .num{font-size:22px}
+}
+
+/* Glossário */
+.gloss{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 32px}
+@media (max-width:700px){.gloss{grid-template-columns:minmax(0,1fr)}}
+.gloss div{padding:16px 0;border-top:1px solid var(--border)}
+.gloss dt{font:600 16px var(--display);letter-spacing:-.01em}
+.gloss dd{margin:4px 0 0;color:var(--ink-muted);font-size:15px}
+
+.alert{display:flex;gap:12px;align-items:flex-start;background:var(--warning-bg);color:var(--ink);border-radius:16px;padding:16px 20px}
+.alert svg{flex:none;color:var(--warning);margin-top:2px}
+.foot{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-muted)}
+.foot svg{width:12px;height:12px}
+@media (prefers-reduced-motion:reduce){.step .blk{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="18" width="11" height="24" rx="2" fill="currentColor"/><rect x="32" y="6" width="11" height="36" rx="2" fill="currentColor"/><rect x="14" y="25" width="20" height="9" fill="currentColor"/></svg>
+      <span>Pedro <b>Hoffman</b></span>
+    </div>
+    <span class="updated">Atualizado em 28/10/2026</span>
+  </header>
+
+  <section class="hero">
+    <span class="caption">Sistema da Aline Antunes Decora · v1 financeiro</span>
+    <h1>Fase 4 de 12, com o banco de dados já pronto e testado.</h1>
+    <p>O planejamento terminou e a parte mais delicada, a segurança dos dados, já está pronta e testada. <b>Agora faltam duas coisas:</b> a aprovação da Aline e a configuração das contas, para depois construirmos as telas.</p>
+  </section>
+
+  <section class="stairs-box" aria-label="As 12 fases do projeto como uma escada">
+    <div class="stairs" id="stairs"></div>
+    <div class="legend">
+      <span><i style="background:var(--step-done)"></i>Concluída</span>
+      <span><i style="background:var(--step-doing)"></i>Em andamento</span>
+      <span><i style="background:var(--step-wait)"></i>Esperando alguém</span>
+      <span><i style="background:var(--step-todo);border:1px solid var(--border-strong)"></i>Ainda não começou</span>
+    </div>
+  </section>
+
+  <div class="alert" role="note">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+    <p><b>O repositório no GitHub ainda está público.</b> Qualquer pessoa consegue ver o código e os documentos. Ele precisa ficar privado antes de o banco de dados ir para o ar.</p>
+  </div>
+
+  <section class="sec-h" aria-labelledby="t-acoes">
+    <h2 id="t-acoes">Próximos passos</h2>
+    <p>O que cada pessoa faz agora para o projeto andar.</p>
+  </section>
+  <div class="who">
+    <div class="col you">
+      <h3>Você <small>Pedro</small></h3>
+      <ol>
+        <li><b>Deixar o repositório privado</b><span>GitHub → Settings → General → Change visibility.</span></li>
+        <li><b>Ligar a verificação em duas etapas</b><span>No e-mail, GitHub, Supabase e Cloudflare. Protege tudo o que vem depois.</span></li>
+        <li><b>Criar os dois projetos no Supabase</b><span>Produção (organização Pro, região São Paulo) e desenvolvimento (organização gratuita).</span></li>
+        <li><b>Autorizar a branch <code>dev</code></b><span>Onde o trabalho do dia a dia acontece antes de ir para o ar.</span></li>
+      </ol>
+    </div>
+    <div class="col">
+      <h3>Aline</h3>
+      <ol>
+        <li><b>Testar o protótipo</b><span>Pelo link que você mandou no WhatsApp.</span></li>
+        <li><b>Responder as duas frases de aprovação</b><span>“Aprovo o protótipo” e “Concordo com os dados e os prazos”.</span></li>
+        <li><b>Se souber: custos fixos, divisão do lucro e retirada mínima</b><span>Pode responder “ainda não sei”.</span></li>
+      </ol>
+    </div>
+    <div class="col">
+      <h3>Claude</h3>
+      <ol>
+        <li><b>Construir as telas da v1</b><span>Início, Lançar, Eventos, Clientes, Relatórios e Configurações, a partir do protótipo.</span></li>
+        <li><b>Ligar o app ao Supabase de testes</b><span>Assim que o projeto de desenvolvimento existir.</span></li>
+        <li><b>Aplicar o banco em produção</b><span>Só depois do repositório privado e da aprovação da Aline.</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <section class="sec-h" aria-labelledby="t-fases">
+    <h2 id="t-fases">As 12 fases, em linguagem simples</h2>
+    <p>Cada fase tem uma lista de itens no arquivo <code>PROJETO.md</code>. Uma fase só termina quando todos os itens estão feitos ou foram dispensados por você.</p>
+  </section>
+  <div class="phases" id="phases"></div>
+
+  <section class="sec-h" aria-labelledby="t-glossario">
+    <h2 id="t-glossario">Palavras que aparecem no projeto</h2>
+  </section>
+  <dl class="gloss">
+    <div><dt>Protótipo</dt><dd>Uma versão de mentira do sistema, com números de exemplo, para ver e clicar antes de construir de verdade.</dd></div>
+    <div><dt>Banco de dados</dt><dd>Onde ficam guardadas todas as informações: clientes, eventos, entradas e saídas. É uma grande planilha organizada e protegida.</dd></div>
+    <div><dt>Supabase</dt><dd>O serviço que guarda o banco de dados e cuida do login. Fica num servidor em São Paulo.</dd></div>
+    <div><dt>Cloudflare</dt><dd>O serviço que coloca o sistema no ar, no endereço app.alineantunesdecora.com.br.</dd></div>
+    <div><dt>GitHub e repositório</dt><dd>Onde fica guardado o código do sistema, com o histórico de cada mudança.</dd></div>
+    <div><dt>Branch</dt><dd>Uma cópia de trabalho do código. A <code>main</code> é a versão oficial; a <code>dev</code> é onde se testa antes.</dd></div>
+    <div><dt>Migração</dt><dd>Um arquivo com as instruções para montar ou mudar o banco de dados. Toda mudança passa por uma, nunca na mão.</dd></div>
+    <div><dt>RLS (segurança por linha)</dt><dd>A regra dentro do banco que decide quem vê o quê. É o que impede a assistente de ver o financeiro, ou outra empresa de ver os dados da Aline.</dd></div>
+    <div><dt>Teste de isolamento</dt><dd>Um teste automático que tenta “invadir” os dados de outra empresa e de outros perfis. Se conseguir, o teste falha e avisa.</dd></div>
+    <div><dt>Verificação em duas etapas</dt><dd>Além da senha, um código no celular para entrar nas contas. Se a senha vazar, ninguém entra sem o celular.</dd></div>
+  </dl>
+
+  <footer class="foot">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="18" width="11" height="24" rx="2" fill="currentColor"/><rect x="32" y="6" width="11" height="36" rx="2" fill="currentColor"/><rect x="14" y="25" width="20" height="9" fill="currentColor"/></svg>
+    feito por Pedro Hoffman
+  </footer>
+</div>
+
+<script>
+// Fonte: PROJETO.md em 28/10/2026. s = done | doing | wait | todo
+const FASES = [
+  {n:1, nome:'Descoberta', titulo:'Descoberta e escopo', s:'done', feito:10, total:10,
+   o:'Entender o negócio, a dor principal e o que entra na primeira versão.',
+   agora:'Definimos: financeiro + eventos primeiro; orçamentos e agenda depois.'},
+  {n:2, nome:'Protótipo', titulo:'Modelagem e protótipo', s:'wait', feito:4, total:6, quem:'Esperando a Aline',
+   o:'Desenhar as telas, montar o protótipo clicável e decidir que dados guardar.',
+   agora:'Protótipo pronto e termo enviado. <b>Falta a resposta da Aline.</b>'},
+  {n:3, nome:'Contas', titulo:'Contas e repositório', s:'wait', feito:2, total:9, quem:'Esperando você',
+   o:'Criar as contas onde o sistema vai rodar e proteger cada uma.',
+   agora:'Arquivos de configuração prontos. <b>Falta você criar o Supabase, ligar as duas etapas e fechar o repositório.</b>'},
+  {n:4, nome:'Banco', titulo:'Banco de dados e segurança', s:'doing', feito:9, total:11, aqui:true,
+   o:'Montar onde os dados ficam guardados e as regras de quem vê o quê.',
+   agora:'Pronto e testado no código: 16 verificações passando. <b>Falta aplicar no Supabase de verdade.</b>'},
+  {n:5, nome:'Login', titulo:'Login e permissões', s:'todo', feito:0, total:7,
+   o:'Entrar só por convite, senha forte, recuperar senha, perfis de acesso.',
+   agora:'A tela de entrar já existe. Falta configurar o Supabase.'},
+  {n:6, nome:'Telas', titulo:'Construir o sistema', s:'doing', feito:5, total:7,
+   o:'Construir as telas de verdade, ligadas ao banco.',
+   agora:'A base está pronta (validação, erros, ligação com o banco). <b>As telas ainda não foram feitas.</b> É o maior bloco que resta.'},
+  {n:7, nome:'Design', titulo:'Design', s:'todo', feito:0, total:9,
+   o:'Acabamento visual: cores da Aline, celular, temas claro e escuro, acessibilidade.',
+   agora:'A direção já está definida pelo protótipo.'},
+  {n:8, nome:'No ar', titulo:'Cloudflare, domínio e proteções', s:'todo', feito:0, total:7,
+   o:'Colocar o sistema no endereço app.alineantunesdecora.com.br, com HTTPS e proteções.',
+   agora:'Começa quando houver telas para publicar.'},
+  {n:9, nome:'LGPD', titulo:'LGPD e jurídico', s:'todo', feito:0, total:4,
+   o:'Política de privacidade, termos de uso e plano para incidentes.',
+   agora:'O mapa de dados já foi rascunhado. Os textos precisam de revisão de um advogado.'},
+  {n:10, nome:'Qualidade', titulo:'Qualidade antes da entrega', s:'todo', feito:1, total:6,
+   o:'Testar tudo, conferir backups e fazer a revisão final de segurança.',
+   agora:'A verificação automática do GitHub já está configurada.'},
+  {n:11, nome:'Entrega', titulo:'Entrega e go-live', s:'todo', feito:0, total:6,
+   o:'Carregar os dados reais, treinar a Aline e colocar no ar.',
+   agora:'Fim do projeto.'},
+  {n:12, nome:'Operação', titulo:'Documentação e operação', s:'todo', feito:0, total:4,
+   o:'Manual, rotinas de manutenção e suporte.',
+   agora:'Fim do projeto.'}
+];
+const ROTULO = {done:'Concluída', doing:'Em andamento', wait:'Esperando', todo:'Não começou'};
+
+document.getElementById('stairs').innerHTML = FASES.map(f => {
+  const h = 14 + (f.n - 1) * 7.8; // cada degrau mais alto que o anterior
+  return `<a class="step${f.aqui ? ' here' : ''}" href="#fase-${f.n}" data-s="${f.s}" aria-label="Fase ${f.n}, ${f.titulo}: ${f.quem || ROTULO[f.s]}">
+    <span class="area"><span class="blk" style="height:${h}%">${f.n}</span></span><span class="lbl">${f.nome}</span></a>`;
+}).join('');
+
+document.getElementById('phases').innerHTML = FASES.map(f => `
+  <article class="ph" id="fase-${f.n}" data-s="${f.s}">
+    <span class="num">${String(f.n).padStart(2, '0')}</span>
+    <div class="body">
+      <h3>${f.titulo}</h3>
+      <p class="what">${f.o}</p>
+      <p class="now">${f.agora}</p>
+    </div>
+    <div class="side">
+      <span class="pill ${f.s}">${f.quem || ROTULO[f.s]}</span>
+      <span class="bar" role="img" aria-label="${f.feito} de ${f.total} itens"><i style="width:${f.feito / f.total * 100}%"></i></span>
+      <span class="count">${f.feito} de ${f.total} itens</span>
+    </div>
+  </article>`).join('');
+</script>

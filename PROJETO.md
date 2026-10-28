@@ -23,6 +23,8 @@
 - **Início:** 28/10/2026
 
 ## Fase atual
+Página de acompanhamento (linguagem simples): https://claude.ai/artifact/Q5sgxoiMfr7tMEHPBRcM9n · fonte em `docs/acompanhamento/index.html`, atualizar a cada mudança de fase.
+
 **Fase 2: Modelagem e protótipo** (Fase 1 concluída em 28/10/2026)
 
 ## Decisões
