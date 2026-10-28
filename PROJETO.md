@@ -4,8 +4,8 @@
 - **Cliente:** Aline Antunes Decora (mãe do Pedro), **SaaS piloto**
 - **Prestador / operador:** Pedro Hoffman
 - **Repositório:** `phonorio1107/alineantunesdecora`
-- **Ramo:** _a confirmar_
-- **Dor principal (horas ou R$/mês):** _a confirmar_
+- **Ramo:** decoração de festas e assessoria de eventos
+- **Dor principal:** financeiro acima de tudo (não sabe o líquido que sobra, o lucro, o fechamento do mês, o fluxo de caixa nem quantos meses a empresa aguenta sem receita); depois orçamentos e agenda. Valor em horas ou R$/mês: _a estimar_
 - **Usuários (quem e quantos):** _a confirmar_
 - **Domínio desejado:** _a confirmar_
 - **Logo e cor:** _a confirmar_
@@ -17,11 +17,13 @@
 ## Decisões
 _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: o projeto usa a skill `novo-cliente-saas` e serve de piloto do SaaS.
+- 28/10/2026: contrato e cobrança dispensados (piloto familiar). Os documentos de LGPD da Fase 9 continuam valendo.
+- 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
 
 ---
 
 ## Fase 1: Descoberta e escopo
-- [ ] Nome e ramo do cliente
+- [x] Nome e ramo do cliente (28/10/2026, resposta do Pedro)
 - [ ] Dor principal (em horas ou reais por mês)
 - [ ] Quem usa e quantos usuários
 - [ ] O que precisa existir na primeira versão
@@ -30,7 +32,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Logo e cor do cliente
 - [ ] Domínio desejado
 - [ ] Escopo cortado para o menor sistema que resolve a dor
-- [ ] Contrato assinado e 50% do setup recebido (ou dispensado com justificativa)
+- [x] Contrato e 50% do setup: **dispensado** (28/10/2026). Justificativa do Pedro: cliente piloto é a mãe dele, sem cobrança.
 
 ## Fase 2: Modelagem e protótipo
 - [ ] Telas e fluxos listados
