@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ShieldCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { registrarErro } from '../lib/erros'
-import logo from '../assets/logo.png'
+import Capa from './Capa'
 import { Campo, Confirmar, Girando, Senha } from '../components/ui'
 import { useSessao } from './Sessao'
 
@@ -54,19 +54,16 @@ export function PedirCodigo({ fator }: { fator: string }) {
   })
   const enviar = (e: FormEvent) => { e.preventDefault(); setErro(null); if (codigo.length === 6) verificar.mutate() }
   return (
-    <main className="conteudo" style={{ minHeight: '100dvh', justifyContent: 'center', alignItems: 'center' }}>
-      <form className="cartao" style={{ width: '100%', maxWidth: 380 }} onSubmit={enviar} noValidate>
-        <img src={logo} alt="Aline Antunes Decora" style={{ height: 56, alignSelf: 'center' }} />
-        <h1 style={{ fontSize: 24 }}>Código de segurança</h1>
-        <p className="muted">Abra o app autenticador no celular e digite o código de 6 números da Aline Antunes Decora.</p>
+    <Capa titulo="Código de segurança" texto="Abra o app autenticador no celular e digite os 6 números da Aline Antunes Decora." tremer={erro ? 1 : 0}>
+      <form className="capa-campos" onSubmit={enviar} noValidate>
         <Campo id="mfa-cod" rotulo="Código" erro={erro ?? undefined}>
-          <input id="mfa-cod" className="dinheiro" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} placeholder="000000" value={codigo} aria-invalid={!!erro}
+          <input id="mfa-cod" className="dinheiro codigo" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} placeholder="000000" value={codigo} aria-invalid={!!erro}
             onChange={(e) => { setCodigo(so6(e.target.value)); if (so6(e.target.value).length === 6 && !verificar.isPending) setTimeout(() => (document.getElementById('mfa-enviar') as HTMLButtonElement | null)?.click(), 0) }} />
         </Campo>
-        <button id="mfa-enviar" className="btn btn-p" disabled={verificar.isPending || codigo.length !== 6}>{verificar.isPending ? <><Girando tamanho={20} />Conferindo…</> : 'Entrar'}</button>
+        <button id="mfa-enviar" className="btn btn-p btn-grande" disabled={verificar.isPending || codigo.length !== 6}>{verificar.isPending ? <><Girando tamanho={20} />Conferindo…</> : 'Entrar'}</button>
         <button type="button" className="btn btn-g" onClick={() => sair()}>Usar outra conta</button>
       </form>
-    </main>
+    </Capa>
   )
 }
 

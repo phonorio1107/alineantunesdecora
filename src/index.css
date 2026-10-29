@@ -477,3 +477,52 @@ button.linha:hover { background: var(--rose-50) }
 .chave-manual summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 44px; display: flex; align-items: center }
 .chave-manual code { word-break: break-all; font-size: 14px; background: var(--rose-50); padding: 2px 6px; border-radius: 6px }
 .ligado-2fa { display: flex; align-items: center; gap: 8px; color: var(--good); font-weight: 600 }
+
+/* ===========================================================================
+   Capa (entrar, nova senha, código): o papel do convite à esquerda, o formulário à direita
+   =========================================================================== */
+.capa { min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr); background: var(--bg) }
+.capa-papel { position: relative; isolation: isolate; background: var(--convite); color: var(--convite-ink); display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;
+  padding: 32px max(24px, env(safe-area-inset-right, 0px)) 40px max(24px, env(safe-area-inset-left, 0px)); min-height: 34dvh }
+.capa-papel::after { content: ""; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px; z-index: 1;
+  background: radial-gradient(circle at 10px 0, var(--convite) 9.5px, transparent 10px) 0 0 / 20px 10px repeat-x }
+.capa-confete { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none }
+.capa-confete i { position: absolute; display: block; border-radius: 50% }
+.capa-logo { width: min(260px, 70%); height: auto; margin-bottom: 8px }
+.capa-frase { font: italic 500 30px/1.15 var(--f-display); letter-spacing: -.01em; max-width: 14ch; text-wrap: balance }
+.capa-sub { font-size: 15px; color: var(--muted) }
+.capa-lado { display: flex; flex-direction: column; justify-content: space-between; gap: 32px; padding: 44px max(24px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px)) }
+.capa-form { width: 100%; max-width: 380px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px }
+.capa-form h1 { font: 600 36px/1.1 var(--f-display); letter-spacing: -.02em }
+.capa-texto { color: var(--muted); margin-bottom: 14px }
+.capa-campos { display: flex; flex-direction: column; gap: 16px }
+.rotulo-linha { display: flex; align-items: center; margin-block: -10px -4px; justify-content: space-between; gap: 12px }
+.rotulo-linha label { font-size: 14px; font-weight: 600 }
+.link-discreto { background: none; border: 0; padding: 0; min-height: 44px; font: 600 14px var(--f-body); color: var(--accent); cursor: pointer; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .18s var(--ease) }
+.link-discreto:hover { text-decoration-color: currentColor }
+.btn-grande { min-height: 52px; font-size: 16px; margin-top: 4px }
+.aviso-ok { background: var(--good-bg); color: var(--good); border-radius: 12px; padding: 12px 16px; font-weight: 500; font-size: 14px }
+.capa-rodape { width: 100%; max-width: 380px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; align-items: flex-start }
+.capa-convite { font-size: 14px; color: var(--muted) }
+.codigo { letter-spacing: .3em; text-align: center }
+@media (min-width: 900px) {
+  .capa { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) }
+  .capa-papel { min-height: 100dvh; justify-content: space-between; padding: 48px 56px 56px }
+  .capa-papel::after { left: auto; top: 0; bottom: 0; right: -10px; width: 10px; height: auto;
+    background: radial-gradient(circle at 0 10px, var(--convite) 9.5px, transparent 10px) 0 0 / 10px 20px repeat-y }
+  .capa-logo { width: 300px; margin: 0 }
+  .capa-frase { font-size: clamp(44px, 4.6vw, 64px); max-width: 11ch }
+  .capa-sub { font-size: 17px; margin-top: -2px }
+  .capa-lado { justify-content: center; padding: 48px 56px 32px; position: relative }
+  .capa-form { flex: 1; justify-content: center }
+  .capa-form h1 { font-size: 44px }
+  .capa-rodape { flex: none }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .capa-confete i { animation: confete-cai 1.2s var(--ease) both; animation-delay: var(--atraso, 0s) }
+  .capa-frase, .capa-logo, .capa-sub { animation: chegar .7s var(--ease) both }
+  .capa-frase { animation-delay: .12s } .capa-sub { animation-delay: .22s }
+  .capa-form { animation: chegar .5s var(--ease) .15s both }
+  .capa-form.treme { animation: treme .42s var(--ease) }
+  @keyframes treme { 15%, 55% { transform: translateX(-8px) } 35%, 75% { transform: translateX(7px) } 90% { transform: translateX(-2px) } }
+}
