@@ -7,6 +7,7 @@ import { supabaseConfigurado } from './lib/supabase'
 import { useVinculo } from './data/consultas'
 import { mensagemErro } from './lib/erros'
 import logo from './assets/logo.png'
+import { Girando } from './components/ui'
 import { AvisoProvider, EmpresaProvider, FolhasProvider } from './app/contexto'
 import Layout from './components/Layout'
 import Inicio from './paginas/Inicio'
@@ -27,7 +28,7 @@ export default function App() {
     if (!carregando && !sessao && pathname !== '/' && pathname !== '/nova-senha') navegar('/', { replace: true })
   }, [carregando, sessao, pathname, navegar])
   if (!supabaseConfigurado) return <Aviso titulo="Sistema não configurado" texto="Faltam as variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY. Veja o .env.example." />
-  if (carregando) return <Aviso titulo="Carregando…" />
+  if (carregando) return <Abrindo />
   if (pathname === '/nova-senha') return <NovaSenha />
   if (!sessao) return <Entrar />
   return <ComEmpresa usuarioId={sessao.user.id} />
@@ -43,7 +44,7 @@ function ComEmpresa({ usuarioId }: { usuarioId: string }) {
     ehProprietaria: v.papel === 'proprietaria',
     veFinanceiro: v.papel === 'proprietaria' || (v.papel === 'assistente' && v.financeiro_liberado),
   }, [v])
-  if (vinculo.isPending) return <Aviso titulo="Carregando…" />
+  if (vinculo.isPending) return <Abrindo />
   if (vinculo.isError) return <Aviso titulo="Não foi possível abrir" texto={mensagemErro(vinculo.error)} />
   if (!valor) return <Aviso titulo="Sem acesso a nenhuma empresa" texto="Peça para a proprietária enviar um convite." />
   const fin = valor.veFinanceiro
@@ -78,6 +79,17 @@ function NaoEncontrada() {
       O endereço pode ter mudado.
       <a className="btn btn-s" href="/">Voltar para o início</a>
     </div>
+  )
+}
+
+/** Depois de entrar, enquanto o sistema busca a empresa e o perfil: logo e o círculo girando. */
+function Abrindo() {
+  return (
+    <main className="conteudo abrindo" aria-busy="true">
+      <img src={logo} alt="Aline Antunes Decora" />
+      <Girando tamanho={40} />
+      <p className="muted">Abrindo o sistema…</p>
+    </main>
   )
 }
 

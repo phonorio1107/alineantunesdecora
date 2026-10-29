@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { modoDemo, supabase } from '../lib/supabase'
 import { registrarErro } from '../lib/erros'
 import logo from '../assets/logo.png'
+import { Girando, Senha } from '../components/ui'
 
 const esquema = z.object({
   email: z.string().trim().email('Confira o e-mail.'),
@@ -49,13 +50,13 @@ export default function Entrar() {
         <form onSubmit={entrar} style={{ display: 'flex', flexDirection: 'column', gap: 16 }} noValidate>
           <label className="campo">
             E-mail
-            <input type="email" autoComplete="email" aria-invalid={!!formState.errors.email} {...register('email')} />
+            <input type="email" inputMode="email" autoCapitalize="off" autoComplete="email" aria-invalid={!!formState.errors.email} {...register('email')} />
             {formState.errors.email && <span className="erro">{formState.errors.email.message}</span>}
           </label>
           {modo === 'entrar' && (
             <label className="campo">
               Senha
-              <input type="password" autoComplete="current-password" aria-invalid={!!formState.errors.senha} {...register('senha')} />
+              <Senha autoComplete="current-password" aria-invalid={!!formState.errors.senha} {...register('senha')} />
               {formState.errors.senha && <span className="erro">{formState.errors.senha.message}</span>}
             </label>
           )}
@@ -63,7 +64,9 @@ export default function Entrar() {
           {aviso && <p className="previa" role="status">{aviso}</p>}
           {modo === 'entrar' ? (
             <>
-              <button className="btn btn-p" disabled={formState.isSubmitting}>Entrar</button>
+              <button className="btn btn-p" disabled={formState.isSubmitting}>
+                {formState.isSubmitting ? <><Girando tamanho={20} />Entrando…</> : 'Entrar'}
+              </button>
               <button type="button" className="btn btn-g" onClick={() => { setModo('recuperar'); setErro(null) }}>Esqueci a senha</button>
             </>
           ) : (

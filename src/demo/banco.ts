@@ -184,8 +184,11 @@ function condicao(linha: Linha, col: string, op: string, val: string) {
   if (op === 'eq') return String(v) === val
   if (op === 'neq') return String(v) !== val
   if (op === 'is') return val === 'null' ? v == null : String(v) === val
-  if (op === 'gte') return v != null && String(v) >= val
-  if (op === 'lte') return v != null && String(v) <= val
+  const cmp = (a: unknown, b: string) => (typeof a === 'number' && b !== '' && !Number.isNaN(Number(b)) ? a - Number(b) : String(a) < b ? -1 : String(a) > b ? 1 : 0)
+  if (op === 'gte') return v != null && cmp(v, val) >= 0
+  if (op === 'lte') return v != null && cmp(v, val) <= 0
+  if (op === 'gt') return v != null && cmp(v, val) > 0
+  if (op === 'lt') return v != null && cmp(v, val) < 0
   if (op === 'like') return v != null && new RegExp('^' + val.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/%/g, '.*') + '$').test(String(v))
   return true
 }
@@ -322,15 +325,17 @@ const RPC: Record<string, (p: Linha) => unknown> = {
     const ate = String(p.p_ate)
     for (const r of T.recorrencias.filter((x) => x.ativa && !x.excluido_em)) {
       const hoje = new Date()
+      const inicio = r.inicio ? String(r.inicio).slice(0, 7) : ''
       for (let k = 0; ; k++) {
         const ini = new Date(hoje.getFullYear(), hoje.getMonth() + k, 1)
         const fim = new Date(hoje.getFullYear(), hoje.getMonth() + k + 1, 0)
         const ym = `${ini.getFullYear()}-${String(ini.getMonth() + 1).padStart(2, '0')}`
         if (`${ym}-01` > ate) break
+        if (inicio && ym < inicio) continue
         const venc = `${ym}-${String(Math.min(num(r.dia_vencimento), fim.getDate())).padStart(2, '0')}`
         const existe = T.lancamentos.some((l) => l.recorrencia_id === r.id && !l.excluido_em && String(l.data_vencimento).slice(0, 7) === ym)
         if (!existe && !mesFechado(venc)) {
-          T.lancamentos.push({ ...base(usuario ?? PROPRIETARIA), tipo: 'saida', valor: r.valor, data_vencimento: venc, data_pagamento: null, conta_id: r.conta_id, categoria_id: r.categoria_id, evento_id: null, recorrencia_id: r.id, descricao: r.descricao })
+          T.lancamentos.push({ ...base(usuario ?? PROPRIETARIA), tipo: r.tipo ?? 'saida', valor: r.valor, data_vencimento: venc, data_pagamento: null, conta_id: r.conta_id, categoria_id: r.categoria_id, evento_id: null, recorrencia_id: r.id, descricao: r.descricao })
           criados++
         }
       }

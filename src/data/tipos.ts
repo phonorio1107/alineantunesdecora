@@ -54,6 +54,7 @@ export interface Cliente extends Padrao {
   nome: string
   telefone: string | null
   email: string | null
+  cep?: string | null
   endereco: string | null
   cidade: string | null
   origem: OrigemCliente
@@ -101,9 +102,17 @@ export interface Lancamento extends Padrao {
   evento_id: string | null
   recorrencia_id: string | null
   descricao: string | null
+  /** Parcelado: mesmo grupo em todas as parcelas, "2 de 5". */
+  parcela_grupo?: string | null
+  parcela_num?: number | null
+  parcela_total?: number | null
 }
 
 export interface Recorrencia extends Padrao {
+  /** Entrada ou saída que se repete todo mês (antes da migração de 30/10/2026, só saídas). */
+  tipo?: TipoLancamento
+  /** Primeiro mês da repetição; vazio = mês atual. */
+  inicio?: string | null
   descricao: string
   valor: number
   dia_vencimento: number

@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import { Download, FileSpreadsheet, FileText, TriangleAlert, X } from 'lucide-react'
+import { useEffect, useId, useRef, useState, type InputHTMLAttributes, type ReactNode, type Ref } from 'react'
+import { Download, Eye, EyeOff, FileSpreadsheet, FileText, TriangleAlert, X } from 'lucide-react'
 import { mensagemErro } from '../lib/erros'
 import { useAvisar } from '../app/contexto'
 
@@ -56,8 +56,26 @@ export function Vazio({ titulo, texto, children }: { titulo: string; texto?: str
   )
 }
 
+/** Círculo girando. Quem usa decide o texto ao lado; o leitor de tela ouve "Carregando". */
+export function Girando({ tamanho = 28 }: { tamanho?: number }) {
+  return <span className="girando" style={{ width: tamanho, height: tamanho }} role="status" aria-label="Carregando" />
+}
+
 export function Carregando({ texto = 'Carregando…' }: { texto?: string }) {
-  return <div className="vazio" aria-busy="true">{texto}</div>
+  return <div className="vazio" aria-busy="true"><Girando />{texto}</div>
+}
+
+/** Campo de senha com o olho para mostrar ou esconder o que foi digitado. */
+export function Senha({ ref, ...props }: InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
+  const [ver, setVer] = useState(false)
+  return (
+    <span className="senha">
+      <input {...props} ref={ref} type={ver ? 'text' : 'password'} autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+      <button type="button" className="olho" onClick={() => setVer(!ver)} aria-label={ver ? 'Esconder a senha' : 'Mostrar a senha'} aria-pressed={ver}>
+        {ver ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
+      </button>
+    </span>
+  )
 }
 
 export function ErroCaixa({ erro, aoTentar }: { erro: unknown; aoTentar?: () => void }) {

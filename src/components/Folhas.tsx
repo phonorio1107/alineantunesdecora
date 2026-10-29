@@ -6,18 +6,19 @@ import { Check, Lock, Receipt } from 'lucide-react'
 import { useAvisar, useEmpresa, useFolhas } from '../app/contexto'
 import {
   buscarDocumento, useAtualizarLancamento, useCategorias, useClientes, useContas, useCriarCliente, useCriarEvento, useCriarLancamento,
-  useEventos, useExcluirLancamento, useFechamentos, useMarcarPago,
+  useDesativarRecorrencia, useEventos, useExcluirLancamento, useExcluirParcelas, useFechamentos, useMarcarPago,
 } from '../data/consultas'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import type { Lancamento } from '../data/tipos'
 import {
-  esquemaCliente, esquemaEvento, esquemaLancamento, type ClienteValido, type EventoValido, type LancamentoValido, type NovoCliente, type NovoEvento, type NovoLancamento,
+  esquemaCliente, esquemaEvento, esquemaLancamento, valorEmReais, type ClienteValido, type EventoValido, type LancamentoValido, type NovoCliente, type NovoEvento, type NovoLancamento,
 } from '../data/esquemas'
 import { baixarRecibo } from '../export/acoes'
-import { parcelasSugeridas } from '../lib/calculos'
+import { dividirEmParcelas, parcelasSugeridas } from '../lib/calculos'
+import { comMascara, comNome, comValor, formatarValorDigitado, mascaraCEP, mascaraDoc, mascaraTelefone } from '../lib/mascaras'
 import { mensagemErro, verificar } from '../lib/erros'
-import { addDias, dataBR, diaMes, formatBRL, hoje, mesDe, nomeMes } from '../lib/format'
+import { addDias, dataBR, diaMes, formatBRL, hoje, mesDe, nomeMes, somarMeses } from '../lib/format'
 import { Campo, Confirmar, Folha } from './ui'
 
 export default function Folhas() {
@@ -48,17 +49,20 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
   const mesFechado = useMesFechado()
   const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<NovoLancamento, unknown, LancamentoValido>({
     resolver: zodResolver(esquemaLancamento),
-    defaultValues: { tipo: tipoInicial, valor: '', categoria_id: '', conta_id: '', evento_id: eventoId ?? null, data: hoje(), pago: true, descricao: '' },
+    defaultValues: { tipo: tipoInicial, valor: '', categoria_id: '', conta_id: '', evento_id: eventoId ?? null, data: hoje(), pago: true, descricao: '', repetir: 'nao' },
   })
   const tipo = watch('tipo')
   const data = watch('data')
+  const repetir = watch('repetir')
+  const nParcelas = Number(watch('parcelas')) || 0
+  const totalDigitado = valorEmReais.safeParse(watch('valor') ?? '')
   useEffect(() => {
     if (contas.data?.[0] && !watch('conta_id')) setValue('conta_id', contas.data[0].id)
   }, [contas.data, setValue, watch])
   const cats = (categorias.data ?? []).filter((c) => c.tipo === tipo)
   const enviar = handleSubmit(async (v) => {
-    await criar.mutateAsync(v)
-    avisar(v.tipo === 'entrada' ? 'Entrada salva' : 'Saída salva')
+    await criar.mutateAsync({ l: v, nomeCategoria: cats.find((c) => c.id === v.categoria_id)?.nome ?? 'Lançamento' })
+    avisar(v.repetir === 'parcelado' ? `${v.parcelas} parcelas salvas` : v.repetir === 'mensal' ? 'Salvo; repete todo mês' : v.tipo === 'entrada' ? 'Entrada salva' : 'Saída salva')
     aoFechar()
   })
   const fechado = data && mesFechado(data)
@@ -75,8 +79,8 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
             ))}
           </div>
         )} />
-        <Campo id="l-valor" rotulo="Valor" erro={errors.valor?.message}>
-          <input id="l-valor" className="dinheiro" inputMode="decimal" placeholder="R$ 0,00" autoComplete="off" autoFocus aria-invalid={!!errors.valor} {...register('valor')} />
+        <Campo id="l-valor" rotulo={repetir === 'parcelado' ? 'Valor total' : 'Valor'} erro={errors.valor?.message}>
+          <input id="l-valor" className="dinheiro" inputMode="decimal" placeholder="R$ 0,00" autoComplete="off" autoFocus aria-invalid={!!errors.valor} {...comValor(register('valor'))} />
         </Campo>
         <Controller control={control} name="categoria_id" render={({ field }) => (
           <div className="campo">
@@ -108,8 +112,39 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
         <Campo id="l-desc" rotulo="Descrição (opcional)" erro={errors.descricao?.message}>
           <input id="l-desc" placeholder="Ex.: flores do painel" maxLength={120} {...register('descricao')} />
         </Campo>
+        <Controller control={control} name="repetir" render={({ field }) => (
+          <div className="campo">
+            <span className="rotulo" id="l-rep">Repetir</span>
+            <div className="seg tres" role="group" aria-labelledby="l-rep">
+              {([['nao', 'Uma vez'], ['parcelado', 'Parcelado'], ['mensal', 'Todo mês']] as const).map(([k, t]) => (
+                <button key={k} type="button" aria-pressed={field.value === k} onClick={() => { field.onChange(k); if (k === 'parcelado' && !nParcelas) setValue('parcelas', 2) }}>{t}</button>
+              ))}
+            </div>
+          </div>
+        )} />
+        {repetir === 'parcelado' ? (
+          <>
+            <Campo id="l-parc" rotulo="Em quantas vezes?" erro={errors.parcelas?.message}>
+              <input id="l-parc" type="number" inputMode="numeric" min={2} max={60} aria-invalid={!!errors.parcelas} {...register('parcelas')} />
+            </Campo>
+            {totalDigitado.success && totalDigitado.data > 0 && nParcelas >= 2 && nParcelas <= 60 ? (
+              <div className="previa" aria-live="polite">
+                <b>{(() => {
+                  const ps = dividirEmParcelas(totalDigitado.data, nParcelas)
+                  return ps[0] === ps[nParcelas - 1] ? `${nParcelas}× de ${formatBRL(ps[0])}` : `1ª de ${formatBRL(ps[0])} e ${nParcelas - 1}× de ${formatBRL(ps[nParcelas - 1])}`
+                })()}</b>
+                <span>Uma por mês, de {dataBR(data || hoje())} a {dataBR(somarMeses(data || hoje(), nParcelas - 1))}.</span>
+              </div>
+            ) : null}
+          </>
+        ) : repetir === 'mensal' ? (
+          <div className="previa" aria-live="polite">
+            <b>Todo dia {Number((data || hoje()).slice(8, 10))}</b>
+            <span>Os próximos 6 meses já aparecem previstos no caixa. Para parar, abra o lançamento ou vá em Configurações.</span>
+          </div>
+        ) : null}
         <label className="chave">
-          <span>{tipo === 'entrada' ? 'Já recebi' : 'Já paguei'}</span>
+          <span>{repetir === 'parcelado' ? (tipo === 'entrada' ? 'Já recebi a 1ª parcela' : 'Já paguei a 1ª parcela') : repetir === 'mensal' ? (tipo === 'entrada' ? 'Já recebi este mês' : 'Já paguei este mês') : tipo === 'entrada' ? 'Já recebi' : 'Já paguei'}</span>
           <input type="checkbox" {...register('pago')} />
         </label>
         {contas.data && contas.data.length === 0 ? <p className="erro-caixa">Cadastre uma conta em Configurações antes de lançar.</p> : null}
@@ -119,7 +154,7 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
           <button type="button" className="btn btn-s" onClick={aoFechar}>Cancelar</button>
           <button type="submit" className="btn btn-p" disabled={criar.isPending || !!fechado}>
             <Check size={18} aria-hidden="true" />
-            {criar.isPending ? 'Salvando…' : 'Salvar lançamento'}
+            {criar.isPending ? 'Salvando…' : repetir === 'parcelado' && nParcelas >= 2 ? `Salvar ${nParcelas} parcelas` : 'Salvar lançamento'}
           </button>
         </div>
       </form>
@@ -143,9 +178,11 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
   const clientes = useClientes(empresaId)
   const marcar = useMarcarPago()
   const excluir = useExcluirLancamento()
+  const excluirParcelas = useExcluirParcelas()
+  const pararRepeticao = useDesativarRecorrencia()
   const atualizar = useAtualizarLancamento()
   const mesFechado = useMesFechado()
-  const [confirmando, setConfirmando] = useState(false)
+  const [confirmando, setConfirmando] = useState<false | 'um' | 'seguintes' | 'parar'>(false)
   const [editando, setEditando] = useState(false)
   const [valor, setValor] = useState('')
   const [venc, setVenc] = useState('')
@@ -158,10 +195,12 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
   const ev = eventos.data?.find((e) => e.id === l.evento_id) ?? null
   const cli = ev?.cliente_id ? clientes.data?.find((c) => c.id === ev.cliente_id) : null
   const travado = mesFechado(l.data_pagamento ?? l.data_vencimento)
-  const erro = marcar.error ?? excluir.error ?? atualizar.error
+  const erro = marcar.error ?? excluir.error ?? atualizar.error ?? excluirParcelas.error ?? pararRepeticao.error
+  const temSeguintes = !!l.parcela_grupo && (l.parcela_num ?? 0) < (l.parcela_total ?? 0)
 
   const salvarEdicao = async () => {
-    const v = Number(valor.replace(/\./g, '').replace(',', '.'))
+    const r = valorEmReais.safeParse(valor)
+    const v = r.success ? r.data : 0
     if (!(v > 0) || !/^\d{4}-\d{2}-\d{2}$/.test(venc)) return
     await atualizar.mutateAsync({ id: l.id, valor: v, data_vencimento: venc })
     setEditando(false)
@@ -186,28 +225,39 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
         <div className="l"><span className="muted">Conta</span><span>{contas.data?.find((c) => c.id === l.conta_id)?.nome ?? '—'}</span></div>
         <div className="l"><span className="muted">Vencimento</span><span>{dataBR(l.data_vencimento)}</span></div>
         <div className="l"><span className="muted">Situação</span><span>{l.data_pagamento ? `${l.tipo === 'entrada' ? 'Recebido' : 'Pago'} em ${dataBR(l.data_pagamento)}` : 'Previsto'}</span></div>
-        {l.recorrencia_id ? <div className="l"><span className="muted">Origem</span><span>Custo fixo mensal</span></div> : null}
+        {l.recorrencia_id ? <div className="l"><span className="muted">Repetição</span><span>Todo mês</span></div> : null}
+        {l.parcela_grupo ? <div className="l"><span className="muted">Parcela</span><span>{l.parcela_num} de {l.parcela_total}</span></div> : null}
       </div>
       {erro ? <p className="erro-caixa" role="alert">{mensagemErro(erro)}</p> : null}
       {travado ? (
         <p className="muted" style={{ display: 'flex', gap: 8, alignItems: 'center' }}><Lock size={16} aria-hidden="true" /> {nomeMes(mesDe(l.data_pagamento ?? l.data_vencimento))} está fechado. Para alterar, reabra o mês em Relatórios.</p>
       ) : editando ? (
         <div className="duas">
-          <Campo id="e-valor" rotulo="Valor"><input id="e-valor" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} /></Campo>
+          <Campo id="e-valor" rotulo="Valor"><input id="e-valor" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} onBlur={(e) => setValor(formatarValorDigitado(e.target.value))} /></Campo>
           <Campo id="e-venc" rotulo="Vencimento"><input id="e-venc" type="date" value={venc} onChange={(e) => setVenc(e.target.value)} /></Campo>
           <div className="acoes" style={{ gridColumn: '1 / -1' }}>
             <button type="button" className="btn btn-s" onClick={() => setEditando(false)}>Cancelar</button>
             <button type="button" className="btn btn-p" onClick={salvarEdicao} disabled={atualizar.isPending}>Salvar alteração</button>
           </div>
         </div>
-      ) : confirmando ? (
-        <Confirmar titulo="Excluir este lançamento?" texto={`${formatBRL(Number(l.valor))} · ${cat?.nome ?? ''}. Ele sai dos relatórios e do saldo.`} rotulo="Excluir lançamento"
+      ) : confirmando === 'um' ? (
+        <Confirmar titulo={l.parcela_grupo ? 'Excluir só esta parcela?' : 'Excluir este lançamento?'} texto={`${formatBRL(Number(l.valor))} · ${cat?.nome ?? ''}. Ele sai dos relatórios e do saldo.`} rotulo="Excluir"
           ocupado={excluir.isPending} aoCancelar={() => setConfirmando(false)}
           aoConfirmar={async () => { await excluir.mutateAsync(l.id); avisar('Lançamento excluído'); aoFechar() }} />
+      ) : confirmando === 'seguintes' ? (
+        <Confirmar titulo={`Excluir a parcela ${l.parcela_num} e as seguintes?`} texto="Saem as que ainda não foram pagas, desta até a última. As já pagas continuam." rotulo="Excluir parcelas"
+          ocupado={excluirParcelas.isPending} aoCancelar={() => setConfirmando(false)}
+          aoConfirmar={async () => { await excluirParcelas.mutateAsync({ grupo: l.parcela_grupo!, aPartirDe: l.parcela_num! }); avisar('Parcelas excluídas'); aoFechar() }} />
+      ) : confirmando === 'parar' ? (
+        <Confirmar titulo="Parar de repetir?" texto={`Os meses previstos depois de ${dataBR(l.data_vencimento)} saem do caixa. Este e os já pagos continuam.`} rotulo="Parar de repetir"
+          ocupado={pararRepeticao.isPending} aoCancelar={() => setConfirmando(false)}
+          aoConfirmar={async () => { await pararRepeticao.mutateAsync({ id: l.recorrencia_id!, depoisDe: l.data_vencimento }); avisar('Não repete mais'); aoFechar() }} />
       ) : (
         <div className="acoes">
-          <button type="button" className="btn btn-g" onClick={() => setConfirmando(true)}>Excluir</button>
-          <button type="button" className="btn btn-s" onClick={() => { setValor(String(l.valor).replace('.', ',')); setVenc(l.data_vencimento); setEditando(true) }}>Editar</button>
+          <button type="button" className="btn btn-g" onClick={() => setConfirmando('um')}>{l.parcela_grupo ? 'Excluir parcela' : 'Excluir'}</button>
+          {temSeguintes ? <button type="button" className="btn btn-g" onClick={() => setConfirmando('seguintes')}>Excluir esta e as seguintes</button> : null}
+          {l.recorrencia_id ? <button type="button" className="btn btn-g" onClick={() => setConfirmando('parar')}>Parar de repetir</button> : null}
+          <button type="button" className="btn btn-s" onClick={() => { setValor(formatarValorDigitado(String(l.valor).replace('.', ','))); setVenc(l.data_vencimento); setEditando(true) }}>Editar</button>
           {l.tipo === 'entrada' && l.data_pagamento ? (
             <button type="button" className="btn btn-s" onClick={recibo} disabled={gerando}><Receipt size={18} aria-hidden="true" />{gerando ? 'Gerando…' : 'Recibo em PDF'}</button>
           ) : null}
@@ -298,20 +348,20 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
             <input id="n-data" type="date" aria-invalid={!!errors.data_evento} {...register('data_evento')} />
           </Campo>
           <Campo id="n-cidade" rotulo="Cidade">
-            <input id="n-cidade" placeholder="Ex.: Jundiaí" maxLength={80} {...register('cidade')} />
+            <input id="n-cidade" placeholder="Ex.: Jundiaí" maxLength={80} autoCapitalize="words" {...comNome(register('cidade'))} />
           </Campo>
         </div>
         {ws ? (
           <div className="duas">
             <Campo id="n-vagas" rotulo="Vagas"><input id="n-vagas" type="number" min={1} {...register('vagas', { setValueAs: (v) => (v ? Number(v) : null) })} /></Campo>
             <Campo id="n-insc" rotulo="Valor da inscrição" erro={errors.valor_inscricao?.message}>
-              <input id="n-insc" inputMode="decimal" placeholder="R$ 0,00" {...register('valor_inscricao', { setValueAs: (v) => v || null })} />
+              <input id="n-insc" inputMode="decimal" placeholder="R$ 0,00" {...comValor(register('valor_inscricao', { setValueAs: (v) => v || null }))} />
             </Campo>
           </div>
         ) : (
           <>
             <Campo id="n-valor" rotulo="Valor fechado" erro={errors.valor_fechado?.message}>
-              <input id="n-valor" inputMode="decimal" placeholder="R$ 0,00" aria-invalid={!!errors.valor_fechado} {...register('valor_fechado')} />
+              <input id="n-valor" inputMode="decimal" placeholder="R$ 0,00" aria-invalid={!!errors.valor_fechado} {...comValor(register('valor_fechado'))} />
             </Campo>
             <div className="duas">
               <Campo id="n-pct" rotulo="Entrada (%)"><input id="n-pct" type="number" min={0} max={100} {...register('entrada_percentual', { valueAsNumber: true })} /></Campo>
@@ -336,7 +386,7 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
           <>
             <div className="duas">
               <Campo id="n-local" rotulo="Local"><input id="n-local" maxLength={120} {...register('local_nome')} /></Campo>
-              <Campo id="n-end" rotulo="Endereço do local"><input id="n-end" maxLength={200} {...register('local_endereco')} /></Campo>
+              <Campo id="n-end" rotulo="Endereço do local"><input id="n-end" maxLength={200} placeholder="Rua, número – bairro" autoCapitalize="words" {...register('local_endereco')} /></Campo>
             </div>
             <div className="duas">
               <Campo id="n-ent" rotulo="Entrega"><input id="n-ent" type="datetime-local" {...register('entrega_em')} /></Campo>
@@ -363,7 +413,7 @@ function NovoClienteFolha({ aoFechar }: { aoFechar: () => void }) {
   const criar = useCriarCliente(empresaId)
   const { register, handleSubmit, formState: { errors } } = useForm<NovoCliente, unknown, ClienteValido>({
     resolver: zodResolver(esquemaCliente),
-    defaultValues: { nome: '', telefone: '', email: '', endereco: '', cidade: '', origem: 'instagram', cpf_cnpj: '' },
+    defaultValues: { nome: '', telefone: '', email: '', cep: '', endereco: '', cidade: '', origem: 'instagram', cpf_cnpj: '' },
   })
   const enviar = handleSubmit(async (v) => {
     await criar.mutateAsync(ehProprietaria ? v : { ...v, cpf_cnpj: null })
@@ -374,19 +424,22 @@ function NovoClienteFolha({ aoFechar }: { aoFechar: () => void }) {
     <Folha titulo="Nova cliente" aoFechar={aoFechar}>
       <form onSubmit={enviar} noValidate style={{ display: 'contents' }}>
         <Campo id="c-nome" rotulo="Nome completo" erro={errors.nome?.message}>
-          <input id="c-nome" autoComplete="off" autoFocus maxLength={120} aria-invalid={!!errors.nome} {...register('nome')} />
+          <input id="c-nome" autoComplete="off" autoCapitalize="words" autoFocus maxLength={120} aria-invalid={!!errors.nome} {...comNome(register('nome'))} />
         </Campo>
         <div className="duas">
           <Campo id="c-tel" rotulo="Telefone" erro={errors.telefone?.message}>
-            <input id="c-tel" inputMode="tel" placeholder="(11) 99999-9999" aria-invalid={!!errors.telefone} {...register('telefone')} />
+            <input id="c-tel" type="tel" inputMode="tel" autoComplete="off" placeholder="(11) 99999-9999" maxLength={15} aria-invalid={!!errors.telefone} {...comMascara(register('telefone'), mascaraTelefone)} />
           </Campo>
           <Campo id="c-email" rotulo="E-mail" erro={errors.email?.message}>
-            <input id="c-email" type="email" inputMode="email" aria-invalid={!!errors.email} {...register('email')} />
+            <input id="c-email" type="email" inputMode="email" autoCapitalize="off" autoComplete="off" placeholder="nome@exemplo.com" aria-invalid={!!errors.email} {...comMascara(register('email'), (v) => v.toLowerCase().trim())} />
           </Campo>
         </div>
-        <Campo id="c-end" rotulo="Endereço"><input id="c-end" maxLength={200} {...register('endereco')} /></Campo>
+        <div className="duas cep">
+          <Campo id="c-cep" rotulo="CEP" erro={errors.cep?.message}><input id="c-cep" inputMode="numeric" autoComplete="off" placeholder="00000-000" maxLength={9} aria-invalid={!!errors.cep} {...comMascara(register('cep'), mascaraCEP)} /></Campo>
+          <Campo id="c-end" rotulo="Endereço"><input id="c-end" maxLength={200} placeholder="Rua, número, complemento – bairro" autoCapitalize="words" {...register('endereco')} /></Campo>
+        </div>
         <div className="duas">
-          <Campo id="c-cid" rotulo="Cidade"><input id="c-cid" maxLength={80} {...register('cidade')} /></Campo>
+          <Campo id="c-cid" rotulo="Cidade"><input id="c-cid" maxLength={80} autoCapitalize="words" placeholder="Ex.: Louveira" {...comNome(register('cidade'))} /></Campo>
           <Campo id="c-orig" rotulo="Como chegou">
             <select id="c-orig" {...register('origem')}>
               <option value="instagram">Instagram</option><option value="indicacao">Indicação</option><option value="whatsapp">WhatsApp</option>
@@ -396,7 +449,7 @@ function NovoClienteFolha({ aoFechar }: { aoFechar: () => void }) {
         </div>
         {ehProprietaria ? (
           <Campo id="c-doc" rotulo="CPF ou CNPJ" erro={errors.cpf_cnpj?.message} dica="Só se for preciso para contrato ou nota fiscal.">
-            <input id="c-doc" inputMode="numeric" aria-invalid={!!errors.cpf_cnpj} {...register('cpf_cnpj')} />
+            <input id="c-doc" inputMode="numeric" autoComplete="off" placeholder="000.000.000-00" maxLength={18} aria-invalid={!!errors.cpf_cnpj} {...comMascara(register('cpf_cnpj'), mascaraDoc)} />
           </Campo>
         ) : null}
         {criar.isError ? <p className="erro-caixa" role="alert">{mensagemErro(criar.error)}</p> : null}

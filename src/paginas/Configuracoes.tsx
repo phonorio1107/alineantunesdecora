@@ -10,6 +10,7 @@ import { cnpjValido, valorEmReais } from '../data/esquemas'
 import type { Empresa, NaturezaCategoria } from '../data/tipos'
 import { Campo, Carregando, Confirmar } from '../components/ui'
 import { formatBRL, formatDoc, hoje, soDigitos } from '../lib/format'
+import { formatarValorDigitado, mascaraCNPJ } from '../lib/mascaras'
 import { mensagemErro } from '../lib/erros'
 
 export default function Configuracoes() {
@@ -41,9 +42,9 @@ function DadosEmpresa() {
   const chaves: (keyof CamposEmpresa)[] = ['nome', 'razao_social', 'cnpj', 'responsavel_nome', 'telefones', 'email_contato', 'endereco', 'cidade_foro', 'banco_nome', 'banco_agencia', 'banco_conta', 'banco_favorecido', 'pix_chave']
   const [v, setV] = useState<Record<string, string>>(Object.fromEntries(chaves.map((k) => [k, inicial(k)])))
   const [erro, setErro] = useState<string | null>(null)
-  const campo = (k: keyof CamposEmpresa, rotulo: string, dica?: string, extra: Record<string, unknown> = {}) => (
+  const campo = (k: keyof CamposEmpresa, rotulo: string, dica?: string, extra: Record<string, unknown> = {}, mascara?: (t: string) => string) => (
     <Campo id={`emp-${k}`} rotulo={rotulo} dica={dica}>
-      <input id={`emp-${k}`} value={v[k]} onChange={(e) => setV({ ...v, [k]: e.target.value })} {...extra} />
+      <input id={`emp-${k}`} value={v[k]} onChange={(e) => setV({ ...v, [k]: mascara ? mascara(e.target.value) : e.target.value })} {...extra} />
     </Campo>
   )
   const salvar = async (e: FormEvent) => {
@@ -64,7 +65,7 @@ function DadosEmpresa() {
       <div className="duas">
         {campo('nome', 'Nome fantasia')}
         {campo('razao_social', 'Razão social', 'Como está no CNPJ.')}
-        {campo('cnpj', 'CNPJ', undefined, { inputMode: 'numeric' })}
+        {campo('cnpj', 'CNPJ', undefined, { inputMode: 'numeric', placeholder: '00.000.000/0000-00', maxLength: 18 }, mascaraCNPJ)}
         {campo('responsavel_nome', 'Responsável', 'Atendente nos contratos e quem assina os recibos.')}
         {campo('telefones', 'Telefones')}
         {campo('email_contato', 'E-mail de contato', undefined, { type: 'email' })}
@@ -115,7 +116,7 @@ function Metas() {
       <h2 id="t-metas">Metas e regras</h2>
       <div className="duas">
         <Campo id="m-res" rotulo="Reserva (meses de custo fixo)" dica={`Hoje equivale a ${formatBRL(Number(v.reserva || 0) * f.fixos)}.`}><input id="m-res" type="number" min={0} max={24} step={0.5} value={v.reserva} onChange={(e) => setV({ ...v, reserva: e.target.value })} /></Campo>
-        <Campo id="m-ret" rotulo="Retirada mínima por mês" dica="Usada no fôlego e na previsão."><input id="m-ret" inputMode="decimal" value={v.retirada} onChange={(e) => setV({ ...v, retirada: e.target.value })} /></Campo>
+        <Campo id="m-ret" rotulo="Retirada mínima por mês" dica="Usada no fôlego e na previsão."><input id="m-ret" inputMode="decimal" placeholder="R$ 0,00" value={v.retirada} onChange={(e) => setV({ ...v, retirada: e.target.value })} onBlur={(e) => setV({ ...v, retirada: formatarValorDigitado(e.target.value) })} /></Campo>
         <Campo id="m-ent" rotulo="Entrada padrão (%)"><input id="m-ent" type="number" min={0} max={100} value={v.entrada} onChange={(e) => setV({ ...v, entrada: e.target.value })} /></Campo>
         <Campo id="m-dias" rotulo="Saldo até (dias antes)"><input id="m-dias" type="number" min={0} max={60} value={v.dias} onChange={(e) => setV({ ...v, dias: e.target.value })} /></Campo>
         <Campo id="m-pe" rotulo="Lucro que fica na empresa (%)"><input id="m-pe" type="number" min={0} max={100} value={v.pctEmpresa} placeholder="a definir" onChange={(e) => setV({ ...v, pctEmpresa: e.target.value })} /></Campo>
@@ -154,7 +155,7 @@ function Contas() {
       {nova ? (
         <form className="duas" onSubmit={salvar} noValidate>
           <Campo id="ct-nome" rotulo="Nome"><input id="ct-nome" placeholder="Ex.: Nubank" value={nova.nome} onChange={(e) => setNova({ ...nova, nome: e.target.value })} autoFocus /></Campo>
-          <Campo id="ct-saldo" rotulo="Saldo de hoje"><input id="ct-saldo" inputMode="decimal" placeholder="R$ 0,00" value={nova.saldo} onChange={(e) => setNova({ ...nova, saldo: e.target.value })} /></Campo>
+          <Campo id="ct-saldo" rotulo="Saldo de hoje"><input id="ct-saldo" inputMode="decimal" placeholder="R$ 0,00" value={nova.saldo} onChange={(e) => setNova({ ...nova, saldo: e.target.value })} onBlur={(e) => setNova({ ...nova, saldo: formatarValorDigitado(e.target.value) })} /></Campo>
           {criar.isError ? <p className="erro-caixa" style={{ gridColumn: '1/-1' }}>{mensagemErro(criar.error)}</p> : null}
           <div className="acoes" style={{ gridColumn: '1/-1', justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-s" onClick={() => setNova(null)}>Cancelar</button>
@@ -194,27 +195,27 @@ function CustosFixos() {
   return (
     <section className="cartao" aria-labelledby="t-fixos">
       <div className="cartao-h">
-        <h2 id="t-fixos">Custos fixos</h2>
+        <h2 id="t-fixos">Todo mês</h2>
         {!novo ? <button type="button" className="btn btn-g btn-sm" onClick={() => setNovo({ descricao: '', valor: '', dia: '5', categoria: fixas[0]?.id ?? '', conta: contas.data?.[0]?.id ?? '' })}><Plus size={18} aria-hidden="true" />Novo custo fixo</button> : null}
       </div>
       <div className="linhas">
         {f.recorrencias.map((r) => removendo === r.id ? (
-          <Confirmar key={r.id} titulo={`Parar de lançar “${r.descricao}”?`} texto="Os lançamentos já criados continuam; os próximos meses não ganham novos." rotulo="Parar" ocupado={desativar.isPending}
-            aoCancelar={() => setRemovendo(null)} aoConfirmar={async () => { await desativar.mutateAsync(r.id); setRemovendo(null); avisar('Custo fixo desativado') }} />
+          <Confirmar key={r.id} titulo={`Parar de lançar “${r.descricao}”?`} texto="Os meses previstos a partir de amanhã saem do caixa. Os já pagos continuam." rotulo="Parar" ocupado={desativar.isPending}
+            aoCancelar={() => setRemovendo(null)} aoConfirmar={async () => { await desativar.mutateAsync({ id: r.id, depoisDe: hoje() }); setRemovendo(null); avisar('Custo fixo desativado') }} />
         ) : (
           <div key={r.id} className="linha">
-            <span className="cresce"><span className="t">{r.descricao}</span><span className="s">todo dia {r.dia_vencimento} · {f.nomeCategoria(r.categoria_id)}</span></span>
-            <span className="v">{formatBRL(Number(r.valor))}</span>
+            <span className="cresce"><span className="t">{r.descricao}</span><span className="s">{r.tipo === 'entrada' ? 'Entrada' : 'Saída'} todo dia {r.dia_vencimento} · {f.nomeCategoria(r.categoria_id)}</span></span>
+            <span className={`v ${r.tipo ?? 'saida'}`}>{r.tipo === 'entrada' ? '+' : '−'} {formatBRL(Number(r.valor))}</span>
             <button type="button" className="btn btn-g btn-sm" onClick={() => setRemovendo(r.id)}>Parar</button>
           </div>
         ))}
-        <div className="linha"><span className="cresce"><b>Total por mês</b></span><span className="v">{formatBRL(f.fixos)}</span></div>
+        <div className="linha"><span className="cresce"><b>Custos fixos por mês</b></span><span className="v">{formatBRL(f.fixos)}</span></div>
       </div>
       {novo ? (
         <form onSubmit={salvar} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Campo id="cf-desc" rotulo="Descrição"><input id="cf-desc" placeholder="Ex.: Aluguel do ateliê" value={novo.descricao} onChange={(e) => setNovo({ ...novo, descricao: e.target.value })} autoFocus /></Campo>
           <div className="duas">
-            <Campo id="cf-valor" rotulo="Valor"><input id="cf-valor" inputMode="decimal" value={novo.valor} onChange={(e) => setNovo({ ...novo, valor: e.target.value })} /></Campo>
+            <Campo id="cf-valor" rotulo="Valor"><input id="cf-valor" inputMode="decimal" placeholder="R$ 0,00" value={novo.valor} onChange={(e) => setNovo({ ...novo, valor: e.target.value })} onBlur={(e) => setNovo({ ...novo, valor: formatarValorDigitado(e.target.value) })} /></Campo>
             <Campo id="cf-dia" rotulo="Dia do vencimento"><input id="cf-dia" type="number" min={1} max={31} value={novo.dia} onChange={(e) => setNovo({ ...novo, dia: e.target.value })} /></Campo>
             <Campo id="cf-cat" rotulo="Categoria"><select id="cf-cat" value={novo.categoria} onChange={(e) => setNovo({ ...novo, categoria: e.target.value })}>{fixas.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}</select></Campo>
             <Campo id="cf-conta" rotulo="Conta"><select id="cf-conta" value={novo.conta} onChange={(e) => setNovo({ ...novo, conta: e.target.value })}>{(contas.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}</select></Campo>

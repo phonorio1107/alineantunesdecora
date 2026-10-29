@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { verificar } from '../lib/erros'
+import { dividirEmParcelas } from '../lib/calculos'
+import { somarMeses } from '../lib/format'
 // Os formulários validam com os esquemas Zod (./esquemas); aqui chegam só dados já validados.
 import type { ClienteValido, EventoValido, InscricaoValida, LancamentoValido } from './esquemas'
 import type {
@@ -159,19 +161,65 @@ function useInvalidar() {
 export function useCriarLancamento(empresa: string) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (l: LancamentoValido) => {
-      const r = await supabase.from('lancamentos').insert({
+    mutationFn: async ({ l, nomeCategoria }: { l: LancamentoValido; nomeCategoria: string }) => {
+      const base = {
         empresa_id: empresa,
         tipo: l.tipo,
-        valor: l.valor,
-        data_vencimento: l.data,
-        data_pagamento: l.pago ? l.data : null,
         conta_id: l.conta_id,
         categoria_id: l.categoria_id,
         evento_id: l.evento_id ?? null,
+      }
+      if (l.repetir === 'parcelado' && l.parcelas) {
+        // Todas as parcelas num insert só: ou entram todas, ou nenhuma.
+        const grupo = crypto.randomUUID()
+        const nome = l.descricao || nomeCategoria
+        const linhas = dividirEmParcelas(l.valor, l.parcelas).map((valor, i) => ({
+          ...base,
+          valor,
+          data_vencimento: somarMeses(l.data, i),
+          data_pagamento: i === 0 && l.pago ? l.data : null,
+          descricao: `${nome} (${i + 1}/${l.parcelas})`.slice(0, 120),
+          parcela_grupo: grupo,
+          parcela_num: i + 1,
+          parcela_total: l.parcelas,
+        }))
+        verificar('criar parcelas', await supabase.from('lancamentos').insert(linhas))
+        return
+      }
+      let recorrencia_id: string | null = null
+      if (l.repetir === 'mensal') {
+        const r = await supabase
+          .from('recorrencias')
+          .insert({
+            empresa_id: empresa, tipo: l.tipo, descricao: (l.descricao || nomeCategoria).slice(0, 80), valor: l.valor,
+            dia_vencimento: Number(l.data.slice(8, 10)), categoria_id: l.categoria_id, conta_id: l.conta_id, inicio: l.data,
+          })
+          .select('id')
+          .single()
+        recorrencia_id = (verificar('criar repetição', r) as { id: string }).id
+      }
+      verificar('criar lançamento', await supabase.from('lancamentos').insert({
+        ...base,
+        valor: l.valor,
+        data_vencimento: l.data,
+        data_pagamento: l.pago ? l.data : null,
         descricao: l.descricao || null,
-      })
-      verificar('criar lançamento', r)
+        recorrencia_id,
+      }))
+      // Os próximos meses já aparecem previstos no caixa.
+      if (recorrencia_id) verificar('gerar repetições', await supabase.rpc('gerar_recorrencias', { p_empresa: empresa, p_ate: proximosMeses(6) }))
+    },
+    onSuccess: () => invalidar('lancamentos', 'saldos', 'resultados', 'recorrencias'),
+  })
+}
+
+/** Exclui esta parcela e as seguintes que ainda não foram pagas. */
+export function useExcluirParcelas() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ grupo, aPartirDe }: { grupo: string; aPartirDe: number }) => {
+      verificar('excluir parcelas', await supabase.from('lancamentos').update({ excluido_em: new Date().toISOString() })
+        .eq('parcela_grupo', grupo).gte('parcela_num', aPartirDe).is('data_pagamento', null))
     },
     onSuccess: () => invalidar('lancamentos', 'saldos', 'resultados'),
   })
@@ -364,13 +412,16 @@ export function useCriarRecorrencia(empresa: string) {
   })
 }
 
+/** Para de repetir e tira os meses previstos (não pagos) depois de "depoisDe"; o que já foi pago fica. */
 export function useDesativarRecorrencia() {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (id: string) => {
-      verificar('desativar custo fixo', await supabase.from('recorrencias').update({ ativa: false }).eq('id', id))
+    mutationFn: async ({ id, depoisDe }: { id: string; depoisDe: string }) => {
+      verificar('parar repetição', await supabase.from('recorrencias').update({ ativa: false }).eq('id', id))
+      verificar('tirar meses previstos', await supabase.from('lancamentos').update({ excluido_em: new Date().toISOString() })
+        .eq('recorrencia_id', id).is('data_pagamento', null).gt('data_vencimento', depoisDe))
     },
-    onSuccess: () => invalidar('recorrencias'),
+    onSuccess: () => invalidar('recorrencias', 'lancamentos', 'saldos', 'resultados'),
   })
 }
 
@@ -436,6 +487,27 @@ export function useAtualizarCliente() {
       verificar('atualizar cliente', await supabase.from('clientes').update(campos).eq('id', id))
     },
     onSuccess: () => invalidar('clientes'),
+  })
+}
+
+/**
+ * Exclui uma cliente. Sem eventos: apaga de vez (o CPF/CNPJ vai junto). Com eventos: apaga os dados pessoais
+ * (LGPD) e mantém o histórico financeiro dos eventos, com o nome "Cliente removida".
+ */
+export function useExcluirCliente() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, temEventos }: { id: string; temEventos: boolean }) => {
+      if (!temEventos) {
+        verificar('excluir cliente', await supabase.from('clientes').delete().eq('id', id))
+        return
+      }
+      verificar('apagar documento', await supabase.from('clientes_documentos').delete().eq('cliente_id', id))
+      verificar('apagar dados pessoais', await supabase.from('clientes').update({
+        nome: 'Cliente removida', telefone: null, email: null, cep: null, endereco: null, cidade: null, excluido_em: new Date().toISOString(),
+      }).eq('id', id))
+    },
+    onSuccess: () => invalidar('clientes', 'documentos', 'eventos'),
   })
 }
 

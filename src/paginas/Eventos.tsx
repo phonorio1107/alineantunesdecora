@@ -14,6 +14,7 @@ import { abaEventos, baixarCSV, baixarExcel, baixarPdfEvento, baixarRecibo } fro
 import { lucroEvento } from '../lib/calculos'
 import { dataBR, formatBRL, formatBRL0, formatPct, formatTelefone, hoje, MESES } from '../lib/format'
 import { mensagemErro, verificar } from '../lib/erros'
+import { capitalizarNome, mascaraTelefone } from '../lib/mascaras'
 import { supabase } from '../lib/supabase'
 import { useQuery } from '@tanstack/react-query'
 
@@ -303,8 +304,8 @@ function Inscritas({ evento: ev }: { evento: Evento }) {
       </div>
       {ocupadas < vagas || !vagas ? (
         <form className="duas" style={{ alignItems: 'end' }} onSubmit={adicionar} noValidate>
-          <Campo id="i-nome" rotulo="Nome da aluna" erro={erros.nome}><input id="i-nome" value={nome} onChange={(e) => setNome(e.target.value)} autoComplete="off" aria-invalid={!!erros.nome} /></Campo>
-          <Campo id="i-tel" rotulo="Telefone" erro={erros.telefone}><input id="i-tel" inputMode="tel" placeholder="(11) 99999-9999" value={tel} onChange={(e) => setTel(e.target.value)} aria-invalid={!!erros.telefone} /></Campo>
+          <Campo id="i-nome" rotulo="Nome da aluna" erro={erros.nome}><input id="i-nome" value={nome} onChange={(e) => setNome(e.target.value)} onBlur={(e) => setNome(capitalizarNome(e.target.value))} autoCapitalize="words" autoComplete="off" aria-invalid={!!erros.nome} /></Campo>
+          <Campo id="i-tel" rotulo="Telefone" erro={erros.telefone}><input id="i-tel" type="tel" inputMode="tel" placeholder="(11) 99999-9999" maxLength={15} value={tel} onChange={(e) => setTel(mascaraTelefone(e.target.value))} aria-invalid={!!erros.telefone} /></Campo>
           <button type="submit" className="btn btn-s" style={{ gridColumn: '1 / -1' }} disabled={criar.isPending}><Plus size={18} aria-hidden="true" />Adicionar inscrita</button>
           {criar.isError ? <p className="erro-caixa" style={{ gridColumn: '1 / -1' }} role="alert">{mensagemErro(criar.error)}</p> : null}
         </form>

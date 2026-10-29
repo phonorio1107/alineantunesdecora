@@ -9,6 +9,7 @@ import { Alerta, Campo, Carregando, Confirmar, ErroCaixa, Folha, Vazio } from '.
 import { baixarContrato } from '../export/acoes'
 import { MODELO_CONTRATO } from '../pdf/clausulas'
 import { dataBR, formatBRL, hoje } from '../lib/format'
+import { formatarValorDigitado } from '../lib/mascaras'
 import { mensagemErro, verificar } from '../lib/erros'
 import { supabase } from '../lib/supabase'
 
@@ -112,7 +113,7 @@ function EmitirFolha({ eventoInicial, aoFechar }: { eventoInicial: string; aoFec
     queryFn: async () => (verificar('parcelas', await supabase.from('lancamentos').select('*').eq('evento_id', eventoId).eq('tipo', 'entrada').is('excluido_em', null).order('data_vencimento')) ?? []) as Lancamento[],
   })
   useEffect(() => {
-    if (ev) setItens([{ codigo: '', descricao: ev.fonte === 'assessoria' ? 'Assessoria de evento' : 'Projeto de decoração', quantidade: '1', valor: String(ev.valor_fechado).replace('.', ',') }])
+    if (ev) setItens([{ codigo: '', descricao: ev.fonte === 'assessoria' ? 'Assessoria de evento' : 'Projeto de decoração', quantidade: '1', valor: formatarValorDigitado(String(ev.valor_fechado).replace('.', ',')) }])
   }, [ev?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const total = useMemo(() => itens.reduce((t, i) => t + numero(i.quantidade) * numero(i.valor), 0), [itens])
@@ -178,15 +179,15 @@ function EmitirFolha({ eventoInicial, aoFechar }: { eventoInicial: string; aoFec
           <div className="campo">
             <span className="rotulo">Itens contratados</span>
             {itens.map((it, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0,0.8fr) minmax(0,3fr) minmax(0,0.8fr) minmax(0,1.4fr) auto', gap: 8, alignItems: 'center' }}>
-                <input aria-label={`Código do item ${i + 1}`} placeholder="Código" value={it.codigo} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, codigo: e.target.value } : x)))} />
-                <input aria-label={`Descrição do item ${i + 1}`} placeholder="Descrição" value={it.descricao} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, descricao: e.target.value } : x)))} />
-                <input aria-label={`Quantidade do item ${i + 1}`} inputMode="numeric" value={it.quantidade} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, quantidade: e.target.value } : x)))} />
-                <input aria-label={`Valor unitário do item ${i + 1}`} inputMode="decimal" value={it.valor} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, valor: e.target.value } : x)))} />
-                <button type="button" className="icone-btn" aria-label={`Remover item ${i + 1}`} onClick={() => setItens(itens.filter((_, j) => j !== i))} disabled={itens.length === 1}><Trash2 size={18} /></button>
+              <div key={i} className="item-contrato">
+                <label className="mini ic-cod"><span>Código</span><input placeholder="Ex.: 12" value={it.codigo} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, codigo: e.target.value } : x)))} /></label>
+                <label className="mini ic-desc"><span>Descrição do item {i + 1}</span><input placeholder="Ex.: Projeto de decoração" value={it.descricao} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, descricao: e.target.value } : x)))} /></label>
+                <label className="mini ic-qtd"><span>Qtd.</span><input inputMode="numeric" value={it.quantidade} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, quantidade: e.target.value } : x)))} /></label>
+                <label className="mini ic-valor"><span>Valor unitário</span><input inputMode="decimal" placeholder="R$ 0,00" value={it.valor} onChange={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, valor: e.target.value } : x)))} onBlur={(e) => setItens(itens.map((x, j) => (j === i ? { ...x, valor: formatarValorDigitado(e.target.value) } : x)))} /></label>
+                <button type="button" className="icone-btn ic-rem" aria-label={`Remover item ${i + 1}`} onClick={() => setItens(itens.filter((_, j) => j !== i))} disabled={itens.length === 1}><Trash2 size={18} /></button>
               </div>
             ))}
-            <button type="button" className="btn btn-g btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => setItens([...itens, { codigo: '', descricao: '', quantidade: '1', valor: '0' }])}><Plus size={16} aria-hidden="true" />Adicionar item</button>
+            <button type="button" className="btn btn-g btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => setItens([...itens, { codigo: '', descricao: '', quantidade: '1', valor: '' }])}><Plus size={16} aria-hidden="true" />Adicionar item</button>
           </div>
           <Campo id="ct-forma" rotulo="Forma de pagamento das parcelas">
             <select id="ct-forma" value={forma} onChange={(e) => setForma(e.target.value)}>

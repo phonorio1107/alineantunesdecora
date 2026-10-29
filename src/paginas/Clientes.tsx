@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Plus, Search } from 'lucide-react'
 import { useAvisar, useEmpresa, useFolhas } from '../app/contexto'
-import { useAtualizarCliente, useClientes, useDocumentos, useEventos, useSalvarDocumento } from '../data/consultas'
+import { useAtualizarCliente, useClientes, useDocumentos, useEventos, useExcluirCliente, useSalvarDocumento } from '../data/consultas'
 import { cpfCnpj } from '../data/esquemas'
 import type { Cliente } from '../data/tipos'
-import { Campo, Carregando, ErroCaixa, Exportar, Folha, Vazio } from '../components/ui'
+import { Campo, Carregando, Confirmar, ErroCaixa, Exportar, Folha, Vazio } from '../components/ui'
 import { abaClientes, baixarCSV, baixarExcel } from '../export/acoes'
 import { dataBR, formatDoc, formatTelefone, mascararDoc } from '../lib/format'
 import { mensagemErro } from '../lib/erros'
+import { capitalizarNome, mascaraCEP, mascaraDoc, mascaraTelefone } from '../lib/mascaras'
 
 const ORIGEM = { instagram: 'Instagram', indicacao: 'Indicação', whatsapp: 'WhatsApp', site: 'Site', outra: 'Outra' }
 
@@ -69,9 +70,11 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
   const eventos = useEventos(empresaId)
   const atualizar = useAtualizarCliente()
   const salvarDoc = useSalvarDocumento(empresaId)
+  const excluir = useExcluirCliente()
+  const [excluindo, setExcluindo] = useState(false)
   const [ver, setVer] = useState(false)
   const [editando, setEditando] = useState(false)
-  const [v, setV] = useState({ nome: c.nome, telefone: formatTelefone(c.telefone), email: c.email ?? '', endereco: c.endereco ?? '', cidade: c.cidade ?? '', doc: doc ? formatDoc(doc) : '' })
+  const [v, setV] = useState({ nome: c.nome, telefone: formatTelefone(c.telefone), email: c.email ?? '', cep: mascaraCEP(c.cep ?? ''), endereco: c.endereco ?? '', cidade: c.cidade ?? '', doc: doc ? formatDoc(doc) : '' })
   const [erro, setErro] = useState<string | null>(null)
   const dela = (eventos.data ?? []).filter((e) => e.cliente_id === c.id)
   const salvar = async () => {
@@ -79,9 +82,12 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
     const tel = v.telefone.replace(/\D/g, '')
     if (v.nome.trim().length < 3) return setErro('Informe o nome completo.')
     if (tel && tel.length !== 10 && tel.length !== 11) return setErro('Informe o telefone com DDD.')
+    const cep = v.cep.replace(/\D/g, '')
+    if (cep && cep.length !== 8) return setErro('O CEP tem 8 números.')
+    if (v.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email.trim())) return setErro('Confira o e-mail.')
     const d = cpfCnpj.safeParse(v.doc)
     if (!d.success) return setErro('Confira o CPF ou o CNPJ.')
-    await atualizar.mutateAsync({ id: c.id, nome: v.nome.trim(), telefone: tel || null, email: v.email.trim() || null, endereco: v.endereco.trim() || null, cidade: v.cidade.trim() || null })
+    await atualizar.mutateAsync({ id: c.id, nome: capitalizarNome(v.nome), telefone: tel || null, email: v.email.trim().toLowerCase() || null, cep: cep || null, endereco: v.endereco.trim() || null, cidade: v.cidade.trim() ? capitalizarNome(v.cidade) : null })
     if (ehProprietaria && d.data && d.data !== doc) await salvarDoc.mutateAsync({ cliente: c.id, cpf_cnpj: d.data })
     setEditando(false)
     avisar('Cliente atualizada')
@@ -90,15 +96,18 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
     <Folha titulo={c.nome} aoFechar={aoFechar}>
       {editando ? (
         <>
-          <Campo id="ce-nome" rotulo="Nome completo"><input id="ce-nome" value={v.nome} onChange={(e) => setV({ ...v, nome: e.target.value })} /></Campo>
+          <Campo id="ce-nome" rotulo="Nome completo"><input id="ce-nome" autoCapitalize="words" maxLength={120} value={v.nome} onChange={(e) => setV({ ...v, nome: e.target.value })} /></Campo>
           <div className="duas">
-            <Campo id="ce-tel" rotulo="Telefone"><input id="ce-tel" inputMode="tel" value={v.telefone} onChange={(e) => setV({ ...v, telefone: e.target.value })} /></Campo>
-            <Campo id="ce-email" rotulo="E-mail"><input id="ce-email" type="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></Campo>
+            <Campo id="ce-tel" rotulo="Telefone"><input id="ce-tel" type="tel" inputMode="tel" placeholder="(11) 99999-9999" maxLength={15} value={v.telefone} onChange={(e) => setV({ ...v, telefone: mascaraTelefone(e.target.value) })} /></Campo>
+            <Campo id="ce-email" rotulo="E-mail"><input id="ce-email" type="email" inputMode="email" autoCapitalize="off" placeholder="nome@exemplo.com" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value.toLowerCase() })} /></Campo>
           </div>
-          <Campo id="ce-end" rotulo="Endereço"><input id="ce-end" value={v.endereco} onChange={(e) => setV({ ...v, endereco: e.target.value })} /></Campo>
+          <div className="duas cep">
+            <Campo id="ce-cep" rotulo="CEP"><input id="ce-cep" inputMode="numeric" placeholder="00000-000" maxLength={9} value={v.cep} onChange={(e) => setV({ ...v, cep: mascaraCEP(e.target.value) })} /></Campo>
+            <Campo id="ce-end" rotulo="Endereço"><input id="ce-end" maxLength={200} autoCapitalize="words" placeholder="Rua, número, complemento – bairro" value={v.endereco} onChange={(e) => setV({ ...v, endereco: e.target.value })} /></Campo>
+          </div>
           <div className="duas">
-            <Campo id="ce-cid" rotulo="Cidade"><input id="ce-cid" value={v.cidade} onChange={(e) => setV({ ...v, cidade: e.target.value })} /></Campo>
-            {ehProprietaria ? <Campo id="ce-doc" rotulo="CPF ou CNPJ"><input id="ce-doc" inputMode="numeric" value={v.doc} onChange={(e) => setV({ ...v, doc: e.target.value })} /></Campo> : null}
+            <Campo id="ce-cid" rotulo="Cidade"><input id="ce-cid" autoCapitalize="words" maxLength={80} value={v.cidade} onChange={(e) => setV({ ...v, cidade: e.target.value })} /></Campo>
+            {ehProprietaria ? <Campo id="ce-doc" rotulo="CPF ou CNPJ"><input id="ce-doc" inputMode="numeric" placeholder="000.000.000-00" maxLength={18} value={v.doc} onChange={(e) => setV({ ...v, doc: mascaraDoc(e.target.value) })} /></Campo> : null}
           </div>
           {erro || atualizar.isError || salvarDoc.isError ? <p className="erro-caixa" role="alert">{erro ?? mensagemErro(atualizar.error ?? salvarDoc.error)}</p> : null}
           <div className="acoes">
@@ -111,7 +120,7 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
           <div className="dre">
             <div className="l"><span className="muted">Telefone</span><span>{formatTelefone(c.telefone) || '—'}</span></div>
             <div className="l"><span className="muted">E-mail</span><span>{c.email ?? '—'}</span></div>
-            <div className="l"><span className="muted">Endereço</span><span>{[c.endereco, c.cidade].filter(Boolean).join(', ') || '—'}</span></div>
+            <div className="l"><span className="muted">Endereço</span><span>{[c.endereco, c.cidade, c.cep ? `CEP ${mascaraCEP(c.cep)}` : null].filter(Boolean).join(', ') || '—'}</span></div>
             <div className="l"><span className="muted">Como chegou</span><span>{ORIGEM[c.origem]}</span></div>
             {ehProprietaria ? (
               <div className="l">
@@ -127,7 +136,24 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
             <h3 style={{ marginBottom: 8 }}>Eventos</h3>
             {dela.length ? <div className="linhas">{dela.map((e) => <Link key={e.id} className="linha" to={`/eventos/${e.id}`} onClick={aoFechar} style={{ color: 'inherit', textDecoration: 'none' }}><span className="cresce"><span className="t">{e.titulo}</span><span className="s">{dataBR(e.data_evento)}</span></span></Link>)}</div> : <p className="muted">Nenhum evento ainda.</p>}
           </div>
-          <div className="acoes"><button type="button" className="btn btn-s" onClick={() => setEditando(true)}>Editar cadastro</button></div>
+          {excluindo ? (
+            <Confirmar
+              titulo={`Excluir ${c.nome}?`}
+              texto={dela.length
+                ? `Ela tem ${dela.length} evento${dela.length > 1 ? 's' : ''}. Os dados pessoais (nome, telefone, e-mail, endereço e CPF/CNPJ) são apagados; o histórico financeiro dos eventos fica, com o nome “Cliente removida”. Contratos já emitidos continuam guardados.`
+                : 'O cadastro e o CPF/CNPJ são apagados de vez. Não dá para desfazer.'}
+              rotulo="Excluir cliente"
+              ocupado={excluir.isPending}
+              aoCancelar={() => setExcluindo(false)}
+              aoConfirmar={async () => { await excluir.mutateAsync({ id: c.id, temEventos: dela.length > 0 }); avisar('Cliente excluída'); aoFechar() }}
+            />
+          ) : (
+            <div className="acoes">
+              {ehProprietaria ? <button type="button" className="btn btn-g" onClick={() => setExcluindo(true)}>Excluir</button> : null}
+              <button type="button" className="btn btn-s" onClick={() => setEditando(true)}>Editar cadastro</button>
+            </div>
+          )}
+          {excluir.isError ? <p className="erro-caixa" role="alert">{mensagemErro(excluir.error)}</p> : null}
         </>
       )}
     </Folha>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { custoFixoMensal, fluxoDeCaixa, folego, lucroEvento, lucroPorArea, parcelasSugeridas, podeRetirar, primeiroMesNegativo, resumoMes } from './calculos'
+import { custoFixoMensal, dividirEmParcelas, fluxoDeCaixa, folego, lucroEvento, lucroPorArea, parcelasSugeridas, podeRetirar, primeiroMesNegativo, resumoMes } from './calculos'
 import { cnpjValido, cpfValido, esquemaCliente, esquemaLancamento, valorEmReais } from '../data/esquemas'
 import { addMes, fimMes, mascararDoc, nomeMes } from './format'
 import type { Categoria, Lancamento, Recorrencia, ResultadoEvento } from '../data/tipos'
@@ -54,6 +54,18 @@ describe('fôlego e retirada', () => {
       ...base, id: String(valor), descricao: 'x', valor, dia_vencimento: 5, categoria_id: 'aluguel', conta_id: 'c', ativa,
     })
     expect(custoFixoMensal([rec(1200, true), rec(180, true), rec(500, false)])).toBe(1380)
+  })
+  it('não conta entrada que se repete como custo', () => {
+    const r = { ...base, id: 'r', descricao: 'mensalidade', valor: 300, dia_vencimento: 5, categoria_id: 'dec', conta_id: 'c', ativa: true, tipo: 'entrada' as const }
+    expect(custoFixoMensal([r])).toBe(0)
+  })
+})
+
+describe('parcelamento', () => {
+  it('divide sem perder centavos', () => {
+    expect(dividirEmParcelas(500, 3)).toEqual([166.68, 166.66, 166.66])
+    expect(dividirEmParcelas(1000, 4)).toEqual([250, 250, 250, 250])
+    expect(dividirEmParcelas(100, 3).reduce((a, b) => a + b, 0)).toBeCloseTo(100, 10)
   })
 })
 
@@ -171,5 +183,32 @@ describe('CSV', () => {
     expect(linhas[0]).toBe('Descrição;Valor;Data')
     expect(linhas[1]).toBe(`"'=HYPERLINK(""x"")";1250,50;28/10/2026`)
     expect(linhas[2]).toBe('"Flores; folhas";-10,00;')
+  })
+})
+
+describe('máscaras', async () => {
+  const { mascaraTelefone, mascaraDoc, mascaraCNPJ, mascaraCEP, formatarValorDigitado, capitalizarNome } = await import('./mascaras')
+  it('telefone', () => {
+    expect(mascaraTelefone('11987654321')).toBe('(11) 98765-4321')
+    expect(mascaraTelefone('1134567890')).toBe('(11) 3456-7890')
+    expect(mascaraTelefone('119')).toBe('(11) 9')
+    expect(mascaraTelefone('(11) 98765-43210000')).toBe('(11) 98765-4321')
+  })
+  it('CPF e CNPJ', () => {
+    expect(mascaraDoc('52998224725')).toBe('529.982.247-25')
+    expect(mascaraDoc('5299')).toBe('529.9')
+    expect(mascaraDoc('11222333000181')).toBe('11.222.333/0001-81')
+    expect(mascaraCNPJ('11222333000181')).toBe('11.222.333/0001-81')
+    expect(mascaraCNPJ('112223330')).toBe('11.222.333/0')
+    expect(mascaraCEP('13290000')).toBe('13290-000')
+  })
+  it('valor', () => {
+    expect(formatarValorDigitado('1250,5')).toBe('1.250,50')
+    expect(formatarValorDigitado('3.100')).toBe('3.100,00')
+    expect(formatarValorDigitado('R$ 80')).toBe('80,00')
+    expect(valorEmReais.parse(formatarValorDigitado('1250,5'))).toBe(1250.5)
+  })
+  it('nome', () => {
+    expect(capitalizarNome('  maria   da silva ')).toBe('Maria da Silva')
   })
 })

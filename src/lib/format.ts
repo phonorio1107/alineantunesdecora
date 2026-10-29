@@ -34,6 +34,13 @@ export const addDias = (iso: string, n: number) => {
   return toISODate(d)
 }
 
+/** Mesma data n meses depois; dia 31 vira o último dia do mês quando ele não existe. */
+export const somarMeses = (iso: string, n: number) => {
+  const ym = addMes(iso.slice(0, 7), n)
+  const fim = Number(fimMes(ym).slice(8, 10))
+  return `${ym}-${String(Math.min(Number(iso.slice(8, 10)), fim)).padStart(2, '0')}`
+}
+
 /** Mês no formato "AAAA-MM". */
 export const mesDe = (iso: string) => iso.slice(0, 7)
 export const addMes = (ym: string, n: number) => {

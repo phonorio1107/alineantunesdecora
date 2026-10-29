@@ -69,7 +69,10 @@ export const esquemaLancamento = z.object({
   data: data,
   pago: z.boolean(),
   descricao: z.string().trim().max(120, 'Use até 120 caracteres.').optional(),
-})
+  /** "parcelado": divide o valor em N meses; "mensal": repete todo mês até ser parado. */
+  repetir: z.enum(['nao', 'parcelado', 'mensal']).default('nao'),
+  parcelas: z.coerce.number<string | number>().int('Use um número inteiro.').min(2, 'Mínimo de 2 parcelas.').max(60, 'Máximo de 60 parcelas.').optional(),
+}).refine((l) => l.repetir !== 'parcelado' || l.parcelas !== undefined, { message: 'Informe em quantas vezes.', path: ['parcelas'] })
 export type NovoLancamento = z.input<typeof esquemaLancamento>
 export type LancamentoValido = z.output<typeof esquemaLancamento>
 
@@ -80,6 +83,12 @@ export const esquemaCliente = z.object({
     .string()
     .trim()
     .refine((v) => v === '' || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), 'Confira o e-mail.')
+    .transform((v) => v || null),
+  cep: z
+    .string()
+    .optional()
+    .transform((v) => soDigitos(v ?? ''))
+    .refine((v) => v === '' || v.length === 8, 'O CEP tem 8 números.')
     .transform((v) => v || null),
   endereco: z.string().trim().max(200).transform((v) => v || null),
   cidade: z.string().trim().max(80).transform((v) => v || null),

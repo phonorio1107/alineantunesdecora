@@ -52,8 +52,16 @@ export function resumoMes(lancamentos: Lancamento[], categorias: Categoria[], ym
   }
 }
 
+/** Soma só as saídas que se repetem todo mês (entradas recorrentes não são custo). */
 export const custoFixoMensal = (recorrencias: Recorrencia[]) =>
-  arred(soma(recorrencias.filter((r) => r.ativa && !r.excluido_em), (r) => Number(r.valor)))
+  arred(soma(recorrencias.filter((r) => r.ativa && !r.excluido_em && (r.tipo ?? 'saida') === 'saida'), (r) => Number(r.valor)))
+
+/** Divide um total em parcelas iguais; os centavos que sobram vão para a primeira. */
+export function dividirEmParcelas(total: number, n: number) {
+  const centavos = Math.round(total * 100)
+  const cada = Math.floor(centavos / n)
+  return Array.from({ length: n }, (_, i) => (i === 0 ? cada + (centavos - cada * n) : cada) / 100)
+}
 
 /** Quantos meses a empresa aguenta sem receber nada: saldo ÷ (custos fixos + retirada mínima). */
 export function folego(saldo: number, fixosMensais: number, retiradaMinima: number) {

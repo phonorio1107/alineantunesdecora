@@ -257,3 +257,40 @@ button.linha:hover { background: var(--rose-50) }
   .icone-btn { height: 44px }
   .chip { min-height: 44px }
 }
+
+/* Carregando: círculo girando (login, abertura do sistema, listas) */
+.girando { display: inline-block; flex: none; border-radius: 50%; border: 3px solid var(--deco-soft); border-top-color: var(--accent); animation: girar .8s linear infinite }
+.btn .girando { border-width: 2px; border-color: color-mix(in srgb, currentColor 30%, transparent); border-top-color: currentColor }
+@keyframes girar { to { transform: rotate(360deg) } }
+@media (prefers-reduced-motion: reduce) { .girando { animation-duration: 2.4s } }
+.abrindo { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px }
+.abrindo img { height: 64px }
+
+/* Senha com o olho */
+.senha { position: relative; display: block }
+.senha input { padding-right: 52px !important }
+.senha .olho { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; color: var(--muted); border-radius: 999px; cursor: pointer }
+.senha .olho:hover { color: var(--ink) }
+
+/* Repetir: três opções */
+.seg.tres { grid-template-columns: repeat(3, 1fr) }
+.seg button { padding: 0 6px; font-size: 14px }
+
+/* Campos: no iPhone, texto menor que 16px faz a tela dar zoom ao tocar no campo */
+.campo input, .campo select, .campo textarea, .busca input, .senha input { font-size: 16px }
+.campo select { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding-right: 32px }
+.campo input[type="date"], .campo input[type="datetime-local"] { min-width: 0; display: block; -webkit-appearance: none; appearance: none; line-height: 46px }
+.campo input::placeholder { color: var(--muted); opacity: .7 }
+.duas.cep { grid-template-columns: minmax(110px, 140px) minmax(0, 1fr) }
+/* Celular: dois campos lado a lado ficam apertados; um embaixo do outro */
+@media (max-width: 479px) {
+  .duas, .duas.cep { grid-template-columns: minmax(0, 1fr) }
+}
+
+/* Itens do contrato: uma linha no computador; no celular, a descrição ocupa a largura toda */
+.item-contrato { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 3fr) minmax(0, .7fr) minmax(0, 1.4fr) auto; grid-template-areas: "cod desc qtd valor rem"; gap: 8px; align-items: end; padding: 10px 0; border-bottom: 1px solid var(--line) }
+.item-contrato .ic-cod { grid-area: cod } .item-contrato .ic-desc { grid-area: desc } .item-contrato .ic-qtd { grid-area: qtd } .item-contrato .ic-valor { grid-area: valor } .item-contrato .ic-rem { grid-area: rem }
+.mini { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 14px; font-weight: 500; color: var(--muted) }
+@media (max-width: 599px) {
+  .item-contrato { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) minmax(0, 1.6fr) auto; grid-template-areas: "desc desc desc desc" "cod qtd valor rem" }
+}
