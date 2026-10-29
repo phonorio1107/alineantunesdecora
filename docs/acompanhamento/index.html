@@ -48,8 +48,9 @@ a{color:var(--link)}
 .stairs{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:end;gap:6px;height:220px}
 .step{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;gap:6px;height:100%;min-width:0;text-decoration:none;color:inherit}
 .step .area{flex:1;display:flex;align-items:flex-end;min-height:0}
-.step .blk{width:100%;border-radius:6px 6px 2px 2px;background:var(--step-todo);display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font:700 13px var(--display);color:var(--ink-muted);transition:transform .15s}
-.step:hover .blk{transform:translateY(-3px)}
+.step .blk{width:100%;border-radius:6px 6px 2px 2px;background:var(--step-todo);display:flex;align-items:flex-start;justify-content:center;padding-top:6px;font:700 13px var(--display);color:var(--ink-muted);transform:scaleY(0);transform-origin:bottom;transition:transform .7s cubic-bezier(.2,.7,.2,1) var(--d,0s)}
+.go .step .blk{transform:scaleY(1)}
+.go .step:hover .blk{transform:translateY(-3px);transition-delay:0s;transition-duration:.15s}
 .step[data-s="done"] .blk{background:var(--step-done);color:var(--surface)}
 .step[data-s="doing"] .blk{background:var(--step-doing);color:#FFFFFF}
 .step[data-s="wait"] .blk{background:var(--step-wait);color:var(--step-wait-ink)}
@@ -96,7 +97,7 @@ a{color:var(--link)}
 .pill.todo{background:var(--surface-alt);color:var(--ink-muted)}
 .count{font-size:14px;color:var(--ink-muted);font-variant-numeric:tabular-nums}
 .bar{width:120px;height:6px;border-radius:999px;background:var(--step-todo);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--step-done)}
+.bar i{display:block;height:100%;width:0;background:var(--step-done);transition:width .9s cubic-bezier(.2,.7,.2,1) var(--d,0s)}
 @media (max-width:600px){
   .ph{grid-template-columns:40px minmax(0,1fr)}
   .side{grid-column:2;flex-direction:row;align-items:center;flex-wrap:wrap;justify-content:flex-start;text-align:left}
@@ -110,11 +111,18 @@ a{color:var(--link)}
 .gloss dt{font:600 16px var(--display);letter-spacing:-.01em}
 .gloss dd{margin:4px 0 0;color:var(--ink-muted);font-size:15px}
 
+.total{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.total-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--ink-muted)}
+.total-row b{font:700 36px/1 var(--display);letter-spacing:-.04em;color:var(--ink)}
+.total-bar{height:12px;border-radius:999px;background:var(--step-todo);overflow:hidden}
+.total-bar i{display:block;height:100%;width:0;background:var(--step-doing);border-radius:999px;transition:width 1.3s cubic-bezier(.2,.7,.2,1)}
+.replay{align-self:flex-start;font:600 14px var(--text);color:var(--link);background:none;border:1px solid var(--border-strong);border-radius:999px;padding:8px 14px;cursor:pointer}
+.replay:hover{background:var(--surface-alt)}
 .alert{display:flex;gap:12px;align-items:flex-start;background:var(--warning-bg);color:var(--ink);border-radius:16px;padding:16px 20px}
 .alert svg{flex:none;color:var(--warning);margin-top:2px}
 .foot{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-muted)}
 .foot svg{width:12px;height:12px}
-@media (prefers-reduced-motion:reduce){.step .blk{transition:none}}
+@media (prefers-reduced-motion:reduce){.step .blk,.bar i,.total-bar i{transition:none}}
 </style>
 
 <div class="wrap">
@@ -123,13 +131,14 @@ a{color:var(--link)}
       <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="18" width="11" height="24" rx="2" fill="currentColor"/><rect x="32" y="6" width="11" height="36" rx="2" fill="currentColor"/><rect x="14" y="25" width="20" height="9" fill="currentColor"/></svg>
       <span>Pedro <b>Hoffman</b></span>
     </div>
-    <span class="updated">Atualizado em 28/10/2026</span>
+    <span class="updated">Atualizado em 30/10/2026</span>
   </header>
 
   <section class="hero">
     <span class="caption">Sistema da Aline Antunes Decora · v1 financeiro</span>
-    <h1>Fase 2 concluída: a Aline aprovou o protótipo.</h1>
-    <p>O planejamento terminou, a Aline aprovou por escrito e o banco e as telas já estão prontos e testados. <b>Falta uma coisa:</b> a configuração das contas (Supabase e Cloudflare), para o sistema rodar de verdade.</p>
+    <h1>Fase 3 concluída: o sistema já está no ar e o login funciona.</h1>
+    <p>As contas estão criadas e protegidas, o banco está aplicado no Supabase, o sistema está publicado no Cloudflare e você já entrou com o seu login. <b>Agora falta testar o uso de verdade:</b> lançar entradas e saídas, cadastrar clientes e eventos, gerar PDFs e exportar o Excel.</p>
+    <div class="total" id="total" aria-live="polite"></div>
   </section>
 
   <section class="stairs-box" aria-label="As 12 fases do projeto como uma escada">
@@ -140,6 +149,7 @@ a{color:var(--link)}
       <span><i style="background:var(--step-wait)"></i>Esperando alguém</span>
       <span><i style="background:var(--step-todo);border:1px solid var(--border-strong)"></i>Ainda não começou</span>
     </div>
+    <button class="replay" type="button" id="replay">Rever a animação</button>
   </section>
 
 
@@ -151,24 +161,26 @@ a{color:var(--link)}
     <div class="col you">
       <h3>Você <small>Pedro</small></h3>
       <ol>
-        <li><b>Ligar a verificação em duas etapas</b><span>No e-mail, GitHub, Supabase e Cloudflare. Pode ser depois, mas antes de entrar qualquer dado real.</span></li>
-        <li><b>Montar o banco no Supabase</b><span>Um projeto só, que você já criou. Falta rodar os dois arquivos de SQL no painel.</span></li>
-        <li><b>Levar o contrato a um advogado</b><span>Encontrei 7 pontos para revisar (locação × decoração, multas, prazos).</span></li>
+        <li><b>Fazer o teste de uso</b><span>No celular e no computador: entrada e saída em menos de 1 minuto, cliente, evento, PDF de contrato, Excel, "Esqueci a senha". Use nomes como "TESTE Maria".</span></li>
+        <li><b>Configurar o backup diário</b><span>Chave de criptografia, bucket no Cloudflare R2 e 6 segredos no GitHub. Obrigatório antes de dado real, pode ficar para depois.</span></li>
+        <li><b>Decidir onde fica o Supabase dos clientes</b><span>Na sua conta (Pro) ou na de cada cliente (gratuito). Em aberto, sem pressa.</span></li>
+        <li><b>Levar o contrato a um advogado</b><span>7 pontos para revisar (locação × decoração, multas, prazos).</span></li>
       </ol>
     </div>
     <div class="col">
       <h3>Aline</h3>
       <ol>
-        <li><b>Testar a prévia nova</b><span>Com contratos, PDFs e Excel. É a versão mais próxima do sistema final.</span></li>
         <li><b>Passar custos fixos, divisão do lucro e retirada mínima</b><span>Pode ficar para depois: ela cadastra em Configurações.</span></li>
+        <li><b>Passar preços e pacotes</b><span>Para os exemplos do sistema ficarem iguais ao dia a dia dela.</span></li>
       </ol>
     </div>
     <div class="col">
       <h3>Claude</h3>
       <ol>
-        <li><b>Ligar o app ao Supabase de testes</b><span>Assim que o projeto de desenvolvimento existir. As telas já estão prontas.</span></li>
-        <li><b>Ajustar as telas com o seu retorno</b><span>Uma a uma, como manda o processo.</span></li>
-        <li><b>Aplicar o banco no Supabase</b><span>Primeiro no de testes. Repositório privado e aprovação da Aline já estão resolvidos.</span></li>
+        <li><b>Corrigir o que o teste de uso mostrar</b><span>Uma tela de cada vez, como manda o processo.</span></li>
+        <li><b>Ligar o backup na versão no ar</b><span>Quando você configurar a chave e os segredos.</span></li>
+        <li><b>Fechar a Fase 5 com evidências</b><span>Recuperar senha, sair de todos os dispositivos, e-mails em português.</span></li>
+        <li><b>Rascunhar a proposta comercial</b><span>Setup, mensalidade, o que está dentro e fora (valores ainda em rascunho).</span></li>
       </ol>
     </div>
   </div>
@@ -192,6 +204,7 @@ a{color:var(--link)}
     <div><dt>Migração</dt><dd>Um arquivo com as instruções para montar ou mudar o banco de dados. Toda mudança passa por uma, nunca na mão.</dd></div>
     <div><dt>RLS (segurança por linha)</dt><dd>A regra dentro do banco que decide quem vê o quê. É o que impede a assistente de ver o financeiro, ou outra empresa de ver os dados da Aline.</dd></div>
     <div><dt>Teste de isolamento</dt><dd>Um teste automático que tenta “invadir” os dados de outra empresa e de outros perfis. Se conseguir, o teste falha e avisa.</dd></div>
+    <div><dt>Backup e teste de restauração</dt><dd>Uma cópia do banco guardada todo dia em outro lugar, criptografada. Todo dia o sistema também prova que consegue restaurar a cópia: um backup que nunca foi aberto não garante nada.</dd></div>
     <div><dt>Verificação em duas etapas</dt><dd>Além da senha, um código no celular para entrar nas contas. Se a senha vazar, ninguém entra sem o celular.</dd></div>
   </dl>
 
@@ -202,7 +215,7 @@ a{color:var(--link)}
 </div>
 
 <script>
-// Fonte: PROJETO.md em 28/10/2026. s = done | doing | wait | todo
+// Fonte: PROJETO.md em 30/10/2026. s = done | doing | wait | todo
 const FASES = [
   {n:1, nome:'Descoberta', titulo:'Descoberta e escopo', s:'done', feito:10, total:10,
    o:'Entender o negócio, a dor principal e o que entra na primeira versão.',
@@ -210,43 +223,43 @@ const FASES = [
   {n:2, nome:'Protótipo', titulo:'Modelagem e protótipo', s:'done', feito:6, total:6,
    o:'Desenhar as telas, montar o protótipo clicável e decidir que dados guardar.',
    agora:'<b>Aprovada pela Aline em 29/10/2026</b>, por escrito: o protótipo e os dados com os prazos de guarda.'},
-  {n:3, nome:'Contas', titulo:'Contas e repositório', s:'wait', feito:3, total:9, quem:'Esperando você',
+  {n:3, nome:'Contas', titulo:'Contas e repositório', s:'done', feito:9, total:9,
    o:'Criar as contas onde o sistema vai rodar e proteger cada uma.',
-   agora:'Repositório privado e arquivos de configuração prontos. <b>Falta você criar o Supabase e ligar as duas etapas.</b>'},
-  {n:4, nome:'Banco', titulo:'Banco de dados e segurança', s:'doing', feito:9, total:11, aqui:true,
+   agora:'<b>Concluída em 30/10/2026.</b> Repositório privado, Supabase, Cloudflare no ar, alertas de segurança ligados e verificação em duas etapas no Gmail, GitHub e Supabase. Cloudflare sem 2FA próprio, justificado.'},
+  {n:4, nome:'Banco', titulo:'Banco de dados e segurança', s:'doing', feito:10, total:11,
    o:'Montar onde os dados ficam guardados e as regras de quem vê o quê.',
-   agora:'Pronto e testado no código: 17 verificações passando, incluindo contratos. <b>Falta aplicar no Supabase de verdade.</b>'},
-  {n:5, nome:'Login', titulo:'Login e permissões', s:'todo', feito:0, total:7,
+   agora:'<b>Banco aplicado no Supabase</b>, 17 verificações de isolamento passando e Security Advisor com 0 erros. Só falta o armazenamento de arquivos, que a v1 não usa.'},
+  {n:5, nome:'Login', titulo:'Login e permissões', s:'doing', feito:1, total:7,
    o:'Entrar só por convite, senha forte, recuperar senha, perfis de acesso.',
-   agora:'A tela de entrar já existe. Falta configurar o Supabase.'},
-  {n:6, nome:'Telas', titulo:'Construir o sistema', s:'doing', feito:6, total:7,
+   agora:'Cadastro aberto desligado, senha mínima de 10 caracteres e endereço do sistema configurado. <b>Falta testar a recuperação de senha</b> e configurar e-mails em português.'},
+  {n:6, nome:'Telas', titulo:'Construir o sistema', s:'doing', feito:6, total:7, aqui:true,
    o:'Construir as telas de verdade, ligadas ao banco.',
-   agora:'<b>Telas da v1 construídas</b> e testadas no navegador: painel, lançamentos, eventos, clientes, contratos, relatórios e configurações, com Excel, CSV e PDFs. Falta testar com o banco de verdade e você aprovar.'},
-  {n:7, nome:'Design', titulo:'Design', s:'todo', feito:0, total:9,
+   agora:'<b>Telas da v1 construídas</b> e testadas no navegador: painel, lançamentos, eventos, clientes, contratos, relatórios e configurações, com Excel, CSV e PDFs. <b>O login com o banco de verdade já funciona.</b> Falta o seu teste de uso e a sua aprovação.'},
+  {n:7, nome:'Design', titulo:'Design', s:'todo', feito:1, total:9,
    o:'Acabamento visual: cores da Aline, celular, temas claro e escuro, acessibilidade.',
    agora:'A direção já está definida pelo protótipo.'},
   {n:8, nome:'No ar', titulo:'Cloudflare, domínio e proteções', s:'todo', feito:0, total:7,
    o:'Colocar o sistema no endereço app.alineantunesdecora.com.br, com HTTPS e proteções.',
-   agora:'Começa quando houver telas para publicar.'},
+   agora:'O sistema já está no ar em um endereço provisório. Falta o domínio próprio, os cabeçalhos de segurança e proteger as prévias.'},
   {n:9, nome:'LGPD', titulo:'LGPD e jurídico', s:'todo', feito:0, total:4,
    o:'Política de privacidade, termos de uso e plano para incidentes.',
    agora:'O mapa de dados já foi rascunhado. Os textos precisam de revisão de um advogado.'},
   {n:10, nome:'Qualidade', titulo:'Qualidade antes da entrega', s:'todo', feito:1, total:6,
    o:'Testar tudo, conferir backups e fazer a revisão final de segurança.',
-   agora:'A verificação automática do GitHub já está configurada.'},
-  {n:11, nome:'Entrega', titulo:'Entrega e go-live', s:'todo', feito:0, total:6,
+   agora:'A verificação automática do GitHub já está configurada. O backup com teste de restauração está pronto e falta ligar.'},
+  {n:11, nome:'Entrega', titulo:'Entrega e go-live', s:'todo', feito:0, total:7,
    o:'Carregar os dados reais, treinar a Aline e colocar no ar.',
    agora:'Fim do projeto.'},
-  {n:12, nome:'Operação', titulo:'Documentação e operação', s:'todo', feito:0, total:4,
+  {n:12, nome:'Operação', titulo:'Documentação e operação', s:'todo', feito:0, total:8,
    o:'Manual, rotinas de manutenção e suporte.',
-   agora:'Fim do projeto.'}
+   agora:'O backup diário automático já está pronto e testado; falta ligar. Entram aqui o modelo de proposta, o contrato e a rotina de operação.'}
 ];
 const ROTULO = {done:'Concluída', doing:'Em andamento', wait:'Esperando', todo:'Não começou'};
 
 document.getElementById('stairs').innerHTML = FASES.map(f => {
   const h = 14 + (f.n - 1) * 7.8; // cada degrau mais alto que o anterior
   return `<a class="step${f.aqui ? ' here' : ''}" href="#fase-${f.n}" data-s="${f.s}" aria-label="Fase ${f.n}, ${f.titulo}: ${f.quem || ROTULO[f.s]}">
-    <span class="area"><span class="blk" style="height:${h}%">${f.n}</span></span><span class="lbl">${f.nome}</span></a>`;
+    <span class="area"><span class="blk" style="height:${h}%;--d:${(f.n - 1) * 0.06}s">${f.n}</span></span><span class="lbl">${f.nome}</span></a>`;
 }).join('');
 
 document.getElementById('phases').innerHTML = FASES.map(f => `
@@ -259,8 +272,35 @@ document.getElementById('phases').innerHTML = FASES.map(f => `
     </div>
     <div class="side">
       <span class="pill ${f.s}">${f.quem || ROTULO[f.s]}</span>
-      <span class="bar" role="img" aria-label="${f.feito} de ${f.total} itens"><i style="width:${f.feito / f.total * 100}%"></i></span>
+      <span class="bar" role="img" aria-label="${f.feito} de ${f.total} itens"><i data-w="${f.feito / f.total * 100}" style="--d:${(f.n - 1) * 0.06}s"></i></span>
       <span class="count">${f.feito} de ${f.total} itens</span>
     </div>
   </article>`).join('');
+
+const feitos = FASES.reduce((a, f) => a + f.feito, 0), todos = FASES.reduce((a, f) => a + f.total, 0), pct = Math.round(feitos / todos * 100);
+document.getElementById('total').innerHTML = `
+  <div class="total-row"><b id="pct">0%</b><span>${feitos} de ${todos} itens do projeto, ${FASES.filter(f => f.s === 'done').length} de 12 fases concluídas</span></div>
+  <div class="total-bar" role="img" aria-label="${pct}% do projeto"><i id="total-fill" data-w="${pct}"></i></div>`;
+
+const parado = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animar() {
+  const box = document.querySelector('.stairs-box');
+  box.classList.remove('go');
+  document.querySelectorAll('[data-w]').forEach(el => { el.style.width = '0%'; });
+  void box.offsetWidth; // reinicia a transição
+  requestAnimationFrame(() => {
+    box.classList.add('go');
+    document.querySelectorAll('[data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+    const alvo = pct, el = document.getElementById('pct');
+    if (parado) { el.textContent = alvo + '%'; return; }
+    const t0 = performance.now();
+    (function passo(t) {
+      const k = Math.min(1, (t - t0) / 1300);
+      el.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))) + '%';
+      if (k < 1) requestAnimationFrame(passo);
+    })(t0);
+  });
+}
+document.getElementById('replay').addEventListener('click', animar);
+animar();
 </script>
