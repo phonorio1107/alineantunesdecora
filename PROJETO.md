@@ -175,5 +175,6 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
 - 28/10/2026: ajuste 2 do protótipo: entrada de 30% e saldo 5 dias antes, categorias de custo da entrevista (freelancers, deslocamento, taxas de cartão, peças perdidas).
 - 28/10/2026: ajuste 1 do protótipo: fundo branco com confetes como no site e números sem quebrar no celular.
+- 29/10/2026: projeto Supabase criado com **Enable Data API: ligado**, **Automatically expose new tables: DESLIGADO** (recomendação do próprio Supabase: o acesso é concedido à mão) e **Enable automatic RLS: ligado** (rede de proteção para tabelas futuras). Migração `20261029100000_permissoes_api.sql` concede o mínimo a cada tabela; teste de isolamento passa nos dois modos da caixa.
 - 29/10/2026: **Fase 2 concluída**: Aline aprovou o protótipo e concordou com os dados e prazos por escrito (WhatsApp). Portão da fase ok: 6 de 6 itens. Pendente, sem travar nada: custos fixos, divisão do lucro e retirada mínima, que ela cadastra em Configurações.
 - 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.

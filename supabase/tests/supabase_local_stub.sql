@@ -23,7 +23,6 @@ grant usage on schema auth to anon, authenticated, service_role;
 grant execute on function auth.uid() to anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated, service_role;
 
--- O Supabase concede tudo nas tabelas do public para esses papéis; a RLS é que filtra.
-alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
-alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
-alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+-- Modo estrito: imita o projeto com "Automatically expose new tables" DESLIGADO (o recomendado e o que usamos).
+-- Nenhuma tabela nova nasce com permissão para os papéis da API; cada migração precisa conceder o que for preciso.
+-- Se funciona assim, funciona também com a opção ligada (as concessões a mais são cobertas pelos revokes e pela RLS).
