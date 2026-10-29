@@ -167,13 +167,14 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Suporte por canal único; pedidos viram Issues (P1 4h, P2 1 dia, P3 agendado)
 - [ ] Offboarding documentado
 - [ ] Checklist "criar novo cliente" (contas, variáveis, banco, domínio, convites, 2FA) e script único de deploy e migração por cliente
-- [ ] Automação de operação: backup agendado com restauração testada, monitor de disponibilidade, rotina contra pausa do banco gratuito
+- [ ] Automação de operação: backup agendado com restauração testada, monitor de disponibilidade, rotina contra pausa do banco gratuito. **Backup diário: código pronto e testado em Postgres local em 30/10/2026** (`scripts/backup/`, `.github/workflows/backup.yml`, passo a passo em `docs/backup.md`; restauração conferida, falha detectada num teste negativo, criptografia ida e volta ok). Falta o Pedro criar a chave, o bucket R2 e os 6 segredos; só marcar quando a primeira execução real ficar verde
 - [ ] Modelo de proposta comercial e contrato (setup, mensalidade, o que está dentro e fora, prazo mínimo, reajuste, atraso, saída dos dados), revisado por advogado
 - [ ] Janela e prazos de suporte escritos; conferir exclusividade no emprego do Pedro; abrir MEI ou ME antes de cobrar
 
 ---
 
 ## Histórico
+- 30/10/2026: **backup diário** escolhido (R2, criptografado, com teste de restauração automático). O teste achou uma falha: o dump só do `public` não levava as funções do schema `privado`; corrigido.
 - 30/10/2026: modelo comercial e de infraestrutura registrados em Decisões (valores em rascunho; **onde fica o Supabase continua em aberto**). Itens de operação e proposta adicionados à Fase 12.
 - 29/10/2026: sistema publicado no Cloudflare e **login testado ao vivo** (Pedro entrou). `main` recebeu o código da v1 por merge. Falta na Fase 3: Dependabot/secret scanning, decisão sobre proteção da `main` (plano gratuito não protege repositório privado) e 2FA.
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.

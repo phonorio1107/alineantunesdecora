@@ -1,0 +1,85 @@
+name: Backup do banco
+
+# Todo dia às 03:17 (horário de Brasília). Também dá para rodar à mão em Actions → Backup do banco → Run workflow.
+# Se algum passo falhar, o GitHub avisa por e-mail. Passo a passo da configuração: docs/backup.md
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+      AGE_PUBLICA: ${{ secrets.BACKUP_AGE_PUBLIC_KEY }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      SAIDA: ${{ runner.temp }}/saida
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir configuração
+        run: |
+          faltando=""
+          for v in DATABASE_URL AGE_PUBLICA R2_ACCOUNT_ID R2_BUCKET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            [ -n "${!v}" ] || faltando="$faltando $v"
+          done
+          if [ -n "$faltando" ]; then
+            echo "::error::Backup NÃO configurado. Faltam os segredos:$faltando (veja docs/backup.md)"
+            exit 1
+          fi
+
+      - name: Instalar cliente do Postgres 17 e age
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Gerar o backup
+        run: bash scripts/backup/gerar-backup.sh
+
+      - name: Testar a restauração
+        env:
+          RESTAURAR_URL: postgresql://postgres:postgres@localhost:5432
+        run: bash scripts/backup/testar-restauracao.sh | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Criptografar
+        run: |
+          echo "ARQUIVO=${RUNNER_TEMP}/aline-$(date -u +%Y-%m-%d).tar.age" >> "$GITHUB_ENV"
+          ARQUIVO="${RUNNER_TEMP}/aline-$(date -u +%Y-%m-%d).tar.age" bash scripts/backup/criptografar.sh
+
+      - name: Enviar para o Cloudflare R2
+        run: |
+          destino="s3://${R2_BUCKET}"
+          ponto="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          nome="$(basename "$ARQUIVO")"
+          aws s3 cp "$ARQUIVO" "$destino/diario/$nome" --endpoint-url "$ponto"
+          # Aos domingos, uma cópia semanal (a regra de ciclo de vida do bucket apaga diários e semanais antigos)
+          if [ "$(date -u +%u)" = "7" ]; then
+            aws s3 cp "$ARQUIVO" "$destino/semanal/$nome" --endpoint-url "$ponto"
+          fi
+          echo "Backup $nome enviado." | tee -a "$GITHUB_STEP_SUMMARY"
