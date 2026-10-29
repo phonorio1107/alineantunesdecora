@@ -1,0 +1,177 @@
+{
+  "planos": [
+    {
+      "nome": "Essencial",
+      "para": "Para organizar o dinheiro do negócio",
+      "setup": "R$ 1.500",
+      "mensal": "R$ 129,90"
+    },
+    {
+      "nome": "Profissional",
+      "para": "Financeiro + clientes, serviços e contratos",
+      "setup": "R$ 2.500",
+      "mensal": "R$ 199,90",
+      "destaque": "Mais indicado"
+    },
+    {
+      "nome": "Parceiro",
+      "para": "Para quem quer o sistema crescendo junto",
+      "setup": "R$ 3.900",
+      "mensal": "R$ 399,90"
+    }
+  ],
+  "tabela": [
+    [
+      "Financeiro, PDFs e Excel",
+      "sim",
+      "sim",
+      "sim"
+    ],
+    [
+      "Clientes e lucro por serviço",
+      "não",
+      "sim",
+      "sim"
+    ],
+    [
+      "Contratos com a sua marca",
+      "não",
+      "sim",
+      "sim"
+    ],
+    [
+      "Usuários incluídos",
+      "2",
+      "4",
+      "8"
+    ],
+    [
+      "Tela sob medida",
+      "não",
+      "não",
+      "1"
+    ],
+    [
+      "Site de apresentação",
+      "não",
+      "não",
+      "sim"
+    ],
+    [
+      "Histórico de backup",
+      "7 dias",
+      "30 dias",
+      "1 ano"
+    ],
+    [
+      "Revisão técnica",
+      "Trimestral",
+      "Mensal",
+      "Quinzenal"
+    ],
+    [
+      "Ajustes e melhorias",
+      "1 por trimestre",
+      "1 por mês",
+      "Até 3 h/mês"
+    ],
+    [
+      "Resposta a urgência",
+      "1 dia útil",
+      "4 h úteis",
+      "4 h + prioridade"
+    ],
+    [
+      "Conversa de acompanhamento",
+      "não",
+      "Trimestral",
+      "Mensal"
+    ],
+    [
+      "Treino da equipe",
+      "30 min",
+      "1 h",
+      "2 h"
+    ],
+    [
+      "Mensalidade",
+      "R$ 129,90",
+      "R$ 199,90",
+      "R$ 399,90"
+    ]
+  ],
+  "faixas_backup": [
+    [
+      "Essencial",
+      "7 dias",
+      "A cópia de cada um dos últimos 7 dias."
+    ],
+    [
+      "Profissional",
+      "30 dias",
+      "7 cópias diárias e 4 semanais."
+    ],
+    [
+      "Parceiro",
+      "1 ano",
+      "Mais 12 mensais e um ensaio completo de recuperação a cada 6 meses."
+    ]
+  ],
+  "faixas_manutencao": [
+    [
+      "Essencial",
+      "A cada 3 meses",
+      "Revisão técnica e 1 pequeno ajuste por trimestre."
+    ],
+    [
+      "Profissional",
+      "Todo mês",
+      "Revisão técnica e 1 pequeno ajuste por mês."
+    ],
+    [
+      "Parceiro",
+      "A cada 15 dias",
+      "Revisão técnica e até 3 horas de melhorias por mês."
+    ]
+  ],
+  "faixas_suporte": [
+    [
+      "Resposta",
+      "2 dias úteis",
+      "Urgência (sistema parado ou dado errado): 1 dia útil."
+    ],
+    [
+      "Resposta",
+      "1 dia útil",
+      "Urgência: até 4 horas úteis. Conversa a cada 3 meses."
+    ],
+    [
+      "Resposta",
+      "1 dia útil",
+      "Urgência: 4 horas úteis, na frente da fila. Conversa todo mês."
+    ]
+  ],
+  "extras": [
+    [
+      "Usuário a mais",
+      "R$ 19,90 por mês, cada."
+    ],
+    [
+      "Página de apresentação (site simples)",
+      "Nos planos Essencial e Profissional: a partir de R$ 900."
+    ],
+    [
+      "Integrações",
+      "Pix e boleto automáticos, nota fiscal, mensagens automáticas no WhatsApp: orçamento à parte. A mensalidade da ferramenta usada é repassada sem acréscimo."
+    ],
+    [
+      "Telas ou módulos novos",
+      "Orçamentos, agenda, estoque: orçamento à parte."
+    ],
+    [
+      "Hora extra de melhoria",
+      "R$ 120 por hora, além do que o plano inclui."
+    ]
+  ],
+  "condicoes": "<b>Condições:</b> prazo mínimo de 12 meses · reajuste anual pelo IPCA · no plano anual à vista, você paga 10 meses e usa 12 · subir de plano a qualquer momento, sem multa · <b>seus dados são seus</b>: exportação completa em Excel, sem custo, sempre que quiser."
+}

@@ -174,6 +174,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ---
 
 ## Histórico
+- 30/10/2026: **3 planos** para enviar no WhatsApp (`docs/modelos/planos/`, 8 lâminas + PDF): Essencial R$ 1.500 + R$ 129,90; Profissional R$ 2.500 + R$ 199,90; Parceiro R$ 3.900 + R$ 399,90. Diferem em módulos, usuários, histórico de backup, frequência de revisão, ajustes e prazo de suporte. Conta de horas e custos no LEIA-ME. Valores em rascunho, a validar.
 - 30/10/2026: adiantado em paralelo ao teste de uso: cabeçalhos de segurança (CSP e afins) gerados no build e testados; fontes servidas pelo próprio site; revisão de design no celular com correções de toque e foco; tela de erro com a marca; rascunhos de LGPD (política, termos, suboperadores, plano de incidente); proposta comercial em PDF; checklist de novo cliente com scripts de migração e publicação; README completo. Backup diário agora só roda no horário depois da variável `BACKUP_ATIVO`; dependência `jspdf` (sem uso) removida.
 - 30/10/2026: **Fase 3 concluída.** 2FA ligado em Gmail, GitHub e Supabase; Cloudflare sem 2FA próprio por usar login Google (justificado).
 - 30/10/2026: **backup diário** escolhido (R2, criptografado, com teste de restauração automático). O teste achou uma falha: o dump só do `public` não levava as funções do schema `privado`; corrigido.

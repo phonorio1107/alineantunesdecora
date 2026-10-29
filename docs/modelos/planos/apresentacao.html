@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Planos · Pedro Hoffman</title>
+<style>
+  /* Design system Pedro Hoffman Degrau: preto e branco em tudo, o marinho é para agir. Lâminas 1080×1350 (4:5) para o WhatsApp. */
+  @font-face{font-family:'Inter';font-weight:400;src:url(fontes/inter-latin-400-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter';font-weight:500;src:url(fontes/inter-latin-500-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter';font-weight:600;src:url(fontes/inter-latin-600-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter';font-weight:700;src:url(fontes/inter-latin-700-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter Tight';font-weight:600;src:url(fontes/inter-tight-latin-600-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter Tight';font-weight:700;src:url(fontes/inter-tight-latin-700-normal.woff2) format('woff2')}
+  :root{--ink:#0E0E10;--muted:#5A5A62;--line:#E6E6E8;--soft:#F5F5F6;--navy:#0B1F3A;--navy-soft:#E8EDF5;--on-navy:#C9D5EA;
+    --display:'Inter Tight',system-ui,sans-serif;--text:'Inter',system-ui,sans-serif}
+  @page{size:1080px 1350px;margin:0}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#fff}
+  body{font-family:var(--text);color:var(--ink);font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  h1,h2,h3,p,ul,ol{margin:0}
+  .slide{width:1080px;height:1350px;padding:76px 80px 64px;display:flex;flex-direction:column;gap:36px;position:relative;overflow:hidden;break-after:page;background:#fff}
+  .slide.escura{background:var(--navy);color:#fff}
+  .topo{display:flex;justify-content:space-between;align-items:center;font:600 22px var(--display);letter-spacing:-.01em}
+  .topo .marca{display:flex;align-items:center;gap:12px}
+  .topo svg{width:30px;height:30px}
+  .topo .pag{font:600 20px var(--text);color:var(--muted);letter-spacing:.08em}
+  .escura .topo .pag{color:var(--on-navy)}
+  .eyebrow{font:600 22px var(--text);letter-spacing:.14em;text-transform:uppercase;color:var(--navy)}
+  .escura .eyebrow{color:var(--on-navy)}
+  h1{font:700 88px/1.02 var(--display);letter-spacing:-.045em}
+  h2{font:700 64px/1.05 var(--display);letter-spacing:-.04em}
+  .lead{font-size:32px;line-height:1.4;color:var(--muted)}
+  .escura .lead{color:var(--on-navy)}
+  .rodape{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:22px;color:var(--muted)}
+  .escura .rodape{color:var(--on-navy)}
+
+  /* capa */
+  .capa{justify-content:space-between}
+  .degraus{display:flex;align-items:flex-end;gap:18px;height:300px}
+  .degraus i{flex:1;border-radius:14px 14px 4px 4px;background:rgba(255,255,255,.14)}
+  .degraus i:nth-child(1){height:34%}.degraus i:nth-child(2){height:67%}.degraus i:nth-child(3){height:100%;background:#fff}
+  .capa h1{font-size:96px}
+
+  /* benefícios */
+  .grade{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .item{background:var(--soft);border-radius:24px;padding:28px 30px;display:flex;flex-direction:column;gap:12px}
+  .item b{font:600 32px/1.15 var(--display);letter-spacing:-.02em}
+  .item span{font-size:24px;line-height:1.4;color:var(--muted)}
+  .item .n{width:52px;height:52px;border-radius:14px;background:var(--ink);color:#fff;display:grid;place-items:center;font:700 24px var(--display)}
+
+  /* cartões dos planos */
+  .planos{display:flex;flex-direction:column;gap:24px}
+  .plano{border:2px solid var(--line);border-radius:28px;padding:34px 36px;display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:center;position:relative}
+  .plano.destaque{border-color:var(--navy);background:var(--navy);color:#fff}
+  .plano .nome{font:700 44px var(--display);letter-spacing:-.03em}
+  .plano .para{font-size:24px;color:var(--muted);grid-column:1}
+  .plano.destaque .para{color:var(--on-navy)}
+  .plano .preco{grid-column:2;grid-row:1 / span 2;text-align:right}
+  .plano .preco b{display:block;font:700 52px var(--display);letter-spacing:-.03em;white-space:nowrap}
+  .plano .preco b small{font:500 24px var(--text);letter-spacing:0}
+  .plano .preco span{display:block;font-size:22px;color:var(--muted);margin-top:4px}
+  .plano.destaque .preco span{color:var(--on-navy)}
+  .selo{position:absolute;top:-18px;left:36px;background:#fff;color:var(--navy);border:2px solid var(--navy);border-radius:999px;padding:4px 16px;font:700 18px var(--text);letter-spacing:.08em;text-transform:uppercase}
+
+  /* comparativo */
+  table{width:100%;border-collapse:collapse;font-size:23px;line-height:1.3}
+  th{font:700 26px var(--display);text-align:center;padding:0 8px 16px;letter-spacing:-.02em;vertical-align:bottom}
+  th.dest{color:var(--navy)}
+  th small{display:block;font:500 19px var(--text);color:var(--muted);letter-spacing:0;margin-top:4px}
+  td{padding:14px 8px;border-top:1.5px solid var(--line);text-align:center;vertical-align:middle}
+  td:first-child{text-align:left;font-weight:600;padding-left:0;width:36%}
+  td.dest{background:var(--navy-soft);font-weight:600}
+  th.dest{background:var(--navy-soft);border-radius:16px 16px 0 0;padding-top:16px}
+  tr:last-child td.dest{border-radius:0 0 16px 16px}
+  .sim{font-weight:700} .nao{color:#A0A0A8}
+
+  /* passos */
+  .passos{display:flex;flex-direction:column;gap:22px}
+  .passo{display:grid;grid-template-columns:72px 1fr;gap:24px;align-items:start}
+  .passo .n{width:72px;height:72px;border-radius:20px;background:var(--ink);color:#fff;display:grid;place-items:center;font:700 32px var(--display)}
+  .escura .passo .n{background:#fff;color:var(--navy)}
+  .passo b{display:block;font:600 34px/1.2 var(--display);letter-spacing:-.02em}
+  .passo span{display:block;font-size:25px;line-height:1.4;color:var(--muted);margin-top:6px}
+  .escura .passo span{color:var(--on-navy)}
+
+  /* faixas por plano */
+  .faixas{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .faixa{border:2px solid var(--line);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:8px}
+  .faixa.destaque{border-color:var(--navy);background:var(--navy-soft)}
+  .faixa .t{font:600 20px var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .faixa b{font:700 34px/1.1 var(--display);letter-spacing:-.02em}
+  .faixa span{font-size:21px;line-height:1.35;color:var(--muted)}
+
+  .lista{display:flex;flex-direction:column;gap:18px;font-size:27px;line-height:1.35}
+  .lista li{list-style:none;display:grid;grid-template-columns:30px 1fr;gap:14px}
+  .lista li::before{content:"";width:14px;height:14px;border-radius:4px;background:var(--ink);margin-top:12px}
+  .lista b{font-weight:600}
+  .lista small{display:block;font-size:22px;color:var(--muted);margin-top:2px}
+  .caixa{background:var(--soft);border-radius:24px;padding:30px 34px;font-size:25px;line-height:1.4}
+  .caixa b{font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- 1. Capa -->
+<section class="slide escura capa">
+  <div class="topo"><span class="marca">{{simbolo_branco}}Pedro Hoffman</span><span class="pag">1/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:32px">
+    <span class="eyebrow">Sistemas de gestão sob medida</span>
+    <h1>Seu negócio organizado, na palma da mão.</h1>
+    <p class="lead">Controle de dinheiro, clientes e serviços feito para o jeito que você trabalha. Três planos para escolher.</p>
+  </div>
+  <div class="degraus" aria-hidden="true"><i></i><i></i><i></i></div>
+</section>
+
+<!-- 2. O que o sistema faz -->
+<section class="slide">
+  <div class="topo"><span class="marca">{{simbolo}}Pedro Hoffman</span><span class="pag">2/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span class="eyebrow">O que o sistema faz</span>
+    <h2>Saber quanto entrou, quanto saiu e quanto sobrou.</h2>
+  </div>
+  <div class="grade">
+    <div class="item"><span class="n">1</span><b>Lançar em menos de 1 minuto</b><span>Entradas e saídas pelo celular, com categorias.</span></div>
+    <div class="item"><span class="n">2</span><b>Lucro de verdade</b><span>Do mês e de cada serviço ou evento, já descontados os custos.</span></div>
+    <div class="item"><span class="n">3</span><b>Fôlego do caixa</b><span>Quantos meses o negócio aguenta sem entrar dinheiro novo.</span></div>
+    <div class="item"><span class="n">4</span><b>Fechamento do mês</b><span>Resumo pronto, em PDF, para guardar ou mandar ao contador.</span></div>
+    <div class="item"><span class="n">5</span><b>Com a sua marca</b><span>Seu logo e suas cores nas telas, contratos e recibos.</span></div>
+    <div class="item"><span class="n">6</span><b>Dados protegidos</b><span>Acesso por convite, cada pessoa vê só o que pode, backup todo dia.</span></div>
+  </div>
+  <div class="rodape"><span>Funciona no celular e no computador</span><span>Planilha Excel quando quiser</span></div>
+</section>
+
+<!-- 3. Os três planos -->
+<section class="slide">
+  <div class="topo"><span class="marca">{{simbolo}}Pedro Hoffman</span><span class="pag">3/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span class="eyebrow">Os planos</span>
+    <h2>Escolha o degrau do seu negócio.</h2>
+  </div>
+  <div class="planos">{{cartoes}}</div>
+  <div class="caixa">
+    <b>Em todos os planos</b>
+    <ul class="lista" style="margin-top:18px;font-size:25px;gap:12px">
+      <li><span>Sistema com a sua marca, no celular e no computador</span></li>
+      <li><span>Backup diário criptografado, com teste automático</span></li>
+      <li><span>Atualizações de segurança e correção de erros</span></li>
+      <li><span>Suporte direto comigo, por um canal só</span></li>
+      <li><span>Seus dados são seus: exportação em Excel quando quiser</span></li>
+    </ul>
+  </div>
+  <div class="rodape"><span>Implantação paga uma vez: metade no início, metade na entrega.</span></div>
+</section>
+
+<!-- 4. Comparativo -->
+<section class="slide">
+  <div class="topo"><span class="marca">{{simbolo}}Pedro Hoffman</span><span class="pag">4/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <span class="eyebrow">Lado a lado</span>
+    <h2 style="font-size:56px">O que cada plano inclui</h2>
+  </div>
+  <table>{{tabela}}</table>
+</section>
+
+<!-- 5. Backup -->
+<section class="slide">
+  <div class="topo"><span class="marca">{{simbolo}}Pedro Hoffman</span><span class="pag">5/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span class="eyebrow">Backup, em português claro</span>
+    <h2>Uma cópia de tudo, todo dia, longe do sistema.</h2>
+  </div>
+  <div class="passos">
+    <div class="passo"><span class="n">1</span><div><b>Copia sozinho, de madrugada</b><span>Todos os seus dados, sem você precisar fazer nada.</span></div></div>
+    <div class="passo"><span class="n">2</span><div><b>Testa se a cópia abre</b><span>Todo dia o sistema restaura a cópia num ambiente de teste e confere. Cópia que nunca foi aberta não garante nada.</span></div></div>
+    <div class="passo"><span class="n">3</span><div><b>Tranca com chave</b><span>A cópia é criptografada: nem a empresa que guarda consegue ler.</span></div></div>
+    <div class="passo"><span class="n">4</span><div><b>Guarda em outro lugar</b><span>Fica fora do sistema. Se algo der muito errado, recupero tudo com perda de no máximo 1 dia.</span></div></div>
+  </div>
+  <div class="faixas">{{faixas_backup}}</div>
+</section>
+
+<!-- 6. Manutenção e suporte -->
+<section class="slide">
+  <div class="topo"><span class="marca">{{simbolo}}Pedro Hoffman</span><span class="pag">6/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span class="eyebrow">Manutenção e suporte</span>
+    <h2>Eu cuido do sistema para você só usar.</h2>
+  </div>
+  <div class="caixa"><b>Revisão técnica:</b> atualizações de segurança, conferência dos backups e dos alertas, velocidade e acessos de quem saiu da equipe. <b>Pequeno ajuste:</b> mudar um texto, um campo, uma categoria ou um relatório simples (até 1 hora).</div>
+  <div class="faixas">{{faixas_manutencao}}</div>
+  <div class="faixas">{{faixas_suporte}}</div>
+  <div class="rodape"><span>Atendimento em dias úteis, das 9h às 20h, por um canal só.</span></div>
+</section>
+
+<!-- 7. Extras e condições -->
+<section class="slide">
+  <div class="topo"><span class="marca">{{simbolo}}Pedro Hoffman</span><span class="pag">7/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span class="eyebrow">Extras e condições</span>
+    <h2>Sem letra miúda.</h2>
+  </div>
+  <ul class="lista">{{extras}}</ul>
+  <div class="caixa">{{condicoes}}</div>
+</section>
+
+<!-- 8. Como começar -->
+<section class="slide escura">
+  <div class="topo"><span class="marca">{{simbolo_branco}}Pedro Hoffman</span><span class="pag">8/8</span></div>
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span class="eyebrow">Como começar</span>
+    <h2>Do primeiro papo ao sistema no ar em 3 a 5 semanas.</h2>
+  </div>
+  <div class="passos">
+    <div class="passo"><span class="n">1</span><div><b>Conversa de 30 minutos</b><span>Entendo como o seu negócio funciona e o que mais pesa hoje. Sem compromisso.</span></div></div>
+    <div class="passo"><span class="n">2</span><div><b>Protótipo para você aprovar</b><span>Você vê e clica nas telas antes de eu construir de verdade.</span></div></div>
+    <div class="passo"><span class="n">3</span><div><b>Implantação</b><span>Sistema com a sua marca, seus dados iniciais e treino da equipe.</span></div></div>
+    <div class="passo"><span class="n">4</span><div><b>Uso assistido</b><span>3 a 5 dias acompanhando de perto, ajustando o que precisar.</span></div></div>
+  </div>
+  <div class="rodape" style="font-size:30px;color:#fff;font-weight:600"><span>Responda esta mensagem e marcamos a conversa.</span></div>
+</section>
+
+</body>
+</html>
