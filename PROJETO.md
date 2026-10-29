@@ -95,7 +95,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Storage: buckets privados, políticas por empresa, limite de tamanho e tipos (a v1 não usa arquivos; vale quando entrar o primeiro bucket)
 - [x] `service_role` fora do front-end e do repositório (28/10/2026; busca no código vazia)
 - [x] Teste de isolamento entre empresas e perfis: `supabase/tests/isolamento.sql`, 17 verificações passando em Postgres 16 local (inclui contratos e custos fixos); confirmado que acusa 4 furos abertos de propósito; roda no GitHub Actions a cada PR (28/10/2026)
-- [ ] Security Advisor zerado (ou justificado)
+- [ ] Security Advisor zerado (ou justificado): rodado em 29/10/2026, **0 erros e 3 avisos**. (1 e 2) `public.rls_auto_enable()` executável por anon e logados: função do próprio Supabase (recurso de RLS automática); corrigido pela migração `20261029110000_revoga_rls_auto_enable.sql` (tira a permissão de execução; testado em Postgres 16 local), **falta o Pedro rodar no SQL Editor e atualizar o Advisor**. (3) *Leaked password protection*: recurso do plano Pro; **justificado**: plano gratuito, compensado por senha mínima de 10 caracteres e cadastro fechado; rever se migrar para o Pro
 
 ## Fase 5: Autenticação e permissões
 - [ ] Cadastro aberto desligado; entrada por convite; confirmação de e-mail
