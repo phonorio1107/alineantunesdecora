@@ -68,6 +68,7 @@ grant execute on function public.gerar_recorrencias(uuid, date) to authenticated
 create schema if not exists controle;
 create table if not exists controle.migracoes (nome text primary key, aplicada_em timestamptz not null default now(), como text not null default 'script');
 revoke all on schema controle from public;
+alter table controle.migracoes enable row level security;
 insert into controle.migracoes (nome, como) values
   ('20261028120000_estrutura_v1.sql', 'marcada'),
   ('20261029090000_contratos_e_logistica.sql', 'marcada'),

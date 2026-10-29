@@ -14,6 +14,7 @@ set client_min_messages = warning;
 create schema if not exists controle;
 create table if not exists controle.migracoes (nome text primary key, aplicada_em timestamptz not null default now(), como text not null default 'script');
 revoke all on schema controle from public;
+alter table controle.migracoes enable row level security;
 SQL
 
 feitas="$(psql "$DATABASE_URL" -At -v ON_ERROR_STOP=1 -c 'select nome from controle.migracoes')"
