@@ -100,7 +100,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ## Fase 5: Autenticação e permissões
 - [ ] Cadastro aberto desligado; entrada por convite; confirmação de e-mail
 - [ ] Senha forte; token curto com renovação; limite de tentativas
-- [ ] Redirect URLs só de produção e prévias
+- [x] Redirect URLs só de produção e prévias (informado pelo Pedro em 30/10/2026: Site URL e Redirect URL = endereço `.workers.dev`, feito em 29/10; sem print). Trocar pelo domínio próprio na Fase 8
 - [ ] 2FA disponível (obrigatório para admin se o cliente aceitar)
 - [ ] Perfis administrador e usuário, checados no banco
 - [ ] Recuperar senha, trocar senha, sair de todos os dispositivos (telas prontas em 28/10/2026; falta testar com o Supabase de verdade)
