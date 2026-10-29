@@ -44,6 +44,9 @@ Repositório → **Settings → Secrets and variables → Actions → New reposi
 ### 5. Primeira execução
 **Actions → Backup do banco → Run workflow.** Deve terminar verde, e o resumo mostra a tabela de contagens com "RESTAURAÇÃO OK". Confira se o arquivo apareceu em `diario/` no R2.
 
+### 6. Ligar o horário diário
+Só depois da primeira execução verde: repositório → **Settings → Secrets and variables → Actions → aba Variables → New repository variable**, nome `BACKUP_ATIVO`, valor `true`. Sem essa variável, o horário das 03:17 não roda (a execução à mão funciona sempre).
+
 Ative os e-mails de falha em GitHub → Settings → Notifications → Actions.
 
 ## Rotina mensal (30 min): provar que dá para abrir

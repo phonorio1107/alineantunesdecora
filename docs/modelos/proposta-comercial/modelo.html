@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Proposta comercial · {{cliente}}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* Design system Pedro Hoffman Degrau: preto e branco em tudo, o marinho é para agir */
+  :root{--ink:#0E0E10;--muted:#5A5A62;--line:#E6E6E8;--soft:#F5F5F6;--navy:#0B1F3A;
+    --display:'Inter Tight',system-ui,sans-serif;--text:'Inter',system-ui,sans-serif}
+  @page{size:A4;margin:20mm 18mm 22mm 18mm}
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{font-family:var(--text);font-variant-numeric:tabular-nums;font-size:9.5pt;line-height:1.5;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  h1,h2,h3,p{margin:0}
+  .masthead{display:flex;justify-content:space-between;align-items:center;padding-bottom:11pt;border-bottom:1.5pt solid var(--ink)}
+  .mark svg{height:16pt;width:auto;display:block}
+  .doc-id{text-align:right;font-size:7.5pt;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;line-height:1.6}
+  .doc-id strong{color:var(--navy);font-weight:600}
+  .title{padding:18pt 0 12pt}
+  .eyebrow{font-size:7.5pt;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--navy)}
+  h1{font-family:var(--display);font-size:22pt;line-height:1.1;font-weight:700;letter-spacing:-.035em;margin-top:6pt;max-width:15.5cm}
+  .lead{color:var(--muted);margin-top:7pt;max-width:15.5cm}
+  .precos{display:grid;grid-template-columns:1fr 1fr;gap:10pt;margin-top:4pt}
+  .preco{border:.75pt solid var(--line);border-radius:8pt;padding:11pt 13pt;background:var(--soft)}
+  .preco span{display:block;font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .preco b{display:block;font-family:var(--display);font-size:19pt;font-weight:700;letter-spacing:-.03em;margin-top:3pt}
+  .preco small{display:block;color:var(--muted);font-size:8.5pt;margin-top:3pt}
+  .preco.destaque{background:var(--navy);border-color:var(--navy);color:#fff}
+  .preco.destaque span,.preco.destaque small{color:#C9D5EA}
+  section{margin-top:15pt;break-inside:avoid}
+  .sec-h{display:flex;align-items:baseline;gap:9pt;padding-bottom:5pt;border-bottom:.75pt solid var(--ink);margin-bottom:8pt}
+  .sec-h .n{font-family:var(--display);font-size:8.5pt;font-weight:700;color:#fff;background:var(--ink);min-width:15pt;height:15pt;border-radius:4pt;display:inline-flex;align-items:center;justify-content:center}
+  h2{font-family:var(--display);font-size:12pt;font-weight:600;letter-spacing:-.02em}
+  .duas{display:grid;grid-template-columns:1fr 1fr;gap:6pt 18pt}
+  ul{margin:0;padding-left:13pt} li{margin:2.5pt 0}
+  .fora li::marker{content:"–  ";color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:9pt}
+  td{padding:5pt 8pt 5pt 0;border-bottom:.6pt solid var(--line);vertical-align:top}
+  td:first-child{font-weight:600;width:32%}
+  .aceite{display:grid;grid-template-columns:1fr 1fr;gap:28pt;margin-top:26pt}
+  .aceite div{border-top:.75pt solid var(--ink);padding-top:5pt;font-size:8.5pt;color:var(--muted)}
+  .aceite b{display:block;color:var(--ink);font-weight:600}
+  .nota{margin-top:12pt;font-size:8pt;color:var(--muted)}
+</style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="mark">{{logo}}</div>
+    <div class="doc-id">Proposta <strong>{{codigo}}</strong><br>{{data}} · válida por {{validade}}</div>
+  </header>
+
+  <div class="title">
+    <span class="eyebrow">Sistema de gestão sob medida</span>
+    <h1>{{titulo}}</h1>
+    <p class="lead">{{apresentacao}}</p>
+  </div>
+
+  <div class="precos">
+    <div class="preco"><span>Implantação (setup)</span><b>{{setup}}</b><small>{{setup_condicao}}</small></div>
+    <div class="preco destaque"><span>Mensalidade</span><b>{{mensalidade}}</b><small>{{mensalidade_condicao}}</small></div>
+  </div>
+
+  <section>
+    <div class="sec-h"><span class="n">1</span><h2>O que o sistema faz</h2></div>
+    <ul class="duas">{{escopo}}</ul>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">2</span><h2>O que a implantação inclui</h2></div>
+    <ul class="duas">{{inclui_setup}}</ul>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">3</span><h2>O que a mensalidade inclui</h2></div>
+    <ul class="duas">{{inclui_mensalidade}}</ul>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">4</span><h2>Não incluído (orçado à parte)</h2></div>
+    <ul class="duas fora">{{nao_inclui}}</ul>
+  </section>
+
+  <section>
+    <div class="sec-h"><span class="n">5</span><h2>Condições</h2></div>
+    <table>{{condicoes}}</table>
+  </section>
+
+  <div class="aceite">
+    <div><b>{{responsavel_cliente}}</b>{{cliente}} · data e assinatura</div>
+    <div><b>Pedro Hoffman</b>Desenvolvedor responsável · data e assinatura</div>
+  </div>
+  <p class="nota">{{nota}}</p>
+</body>
+</html>

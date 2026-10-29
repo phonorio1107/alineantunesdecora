@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   backup:
+    # O horário só vale depois que a configuração estiver pronta (variável BACKUP_ATIVO = true). Rodar à mão funciona sempre.
+    if: github.event_name == 'workflow_dispatch' || vars.BACKUP_ATIVO == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:

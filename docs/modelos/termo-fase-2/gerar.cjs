@@ -1,5 +1,5 @@
 // Gera o PDF do termo de aprovação da Fase 2 a partir do modelo e dos dados de um cliente.
-// Uso: node docs/modelos/termo-fase-2/gerar.js docs/modelos/termo-fase-2/aline.json docs/termo-aprovacao-fase-2.pdf
+// Uso: node docs/modelos/termo-fase-2/gerar.cjs docs/modelos/termo-fase-2/aline.json docs/termo-aprovacao-fase-2.pdf
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
@@ -9,7 +9,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 async function main() {
   const [dadosPath, saida] = process.argv.slice(2);
   if (!dadosPath || !saida) {
-    console.error('Uso: node gerar.js <dados.json> <saida.pdf>');
+    console.error('Uso: node gerar.cjs <dados.json> <saida.pdf>');
     process.exit(1);
   }
   const d = JSON.parse(fs.readFileSync(dadosPath, 'utf8'));

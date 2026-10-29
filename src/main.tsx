@@ -3,7 +3,15 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, MemoryRouter } from 'react-router-dom'
 import App from './App'
+import ErroGeral from './components/ErroGeral'
 import { SessaoProvider } from './auth/Sessao'
+// Fontes servidas pelo próprio sistema (sem Google Fonts): menos um terceiro recebendo o IP de quem usa, e a CSP fica só com 'self'.
+import '@fontsource-variable/dm-sans/opsz.css'
+import '@fontsource-variable/dm-sans/opsz-italic.css'
+import '@fontsource/playfair-display/latin-500.css'
+import '@fontsource/playfair-display/latin-600.css'
+import '@fontsource/playfair-display/latin-700.css'
+import '@fontsource/playfair-display/latin-500-italic.css'
 import './index.css'
 import { modoDemo } from './lib/supabase'
 
@@ -27,12 +35,14 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <SessaoProvider>
-        <Roteador>
-          <App />
-        </Roteador>
-      </SessaoProvider>
-    </QueryClientProvider>
+    <ErroGeral>
+      <QueryClientProvider client={queryClient}>
+        <SessaoProvider>
+          <Roteador>
+            <App />
+          </Roteador>
+        </SessaoProvider>
+      </QueryClientProvider>
+    </ErroGeral>
   </StrictMode>,
 )

@@ -10,7 +10,7 @@
   --shadow: 0 1px 2px rgba(90, 30, 55, .05), 0 10px 30px rgba(90, 30, 55, .07); --scrim: rgba(34, 20, 28, .42);
   --dot1: #f9cfde; --dot2: #fcefb8; --dot3: #cfeaf2; --blob1: #fde7ef; --blob2: #fff6d6;
   --f-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --f-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-body: "DM Sans Variable", "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
 }
 :root.escuro {
@@ -27,7 +27,7 @@
 html, body, #root { min-height: 100% }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 var(--f-body); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent }
 button, input, select, textarea { font: inherit; color: inherit }
-:focus-visible { outline: 3px solid var(--deco); outline-offset: 2px; border-radius: 6px }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px }
 h1, h2, h3, p { margin: 0; text-wrap: balance }
 h1 { font: 600 30px/1.15 var(--f-display); letter-spacing: -.01em }
 h1 em, h2 em { color: var(--deco); font-style: italic; font-weight: 500 }
@@ -132,6 +132,8 @@ button.linha:hover { background: var(--rose-50) }
   .linha .cresce { flex: 1 1 calc(100% - 48px) }
   .linha > .btn, .linha > .pill { margin-left: 48px }
   .linha > .v { margin-left: auto }
+  /* No celular, a descrição usa até duas linhas em vez de cortar com reticências */
+  .linha .t { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere }
 }
 .vazio { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 32px 16px; color: var(--muted) }
 .vazio b { color: var(--ink); font-weight: 600 }
@@ -144,7 +146,8 @@ button.linha:hover { background: var(--rose-50) }
 .chip { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 14px; font-weight: 500 }
 .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent) }
 .busca { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 0 14px; min-height: 44px; color: var(--muted) }
-.busca input { border: 0; background: none; outline: none; flex: 1; min-width: 0; color: var(--ink) }
+.busca input { border: 0; background: none; outline: none; flex: 1; min-width: 0; align-self: stretch; color: var(--ink) }
+.busca:focus-within { outline: 3px solid var(--accent); outline-offset: 2px }
 .resumo-linha { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--muted) }
 .resumo-linha b { color: var(--ink); font-variant-numeric: tabular-nums }
 .abas { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto }
@@ -246,4 +249,11 @@ button.linha:hover { background: var(--rose-50) }
   .linha-acao > button.linha .cresce { flex: 1 1 auto }
   .linha-acao > button.linha > .v { margin-left: 0 }
   .linha-acao > :not(button.linha) { margin-left: 48px }
+}
+
+/* Celular e telas de toque: todo alvo com pelo menos 44px (revisão da Fase 7). No computador, os botões pequenos continuam compactos. */
+@media (pointer: coarse), (max-width: 760px) {
+  .btn-sm { min-height: 44px }
+  .icone-btn { height: 44px }
+  .chip { min-height: 44px }
 }

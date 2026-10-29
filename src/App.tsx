@@ -6,6 +6,7 @@ import NovaSenha from './auth/NovaSenha'
 import { supabaseConfigurado } from './lib/supabase'
 import { useVinculo } from './data/consultas'
 import { mensagemErro } from './lib/erros'
+import logo from './assets/logo.png'
 import { AvisoProvider, EmpresaProvider, FolhasProvider } from './app/contexto'
 import Layout from './components/Layout'
 import Inicio from './paginas/Inicio'
@@ -83,7 +84,8 @@ function NaoEncontrada() {
 function Aviso({ titulo, texto }: { titulo: string; texto?: string }) {
   return (
     <main className="conteudo" style={{ minHeight: '100dvh', justifyContent: 'center', alignItems: 'center' }}>
-      <div className="cartao" style={{ maxWidth: 380, textAlign: 'center' }}>
+      <div className="cartao" style={{ maxWidth: 380, textAlign: 'center', alignItems: 'center' }}>
+        <img src={logo} alt="Aline Antunes Decora" style={{ height: 56 }} />
         <h1 style={{ fontSize: 22 }}>{titulo}</h1>
         {texto ? <p className="muted">{texto}</p> : null}
       </div>

@@ -22,6 +22,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Cabeçalhos de segurança gerados
+        run: grep -q "frame-ancestors 'none'" dist/_headers && grep -q "Strict-Transport-Security" dist/_headers
       - run: npm audit --omit=dev --audit-level=critical
 
   banco:
@@ -43,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Simular o ambiente do Supabase
         run: psql -v ON_ERROR_STOP=1 -q -f supabase/tests/supabase_local_stub.sql
-      - name: Aplicar migrações
-        run: for f in supabase/migrations/*.sql; do echo "$f"; psql -v ON_ERROR_STOP=1 -q -f "$f"; done
+      - name: Aplicar migrações (pelo mesmo script usado nos clientes)
+        run: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres bash scripts/cliente/migrar.sh
       - name: Teste de isolamento
         run: psql -v ON_ERROR_STOP=1 -q -f supabase/tests/isolamento.sql

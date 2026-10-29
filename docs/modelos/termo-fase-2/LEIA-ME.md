@@ -8,7 +8,7 @@ PDF de 3 páginas que o cliente responde para fechar a Fase 2: aprovação do pr
 2. Rode:
 
 ```bash
-node docs/modelos/termo-fase-2/gerar.js docs/modelos/termo-fase-2/<cliente>.json docs/termo-aprovacao-fase-2.pdf
+node docs/modelos/termo-fase-2/gerar.cjs docs/modelos/termo-fase-2/<cliente>.json docs/termo-aprovacao-fase-2.pdf
 ```
 
 Precisa do Playwright com Chromium (já instalado nas sessões em nuvem do Claude Code). A fonte é a Inter; sem ela, o navegador usa a sem serifa do sistema.
@@ -30,7 +30,7 @@ Acrescentar no fim da seção "Fase 2: Modelagem e protótipo":
 
 ```markdown
 - Aprovação do cliente pelo **termo de aprovação da Fase 2** (modelo em `docs/modelos/termo-fase-2/` do template-base):
-  copie `aline.json` como base, preencha com os dados do cliente e gere o PDF com `gerar.js`.
+  copie `aline.json` como base, preencha com os dados do cliente e gere o PDF com `gerar.cjs`.
   O termo cobre: aprovação do protótipo, concordância com o mapa de dados pessoais e prazos de guarda, e as informações
   que faltam para os cálculos. Guarde a resposta do cliente (print, áudio transcrito ou folha assinada) em `docs/aprovacoes/`
   e registre a data no PROJETO.md. Sem essa resposta, a Fase 2 não fecha.

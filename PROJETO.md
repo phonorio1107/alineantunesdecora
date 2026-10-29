@@ -120,29 +120,29 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 
 ## Fase 7: Design
 - [ ] Direção visual escolhida pelo Pedro (tom, densidade, cantos, gráficos)
-- [ ] Tokens de design e temas claro e escuro testados
-- [ ] Cor do cliente como destaque, contraste mínimo 4,5:1
-- [ ] Logo no topo; rodapé "feito por Pedro Hoffman" com o símbolo Pedro Hoffman de 12px (design system Degrau)
+- [x] Tokens de design e temas claro e escuro testados (30/10/2026: revisão em 360px nos dois temas, capturas de tela de todas as telas)
+- [ ] Cor do cliente como destaque, contraste mínimo 4,5:1 (tokens escolhidos para 4,5:1 na Fase 2; falta medição formal tela a tela)
+- [x] Logo no topo; rodapé "feito por Pedro Hoffman" com o símbolo Pedro Hoffman de 12px (design system Degrau) (conferido em 30/10/2026)
 - [ ] Espaçamento 4/8/12/16/24/32/48/64; cantos 4/8/12/16; um botão principal por tela
 - [x] Estados vazio, carregando e erro; confirmação em ação destrutiva; avisos de sucesso; erro junto ao campo (28/10/2026, em todas as telas da v1)
-- [ ] Celular (360px), teclado, foco visível, texto mínimo 14px, toque de 44px
+- [x] Celular (360px), teclado, foco visível, texto mínimo 14px, toque de 44px (30/10/2026, auditoria automática em 9 telas: nenhum texto abaixo de 14px, nenhuma rolagem lateral, foco visível pelo teclado. Corrigido: botões pequenos, setas de mês e filtros passaram a 44px no celular; busca com foco visível; contorno de foco no rosa escuro, contraste melhor; descrição dos lançamentos em até 2 linhas no celular. Exceção aceita: link dentro de frase, permitido pelo WCAG)
 - [ ] Textos curtos no infinitivo; datas, moeda e números no formato brasileiro
-- [ ] Ícones, favicon, título da aba, 404 e tela de erro com a marca
+- [x] Ícones, favicon, título da aba, 404 e tela de erro com a marca (30/10/2026: tela de erro geral nova, com logo e botão de recarregar; telas de aviso com logo)
 
 ## Fase 8: Cloudflare, domínio e cabeçalhos
 - [ ] Subdomínio por CNAME; HTTPS e redirecionamento HTTP→HTTPS
-- [ ] `_headers` (HSTS, nosniff, Referrer-Policy, Permissions-Policy, frame-ancestors, CSP)
-- [ ] `_redirects` para a SPA
-- [ ] Prévias protegidas (Cloudflare Access) e fora dos buscadores; `noindex` em produção se privado
+- [ ] `_headers` (HSTS, nosniff, Referrer-Policy, Permissions-Policy, frame-ancestors, CSP): **pronto em 30/10/2026**, gerado no build (`vite.config.ts` → `dist/_headers`) com a CSP liberando só o Supabase do cliente. Testado com a CSP ligada: login, fontes, PDF do fechamento, Excel e PDF do contrato funcionam; o `exceljs` tenta `eval` e cai num caminho alternativo, então `unsafe-eval` ficou fora. A verificação automática confere que o arquivo é gerado. Fontes passaram a ser servidas pelo próprio site (sem Google Fonts). **Falta conferir no endereço publicado**
+- [x] Rotas da SPA: resolvido pelo `not_found_handling: single-page-application` do `wrangler.jsonc` (29/10/2026), sem `_redirects`
+- [x] Prévias e buscadores (30/10/2026): endereço de prévia do Cloudflare **desligado** (em vez de protegido); `noindex` na página e no cabeçalho `X-Robots-Tag`. Rever se as prévias forem ligadas
 - [ ] Variáveis de produção e prévia separadas
 - [ ] Turnstile ou limite de tentativas no login (se o risco justificar)
 - [ ] Cloudflare Web Analytics (se o cliente quiser)
 
 ## Fase 9: LGPD e jurídico
-- [ ] Política de privacidade e termos publicados, com contato do encarregado
-- [ ] Lista de suboperadores no anexo do contrato
+- [ ] Política de privacidade e termos publicados, com contato do encarregado: **rascunhos em `docs/lgpd/` (30/10/2026)**; faltam advogado, dados da Aline (CNPJ, encarregada) e publicar no sistema
+- [ ] Lista de suboperadores no anexo do contrato: **rascunho em `docs/lgpd/suboperadores.md`** (Supabase, Cloudflare, R2, GitHub); falta advogado
 - [ ] Exportar e excluir dados de uma pessoa; retenção implementada
-- [ ] Plano de incidente (24h ao cliente; ANPD em 3 dias úteis; registro por 5 anos)
+- [ ] Plano de incidente (24h ao cliente; ANPD em 3 dias úteis; registro por 5 anos): **rascunho em `docs/lgpd/plano-de-incidente.md`**; falta advogado e contatos
 
 ## Fase 10: Qualidade antes da entrega
 - [ ] `SECURITY_CHECKLIST.md` completo; isolamento passando; Advisor zerado
@@ -162,18 +162,19 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Monitor de disponibilidade (5 min) e registro de erros com alerta por e-mail
 
 ## Fase 12: Documentação e operação
-- [ ] README do cliente (arquitetura, contas, variáveis, restauração, deploy)
-- [ ] Rotinas agendadas: semanal, mensal, trimestral e anual
+- [x] README do cliente (arquitetura, contas, variáveis, restauração, deploy) (30/10/2026, `README.md`)
+- [ ] Rotinas agendadas: semanal, mensal, trimestral e anual (escritas no `README.md`; falta agendar no calendário do Pedro e ligar o backup)
 - [ ] Suporte por canal único; pedidos viram Issues (P1 4h, P2 1 dia, P3 agendado)
 - [ ] Offboarding documentado
-- [ ] Checklist "criar novo cliente" (contas, variáveis, banco, domínio, convites, 2FA) e script único de deploy e migração por cliente
+- [x] Checklist "criar novo cliente" (contas, variáveis, banco, domínio, convites, 2FA) e script único de deploy e migração por cliente (30/10/2026: `docs/operacao/novo-cliente.md`; `scripts/cliente/migrar.sh` roda só as migrações pendentes e anota em `controle.migracoes`, testado em banco novo, banco já migrado e migração com erro, que é desfeita; a verificação automática passou a usar o mesmo script; `scripts/cliente/publicar.sh` recusa chave secreta e passou no teste sem publicar)
 - [ ] Automação de operação: backup agendado com restauração testada, monitor de disponibilidade, rotina contra pausa do banco gratuito. **Backup diário: código pronto e testado em Postgres local em 30/10/2026** (`scripts/backup/`, `.github/workflows/backup.yml`, passo a passo em `docs/backup.md`; restauração conferida, falha detectada num teste negativo, criptografia ida e volta ok). Falta o Pedro criar a chave, o bucket R2 e os 6 segredos; só marcar quando a primeira execução real ficar verde
-- [ ] Modelo de proposta comercial e contrato (setup, mensalidade, o que está dentro e fora, prazo mínimo, reajuste, atraso, saída dos dados), revisado por advogado
+- [ ] Modelo de proposta comercial e contrato (setup, mensalidade, o que está dentro e fora, prazo mínimo, reajuste, atraso, saída dos dados), revisado por advogado: **proposta pronta em `docs/modelos/proposta-comercial/`** (gera PDF de 2 páginas; valores de rascunho); falta o contrato e o advogado
 - [ ] Janela e prazos de suporte escritos; conferir exclusividade no emprego do Pedro; abrir MEI ou ME antes de cobrar
 
 ---
 
 ## Histórico
+- 30/10/2026: adiantado em paralelo ao teste de uso: cabeçalhos de segurança (CSP e afins) gerados no build e testados; fontes servidas pelo próprio site; revisão de design no celular com correções de toque e foco; tela de erro com a marca; rascunhos de LGPD (política, termos, suboperadores, plano de incidente); proposta comercial em PDF; checklist de novo cliente com scripts de migração e publicação; README completo. Backup diário agora só roda no horário depois da variável `BACKUP_ATIVO`; dependência `jspdf` (sem uso) removida.
 - 30/10/2026: **Fase 3 concluída.** 2FA ligado em Gmail, GitHub e Supabase; Cloudflare sem 2FA próprio por usar login Google (justificado).
 - 30/10/2026: **backup diário** escolhido (R2, criptografado, com teste de restauração automático). O teste achou uma falha: o dump só do `public` não levava as funções do schema `privado`; corrigido.
 - 30/10/2026: modelo comercial e de infraestrutura registrados em Decisões (valores em rascunho; **onde fica o Supabase continua em aberto**). Itens de operação e proposta adicionados à Fase 12.

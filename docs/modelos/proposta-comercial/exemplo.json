@@ -1,0 +1,59 @@
+{
+  "codigo": "EX-01",
+  "data": "30/10/2026",
+  "validade": "15 dias",
+  "cliente": "Exemplo Eventos",
+  "responsavel_cliente": "Nome da responsável",
+  "titulo": "Controle financeiro e de eventos feito para o seu negócio.",
+  "apresentacao": "Um sistema no celular e no computador para lançar entradas e saídas em menos de um minuto, saber o lucro de cada evento, fechar o mês e enxergar quantos meses o caixa aguenta. Com a sua marca, os seus contratos e os seus dados protegidos.",
+  "setup": "R$ 2.500",
+  "setup_condicao": "50% na assinatura e 50% na entrega (go-live).",
+  "mensalidade": "R$ 199,90",
+  "mensalidade_condicao": "A partir do mês seguinte à entrega. Até 3 usuários.",
+  "escopo": [
+    "Entradas e saídas com categorias, contas e custos fixos",
+    "Painel com saldo, lucro do mês, quanto sobrou e fôlego do caixa",
+    "Eventos com parcelas, custos e lucro por evento",
+    "Clientes com histórico, CPF/CNPJ protegido",
+    "Contratos gerados no seu modelo, em PDF",
+    "Fechamento do mês, fluxo de caixa e recibos em PDF",
+    "Exportação em Excel e CSV a qualquer momento",
+    "Perfis de acesso: proprietária, assistente e freelancer"
+  ],
+  "inclui_setup": [
+    "Conversa de descoberta e protótipo para aprovar antes de construir",
+    "Configuração do banco de dados, do login e da segurança",
+    "Telas com a sua marca (logo, cores e fontes)",
+    "Publicação no seu endereço (domínio próprio)",
+    "Importação dos dados iniciais (até 1 planilha)",
+    "Treino de 30 minutos e manual de 1 página",
+    "3 a 5 dias de uso assistido, com os ajustes desse período"
+  ],
+  "inclui_mensalidade": [
+    "Backup diário criptografado, com teste de restauração automático",
+    "Atualizações de segurança e das bibliotecas",
+    "Correção de erros sem custo",
+    "Suporte por um canal único, em dias úteis",
+    "Prazo: urgente em até 4 horas úteis; comum em até 1 dia útil",
+    "Monitoramento do sistema e do banco de dados",
+    "Exportação completa dos seus dados quando quiser"
+  ],
+  "nao_inclui": [
+    "Funcionalidades novas (ex.: orçamentos, agenda completa)",
+    "Usuários além dos incluídos no plano",
+    "Integrações (Pix automático, nota fiscal, WhatsApp)",
+    "Importação de dados em grande volume após a entrega",
+    "Treinos extras e consultoria",
+    "Atendimento fora do horário combinado"
+  ],
+  "condicoes": [
+    ["Prazo de implantação", "De 3 a 5 semanas a partir da assinatura e do envio das informações pedidas."],
+    ["Prazo mínimo", "12 meses de mensalidade a partir da entrega. Depois, mês a mês."],
+    ["Reajuste", "Anual, pelo IPCA, com aviso de 30 dias."],
+    ["Atraso", "Aviso no 5º dia; depois de 30 dias, o suporte e as atualizações ficam suspensos até a regularização. Os dados continuam sendo seus."],
+    ["Seus dados", "Pertencem a você. Na saída, entrego tudo em Excel e CSV sem custo. A transferência do sistema para contas suas é orçada à parte."],
+    ["Privacidade (LGPD)", "Você é a controladora dos dados; eu atuo como operador, seguindo a política de privacidade e a lista de fornecedores anexas ao contrato."],
+    ["Horário de suporte", "Dias úteis, das 9h às 20h, pelo canal combinado."]
+  ],
+  "nota": "Esta proposta não é o contrato. Aceita a proposta, as condições acima vão para o contrato de prestação de serviços, revisado por advogado."
+}
