@@ -8,3 +8,7 @@ dist-demo
 # Segredos: nenhum arquivo .env vai para o repositório (só o modelo)
 .env*
 !.env.example
+
+# Python
+__pycache__/
+*.pyc
