@@ -128,8 +128,8 @@ a{color:var(--link)}
 
   <section class="hero">
     <span class="caption">Sistema da Aline Antunes Decora · v1 financeiro</span>
-    <h1>Fase 4 de 12, com o banco de dados já pronto e testado.</h1>
-    <p>O planejamento terminou e a parte mais delicada, a segurança dos dados, já está pronta e testada. <b>Agora faltam duas coisas:</b> a aprovação da Aline e a configuração das contas, para depois construirmos as telas.</p>
+    <h1>Fase 2 concluída: a Aline aprovou o protótipo.</h1>
+    <p>O planejamento terminou, a Aline aprovou por escrito e o banco e as telas já estão prontos e testados. <b>Falta uma coisa:</b> a configuração das contas (Supabase e Cloudflare), para o sistema rodar de verdade.</p>
   </section>
 
   <section class="stairs-box" aria-label="As 12 fases do projeto como uma escada">
@@ -159,9 +159,8 @@ a{color:var(--link)}
     <div class="col">
       <h3>Aline</h3>
       <ol>
-        <li><b>Testar o protótipo</b><span>Pelo link que você mandou no WhatsApp.</span></li>
-        <li><b>Responder as duas frases de aprovação</b><span>“Aprovo o protótipo” e “Concordo com os dados e os prazos”.</span></li>
-        <li><b>Se souber: custos fixos, divisão do lucro e retirada mínima</b><span>Pode responder “ainda não sei”.</span></li>
+        <li><b>Testar a prévia nova</b><span>Com contratos, PDFs e Excel. É a versão mais próxima do sistema final.</span></li>
+        <li><b>Passar custos fixos, divisão do lucro e retirada mínima</b><span>Pode ficar para depois: ela cadastra em Configurações.</span></li>
       </ol>
     </div>
     <div class="col">
@@ -169,7 +168,7 @@ a{color:var(--link)}
       <ol>
         <li><b>Ligar o app ao Supabase de testes</b><span>Assim que o projeto de desenvolvimento existir. As telas já estão prontas.</span></li>
         <li><b>Ajustar as telas com o seu retorno</b><span>Uma a uma, como manda o processo.</span></li>
-        <li><b>Aplicar o banco em produção</b><span>Repositório já está privado. Falta a aprovação da Aline.</span></li>
+        <li><b>Aplicar o banco no Supabase</b><span>Primeiro no de testes. Repositório privado e aprovação da Aline já estão resolvidos.</span></li>
       </ol>
     </div>
   </div>
@@ -208,9 +207,9 @@ const FASES = [
   {n:1, nome:'Descoberta', titulo:'Descoberta e escopo', s:'done', feito:10, total:10,
    o:'Entender o negócio, a dor principal e o que entra na primeira versão.',
    agora:'Definimos: financeiro + eventos primeiro; orçamentos e agenda depois.'},
-  {n:2, nome:'Protótipo', titulo:'Modelagem e protótipo', s:'wait', feito:4, total:6, quem:'Esperando a Aline',
+  {n:2, nome:'Protótipo', titulo:'Modelagem e protótipo', s:'done', feito:6, total:6,
    o:'Desenhar as telas, montar o protótipo clicável e decidir que dados guardar.',
-   agora:'Protótipo pronto e termo enviado. <b>Falta a resposta da Aline.</b>'},
+   agora:'<b>Aprovada pela Aline em 29/10/2026</b>, por escrito: o protótipo e os dados com os prazos de guarda.'},
   {n:3, nome:'Contas', titulo:'Contas e repositório', s:'wait', feito:3, total:9, quem:'Esperando você',
    o:'Criar as contas onde o sistema vai rodar e proteger cada uma.',
    agora:'Repositório privado e arquivos de configuração prontos. <b>Falta você criar o Supabase e ligar as duas etapas.</b>'},

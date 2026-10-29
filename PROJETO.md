@@ -25,7 +25,7 @@
 ## Fase atual
 Página de acompanhamento (linguagem simples): https://claude.ai/artifact/Q5sgxoiMfr7tMEHPBRcM9n · fonte em `docs/acompanhamento/index.html`, atualizar a cada mudança de fase.
 
-**Fase 2: Modelagem e protótipo** (Fase 1 concluída em 28/10/2026)
+**Fase 3: Contas e repositório** (Fases 1 e 2 concluídas; Fase 2 fechada em 29/10/2026)
 
 ## Decisões
 _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
@@ -69,9 +69,9 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Telas e fluxos listados (28/10/2026, `docs/fase-2-modelagem.md`)
 - [x] Modelo de dados aprovado pelo Pedro (28/10/2026)
 - [x] Protótipo clicável com dados fictícios (28/10/2026): `prototipo/index.html`, publicado em https://claude.ai/artifact/QohEXXEH6yXCXb3iiA4PNn (testado em 1280px e 375px, nos temas claro e escuro, sem erros no console e sem rolagem lateral)
-- [ ] Rodada de ajustes do protótipo
-- [ ] Aprovação do cliente por escrito (PDF em [`docs/termo-aprovacao-fase-2.pdf`](docs/termo-aprovacao-fase-2.pdf), gerado do modelo em `docs/modelos/termo-fase-2/`; respostas em `docs/aprovacoes/`)
-- [x] Mapa de dados pessoais (28/10/2026, rascunho; a base legal ainda precisa ser confirmada pela Aline)
+- [x] Rodada de ajustes do protótipo (29/10/2026): a Aline aprovou sem pedir mudanças. Os ajustes feitos antes vieram do Pedro: fundo branco com confetes, entrada de 30% e saldo 5 dias antes, categorias da entrevista.
+- [x] Aprovação do cliente por escrito (29/10/2026, WhatsApp; comprovante em [`docs/aprovacoes/2026-10-29-aprovacao-whatsapp.md`](docs/aprovacoes/2026-10-29-aprovacao-whatsapp.md)). Termo em PDF: (PDF em [`docs/termo-aprovacao-fase-2.pdf`](docs/termo-aprovacao-fase-2.pdf), gerado do modelo em `docs/modelos/termo-fase-2/`; respostas em `docs/aprovacoes/`)
+- [x] Mapa de dados pessoais (28/10/2026; Aline concordou com os dados e prazos em 29/10/2026. Prazos ainda a confirmar com o contador)
 
 ## Fase 3: Contas e repositório
 - [x] **Repositório privado** (28/10/2026; API do GitHub confirma `visibility: private`)
@@ -175,4 +175,5 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
 - 28/10/2026: ajuste 2 do protótipo: entrada de 30% e saldo 5 dias antes, categorias de custo da entrevista (freelancers, deslocamento, taxas de cartão, peças perdidas).
 - 28/10/2026: ajuste 1 do protótipo: fundo branco com confetes como no site e números sem quebrar no celular.
+- 29/10/2026: **Fase 2 concluída**: Aline aprovou o protótipo e concordou com os dados e prazos por escrito (WhatsApp). Portão da fase ok: 6 de 6 itens. Pendente, sem travar nada: custos fixos, divisão do lucro e retirada mínima, que ela cadastra em Configurações.
 - 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.
