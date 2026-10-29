@@ -42,6 +42,9 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: **tema claro é o padrão** (fundo branco com confetes rosa, amarelo e azul, como no site), independente do tema do aparelho. O escuro fica como opção em Configurações → Aparência.
 - 28/10/2026: documentos do Pedro seguem o design system **Pedro Hoffman Degrau** (https://claude.ai/artifact/TTBKvP6xEKFKxHtrAiHGcp). Nos sistemas dos clientes, o rodapé "feito por Pedro Hoffman" usa o **símbolo de 12 px** do design system, no lugar do quadrado verde de 10 px da skill (atualizar a skill).
 - 28/10/2026: princípio do produto, nas palavras do Pedro: dar **liberdade financeira** à Aline, com lançamento de informações **fácil**. O financeiro é a prioridade número 1.
+- 30/10/2026: **modelo comercial (rascunho, a validar com 2 ou 3 prospectos e com advogado):** setup de R$ 2.500 a R$ 3.500 (inclui contas, banco, domínio, deploy, dados iniciais, treino e teste de 3 a 5 dias) e mensalidade de R$ 199 a R$ 249 (backup, atualizações, suporte com prazo, correção de erros; funcionalidade nova, mais usuários e integrações cobrados à parte). Preço de lançamento para os 2 ou 3 primeiros clientes pagantes. Aline segue como piloto sem cobrança; registrar por escrito o valor de tabela como prova de valor. Custos de Supabase e Cloudflare a confirmar nas páginas oficiais antes de qualquer contrato.
+- 30/10/2026: **infraestrutura:** Supabase gratuito e `pg_dump` manual até haver o primeiro cliente pagante; a partir do 2º ou 3º cliente, **uma organização Supabase Pro** com um projeto por cliente (backup diário, sem pausa, uma fatura); Cloudflare no plano gratuito. Conta própria do cliente fica como plano premium futuro (licença de uso e manutenção), com cláusula de exportação e transferência dos dados. Antes de guardar dados de terceiros na conta do Pedro: 2FA em tudo e cláusula de operador no contrato.
+- 30/10/2026: o Pedro trabalha em outro emprego durante o projeto: limitar a 3 a 5 clientes no início, automatizar operação (script de deploy e migração, backup agendado, monitor) e escrever horários e prazos de suporte no contrato; conferir cláusula de exclusividade do emprego e abrir MEI ou ME ao cobrar.
 
 ---
 
@@ -163,10 +166,15 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Rotinas agendadas: semanal, mensal, trimestral e anual
 - [ ] Suporte por canal único; pedidos viram Issues (P1 4h, P2 1 dia, P3 agendado)
 - [ ] Offboarding documentado
+- [ ] Checklist "criar novo cliente" (contas, variáveis, banco, domínio, convites, 2FA) e script único de deploy e migração por cliente
+- [ ] Automação de operação: backup agendado com restauração testada, monitor de disponibilidade, rotina contra pausa do banco gratuito
+- [ ] Modelo de proposta comercial e contrato (setup, mensalidade, o que está dentro e fora, prazo mínimo, reajuste, atraso, saída dos dados), revisado por advogado
+- [ ] Janela e prazos de suporte escritos; conferir exclusividade no emprego do Pedro; abrir MEI ou ME antes de cobrar
 
 ---
 
 ## Histórico
+- 30/10/2026: modelo comercial e de infraestrutura registrados em Decisões (valores em rascunho). Itens de operação e proposta adicionados à Fase 12.
 - 29/10/2026: sistema publicado no Cloudflare e **login testado ao vivo** (Pedro entrou). `main` recebeu o código da v1 por merge. Falta na Fase 3: Dependabot/secret scanning, decisão sobre proteção da `main` (plano gratuito não protege repositório privado) e 2FA.
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
 - 28/10/2026: termo da Fase 2 enviado à Aline pelo WhatsApp (aguardando resposta).
