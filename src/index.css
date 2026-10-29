@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 /* Identidade aprovada no protótipo (Fase 2): fundo branco com confetes, rosa da marca, Playfair Display + DM Sans.
+   Redesenho de 31/10/2026 ("caderno de encomendas"): tinta em ameixa, manteiga para "hoje" e prazos, céu para o Google;
+   o momento marcante é o convite do próximo evento no Início; o resto fica calmo, com linhas finas em vez de caixas.
    Tema claro é o padrão; o escuro é opção em Configurações (classe .escuro no <html>). */
 :root {
   --bg: #fffdfc; --surface: #ffffff; --rose-50: #fff8fa; --rose-100: #fbe3ec; --cream: #fef7d9;
-  --ink: #222220; --muted: #796b70; --line: #f0e2e8;
+  --ink: #3b2130; --muted: #7a6470; --line: #f1e3e9; --line-forte: #e6d2db;
+  --manteiga: #f2cf73; --manteiga-bg: #fdf3d6; --manteiga-ink: #7a5a06; --ceu: #3d7e93; --ceu-bg: #e4f2f6;
+  --convite: #fdeef4; --convite-ink: #5c2440;
+  --ease: cubic-bezier(.2, .8, .2, 1);
   --accent: #b24a77; --on-accent: #ffffff; --deco: #da6f9a; --deco-soft: #f7d7e4; --bar-s: #cdbcc3;
   --good: #2f7a57; --good-bg: #e6f4ec; --warn: #965905; --warn-bg: #fdf1dc; --bad: #b3261e; --bad-bg: #fbe9e7;
   --shadow: 0 1px 2px rgba(90, 30, 55, .05), 0 10px 30px rgba(90, 30, 55, .07); --scrim: rgba(34, 20, 28, .42);
@@ -15,7 +20,9 @@
 }
 :root.escuro {
   --bg: #191517; --surface: #221d20; --rose-50: #261f23; --rose-100: #3a2a31; --cream: #30291a;
-  --ink: #f6eef1; --muted: #bfaeb5; --line: #3a3035;
+  --ink: #f6eef1; --muted: #bfaeb5; --line: #3a3035; --line-forte: #4a3d43;
+  --manteiga: #e7c25e; --manteiga-bg: #3a3019; --manteiga-ink: #f0d58a; --ceu: #8cc6d7; --ceu-bg: #1e3138;
+  --convite: #2e2027; --convite-ink: #f7d6e4;
   --accent: #da6f9a; --on-accent: #1e1a1c; --deco: #da6f9a; --deco-soft: #4a2e3a; --bar-s: #6e5c64;
   --good: #7fd3a5; --good-bg: #1d3128; --warn: #f0be6a; --warn-bg: #3a2e17; --bad: #f4978e; --bad-bg: #3d2220;
   --shadow: none; --scrim: rgba(0, 0, 0, .6);
@@ -29,14 +36,14 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 v
 button, input, select, textarea { font: inherit; color: inherit }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px }
 h1, h2, h3, p { margin: 0; text-wrap: balance }
-h1 { font: 600 30px/1.15 var(--f-display); letter-spacing: -.01em }
-h1 em, h2 em { color: var(--deco); font-style: italic; font-weight: 500 }
-h2 { font: 600 22px/1.2 var(--f-display) }
+h1 { font: 600 30px/1.12 var(--f-display); letter-spacing: -.015em }
+h1 em, h2 em { font-style: italic; font-weight: 500 }
+h2 { font: 600 21px/1.2 var(--f-display); letter-spacing: -.005em }
 h3 { font: 600 15px/1.3 var(--f-body) }
-@media (min-width: 900px) { h1 { font-size: 36px } }
+@media (min-width: 900px) { h1 { font-size: 40px } }
 .num { font-variant-numeric: tabular-nums }
 .muted { color: var(--muted) }
-.eyebrow { font-size: 14px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent) }
+.eyebrow { font: italic 500 17px/1.3 var(--f-display); color: var(--accent) }
 .ic { flex: none }
 
 /* Estrutura */
@@ -62,8 +69,10 @@ h3 { font: 600 15px/1.3 var(--f-body) }
 }
 .nav { display: flex; flex-direction: column; gap: 4px }
 .nav a { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 12px; color: var(--ink); text-decoration: none; font-weight: 500 }
-.nav a:hover { background: var(--rose-100) }
-.nav a.active { background: var(--surface); color: var(--accent); font-weight: 600; box-shadow: var(--shadow) }
+.nav a { position: relative; transition: background .18s var(--ease), color .18s var(--ease) }
+.nav a:hover { background: var(--rose-50) }
+.nav a.active { color: var(--accent); font-weight: 600; background: var(--rose-50) }
+.nav a.active::before { content: ""; position: absolute; left: -4px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--deco); box-shadow: 0 0 0 3px var(--bg) }
 .lateral .espaco { flex: 1 }
 .abas-celular { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px) }
@@ -82,6 +91,8 @@ h3 { font: 600 15px/1.3 var(--f-body) }
 .btn-d { background: var(--bad); color: var(--surface) }
 .btn-sm { min-height: 36px; padding: 0 14px; font-size: 14px }
 .btn:disabled { opacity: .5; cursor: not-allowed }
+.btn, .chip, .icone-btn { transition: transform .12s var(--ease), background-color .18s var(--ease), border-color .18s var(--ease), filter .18s }
+.btn:active:not(:disabled), .chip:active, .icone-btn:active:not(:disabled) { transform: scale(.97) }
 .icone-btn { width: 44px; height: 40px; display: grid; place-items: center; border: 0; background: none; border-radius: 999px; cursor: pointer; color: var(--ink) }
 .icone-btn:hover { background: var(--rose-50) }
 .icone-btn:disabled { opacity: .3; cursor: default }
@@ -90,7 +101,7 @@ h3 { font: 600 15px/1.3 var(--f-body) }
 .cabecalho { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px }
 .cabecalho > div:first-child { display: flex; flex-direction: column; gap: 6px; min-width: 0 }
 .acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
-.cartao { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+.cartao { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0 }
 .cartao-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap }
 .grade2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px }
 @media (min-width: 760px) { .grade2 { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
@@ -152,6 +163,7 @@ button.linha:hover { background: var(--rose-50) }
 .resumo-linha b { color: var(--ink); font-variant-numeric: tabular-nums }
 .abas { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto }
 .abas button { border: 0; background: none; padding: 0 14px; min-height: 44px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap }
+.abas button { transition: color .18s var(--ease), border-color .25s var(--ease) }
 .abas button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600 }
 
 /* Eventos */
@@ -207,6 +219,7 @@ button.linha:hover { background: var(--rose-50) }
 .folha-h { display: flex; align-items: center; justify-content: space-between; gap: 12px }
 .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--rose-50); border-radius: 999px; padding: 4px; gap: 4px }
 .seg button { min-height: 44px; border: 0; border-radius: 999px; background: none; font-weight: 600; cursor: pointer; color: var(--muted) }
+.seg button { transition: background-color .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease) }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow) }
 .seg button[aria-pressed="true"].entrada { color: var(--good) } .seg button[aria-pressed="true"].saida { color: var(--accent) }
 .campo { display: flex; flex-direction: column; gap: 6px; min-width: 0 }
@@ -237,10 +250,14 @@ button.linha:hover { background: var(--rose-50) }
 .links a .ic:last-child { margin-left: auto; color: var(--muted) }
 .amostra { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); display: inline-block }
 @media (prefers-reduced-motion: no-preference) {
-  .folha { animation: subir .22s ease-out }
-  .aviso-toast { animation: surgir .2s ease-out }
-  @keyframes subir { from { transform: translateY(24px); opacity: .6 } }
+  .folha { animation: subir .38s var(--ease) }
+  .folha-fundo > .scrim { animation: surgir .25s ease-out }
+  .aviso-toast { animation: estalar .32s var(--ease) }
+  .troca-tela { animation: chegar .22s var(--ease) }
+  @keyframes subir { from { transform: translateY(40px); opacity: 0 } }
   @keyframes surgir { from { opacity: 0 } }
+  @keyframes estalar { from { opacity: 0; transform: translate(-50%, 12px) scale(.96) } }
+  @keyframes chegar { from { opacity: 0; transform: translateY(6px) } }
 }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0 }
 /* Linha de lançamento com botão ao lado: no celular o botão desce para baixo do texto */
@@ -293,4 +310,164 @@ button.linha:hover { background: var(--rose-50) }
 .mini { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 14px; font-weight: 500; color: var(--muted) }
 @media (max-width: 599px) {
   .item-contrato { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) minmax(0, 1.6fr) auto; grid-template-areas: "desc desc desc desc" "cod qtd valor rem" }
+}
+
+/* A troca de tela embrulha o conteúdo: o espaçamento entre blocos continua o mesmo de .conteudo */
+.troca-tela { display: flex; flex-direction: column; gap: 24px; min-width: 0 }
+
+/* ===========================================================================
+   Redesenho 31/10/2026: Início com o convite do próximo evento e o livro-caixa
+   =========================================================================== */
+.inicio { display: flex; flex-direction: column; gap: 28px }
+.inicio .cabecalho h1 { font-size: 34px }
+@media (min-width: 900px) { .inicio .cabecalho h1 { font-size: 44px } }
+.palco { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start }
+@media (min-width: 1000px) { .palco { grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 28px } }
+
+/* O convite: papel rosado com a borda de baixo recortada, como papelaria de festa */
+.convite { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 28px; align-items: start;
+  background: var(--convite); color: var(--convite-ink); border-radius: 24px 24px 6px 6px; padding: 28px 28px 34px; margin-bottom: 12px }
+.convite::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -10px; height: 10px;
+  background: radial-gradient(circle at 10px 0, var(--convite) 9.5px, transparent 10px) 0 0 / 20px 10px repeat-x }
+.convite-data { display: flex; flex-direction: column; align-items: center; min-width: 96px; padding-top: 2px }
+.convite-semana { font: italic 500 17px/1.2 var(--f-display); color: var(--accent) }
+.convite-dia { font: italic 600 96px/1 var(--f-display); letter-spacing: -.04em; color: var(--convite-ink); margin: 2px 0 6px; padding-right: 8px }
+.convite-mes { font: 500 15px/1.2 var(--f-body); color: var(--muted) }
+.convite-corpo { display: flex; flex-direction: column; gap: 10px; min-width: 0; align-items: flex-start }
+.convite-falta { display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px; border-radius: 999px; background: var(--manteiga); color: #3b2a05; font-weight: 600; font-size: 14px }
+.convite-titulo { font: 600 30px/1.12 var(--f-display); letter-spacing: -.015em; text-wrap: balance }
+.convite-cliente { color: var(--convite-ink); opacity: .8; font-size: 16px }
+.convite-detalhes { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 15px }
+.convite-detalhes li { display: flex; align-items: center; gap: 8px }
+.convite-detalhes svg { color: var(--deco); flex: none }
+.convite-pago { display: flex; flex-direction: column; gap: 6px; width: min(100%, 360px); font-size: 14px; margin-top: 4px }
+.fio { display: block; height: 4px; border-radius: 999px; background: color-mix(in srgb, var(--deco) 22%, transparent); overflow: hidden }
+.fio i { display: block; height: 100%; border-radius: 999px; background: var(--accent) }
+.convite-abrir { margin-top: 8px; background: var(--surface) }
+.convite-vazio { grid-template-columns: minmax(0, 1fr) }
+@media (max-width: 599px) {
+  .convite { grid-template-columns: minmax(0, 1fr); padding: 24px 20px 30px }
+  .convite-data { flex-direction: row; align-items: baseline; gap: 10px; min-width: 0 }
+  .convite-dia { font-size: 64px; order: -1; margin: 0 }
+  .convite-titulo { font-size: 26px }
+}
+
+/* Livro-caixa: linhas finas, números alinhados, um destaque só (o que sobrou para ela) */
+.livro { display: flex; flex-direction: column; gap: 6px; padding: 4px 0 }
+.livro-t { font: italic 500 22px/1.2 var(--f-display); color: var(--accent); padding-bottom: 6px }
+.livro dl { margin: 0; display: flex; flex-direction: column }
+.livro-l { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 14px 0; border-top: 1px solid var(--line-forte) }
+.livro-l:first-child { border-top: 0; padding-top: 4px }
+.livro-l dt { font-weight: 500; color: var(--muted); font-size: 15px }
+.livro-l dd { margin: 0; font: 600 21px/1.2 var(--f-body); letter-spacing: -.01em; text-align: right; white-space: nowrap }
+.livro-s { grid-column: 1 / -1; font-size: 14px; color: var(--muted) }
+.livro-s b { color: var(--ink) }
+.livro-l .medidor { grid-column: 1 / -1; height: 6px; margin: 6px 0 2px }
+.livro-voce { background: var(--rose-50); border-radius: 14px; padding: 14px 14px; margin: 6px 0; border-top-color: transparent }
+.livro-voce + .livro-l { border-top-color: transparent }
+.medidor.atencao i { background: var(--manteiga) }
+
+/* Fila dos próximos eventos */
+.fila { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column }
+.fila li + li { border-top: 1px solid var(--line) }
+.fila a { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 12px 8px; margin: 0 -8px; border-radius: 12px; color: inherit; text-decoration: none; transition: background-color .18s var(--ease) }
+.fila a:hover { background: var(--rose-50) }
+.fila-data { display: flex; flex-direction: column; align-items: center; font-size: 14px; color: var(--muted); line-height: 1.1 }
+.fila-data b { font: italic 600 28px/1 var(--f-display); color: var(--accent) }
+.fila-t { display: flex; flex-direction: column; font-weight: 600; min-width: 0 }
+.fila-t small { font-weight: 400; font-size: 14px; color: var(--muted) }
+.fila-falta { font-size: 14px; color: var(--muted); white-space: nowrap }
+@media (max-width: 599px) { .fila a { grid-template-columns: 48px minmax(0, 1fr) } .fila-falta { display: none } }
+
+/* Linhas que saem ao confirmar ("Recebi", "Paguei") */
+.linhas > div:not(.linha) + div:not(.linha) > .linha { border-top: 1px solid var(--line) }
+@media (prefers-reduced-motion: no-preference) {
+  .saindo { animation: sair .32s var(--ease) forwards }
+  @keyframes sair { to { opacity: 0; transform: translateX(16px) } }
+  .convite.chega { animation: convite-chega .6s var(--ease) both }
+  @keyframes convite-chega { from { opacity: 0; transform: translateY(14px) } }
+}
+
+/* Confetes: só no alto da página. Na primeira abertura da sessão eles caem uma vez, devagar. */
+@media (prefers-reduced-motion: no-preference) {
+  .confete.cai i { animation: confete-cai 1.1s var(--ease) both; animation-delay: var(--atraso, 0s) }
+  @keyframes confete-cai { from { opacity: 0; transform: translateY(-40px) rotate(-20deg) } }
+}
+
+/* ===========================================================================
+   Agenda
+   =========================================================================== */
+.agenda { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start }
+@media (min-width: 1400px) { .agenda { grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr) } .agenda-dia { position: sticky; top: 24px } }
+.agenda-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px }
+.agenda-titulo { font: italic 600 30px/1.1 var(--f-display); text-transform: none }
+.agenda-titulo::first-letter { text-transform: uppercase }
+.agenda-titulo span { font: 500 17px var(--f-body); font-style: normal; color: var(--muted); margin-left: 6px }
+.grade-mes { display: flex; flex-direction: column; gap: 6px }
+.grade-semana, .grade-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px }
+.grade-semana span { font-size: 14px; color: var(--muted); text-align: center; padding: 4px 0 }
+.dia { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 3px; min-height: 92px; padding: 6px; border: 1px solid transparent; border-radius: 12px; background: none; cursor: pointer; text-align: left; font: inherit; color: inherit; min-width: 0;
+  transition: background-color .18s var(--ease), border-color .18s var(--ease) }
+.dia:hover { background: var(--rose-50) }
+.dia.fora { opacity: .42 }
+.dia-n { font-weight: 600; font-size: 15px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; font-variant-numeric: tabular-nums }
+.dia.hoje .dia-n { background: var(--manteiga); color: #3b2a05 }
+.dia.escolhido { background: var(--rose-50); border-color: var(--deco) }
+.dia-itens { display: flex; flex-direction: column; gap: 2px; min-width: 0 }
+.dia-itens > span { font-size: 14px; line-height: 1.3; padding: 1px 6px; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.dia-itens .mais { color: var(--muted); padding-left: 6px }
+.dia-pontos { display: none; gap: 3px; justify-content: center }
+.dia-pontos i { width: 6px; height: 6px; border-radius: 50% }
+/* Cores por tipo: festa (rosa), entrega/devolução (manteiga), compromisso (ameixa, contorno), Google (céu) */
+.dia-itens .marca-festa { background: var(--rose-100); color: var(--accent); font-weight: 600 }
+.dia-itens .marca-logistica { background: var(--manteiga-bg); color: var(--manteiga-ink) }
+.dia-itens .marca-compromisso { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-forte); color: var(--ink) }
+.dia-itens .marca-google { background: var(--ceu-bg); color: var(--ceu) }
+.legenda i.marca-festa, .dia-pontos i.marca-festa { background: var(--deco) }
+.legenda i.marca-logistica, .dia-pontos i.marca-logistica { background: var(--manteiga) }
+.legenda i.marca-compromisso, .dia-pontos i.marca-compromisso { background: var(--ink) }
+.legenda i.marca-google, .dia-pontos i.marca-google { background: var(--ceu) }
+.legenda i { border-radius: 50% !important }
+@media (max-width: 759px) {
+  .agenda-mes { padding: 16px 6px }
+  .agenda-topo { padding: 0 8px }
+  .grade-semana, .grade-dias { gap: 1px }
+  .dia { min-height: 54px; align-items: center; padding: 4px 2px }
+  .dia-itens { display: none }
+  .dia-pontos { display: flex }
+}
+
+.agenda-dia-t { font: italic 600 24px/1.2 var(--f-display) }
+.dia-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px }
+.dia-lista li { border-left: 3px solid var(--line-forte); border-radius: 4px 12px 12px 4px; background: var(--bg) }
+.dia-lista li > * { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; width: 100%; padding: 12px 14px; text-align: left; background: none; border: 0; font: inherit; color: inherit; text-decoration: none; cursor: pointer; border-radius: inherit }
+.dia-lista li > div { cursor: default }
+.dia-lista li > a:hover, .dia-lista li > button:hover { background: var(--rose-50) }
+.dia-hora { font-weight: 600; font-variant-numeric: tabular-nums; font-size: 15px }
+.dia-t { display: flex; flex-direction: column; gap: 2px; font-weight: 600; min-width: 0 }
+.dia-t small { font-weight: 400; font-size: 14px; color: var(--muted) }
+.dia-t small.dia-tipo { font-weight: 500 }
+.marca-borda-festa { border-left-color: var(--deco) !important }
+.marca-borda-logistica { border-left-color: var(--manteiga) !important }
+.marca-borda-compromisso { border-left-color: var(--ink) !important }
+.marca-borda-google { border-left-color: var(--ceu) !important; background: var(--ceu-bg) !important }
+.marca-texto-festa { color: var(--accent) !important } .marca-texto-google { color: var(--ceu) !important }
+.horas { grid-template-columns: repeat(2, minmax(0, 1fr)) !important }
+
+/* Cartão do Google */
+.google-cartao { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px 20px; align-items: center; padding: 18px 22px; border-radius: 18px; background: var(--ceu-bg); color: var(--ink) }
+.google-cartao h2 { font: 600 19px/1.25 var(--f-display) }
+.google-cartao p { color: var(--muted); font-size: 15px; max-width: 68ch }
+.google-cartao.ligado { background: var(--surface); border: 1px solid var(--line) }
+.google-texto { display: flex; flex-direction: column; gap: 6px; min-width: 0 }
+.selo-google { width: 40px; height: 40px; transform: rotate(-90deg) }
+.google-nota { font-size: 14px; color: var(--muted) }
+@media (max-width: 699px) { .google-cartao { grid-template-columns: auto minmax(0, 1fr) } .google-cartao > .btn, .google-cartao > .acoes, .google-cartao > .confirmar { grid-column: 1 / -1 } }
+@media (prefers-reduced-motion: no-preference) { .girando-icone { animation: girar .9s linear infinite } }
+.agenda-topo .acoes { flex-wrap: nowrap; gap: 2px }
+@media (max-width: 599px) {
+  .agenda-titulo { font-size: 24px }
+  .agenda-titulo span { font-size: 15px }
+  .google-cartao { padding: 16px }
+  .google-cartao .acoes { justify-content: flex-start }
 }

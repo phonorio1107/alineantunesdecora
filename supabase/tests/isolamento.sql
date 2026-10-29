@@ -350,6 +350,56 @@ begin
   raise notice 'ok  6. Visitante sem login não consulta nenhuma tabela';
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- 7. Agenda e Google: compromissos isolados por empresa e perfil; tokens do Google invisíveis
+-- ---------------------------------------------------------------------------
+reset role;
+do $$ begin perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true); end $$;
+insert into public.compromissos (empresa_id, titulo, inicio, fim) values
+  ('eeeeeeee-0000-0000-0000-00000000000a', 'Visita ao salão da A', '2026-11-10 14:00-03', '2026-11-10 15:00-03');
+insert into public.google_contas (empresa_id, token_cifrado) values ('eeeeeeee-0000-0000-0000-00000000000a', 'cifrado-da-A');
+insert into public.google_vinculos (empresa_id, origem, origem_id, google_evento_id)
+  values ('eeeeeeee-0000-0000-0000-00000000000a', 'evento', 'dddddddd-0000-0000-0000-00000000000a', 'g-123');
+set local role authenticated;
+do $$
+declare quem text; n int;
+begin
+  foreach quem in array array['00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-0000000000b1'] loop
+    perform set_config('request.jwt.claims', format('{"sub":"%s","role":"authenticated"}', quem), true);
+    select count(*) into n from public.compromissos;
+    if quem in ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000a2') and n <> 1 then raise exception 'FALHOU: % não vê o compromisso da própria empresa', quem; end if;
+    if quem in ('00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-0000000000b1') and n <> 0 then raise exception 'FALHOU: % vê compromisso que não devia', quem; end if;
+    begin
+      perform count(*) from public.google_contas;
+      raise exception 'FALHOU: % leu google_contas', quem;
+    exception when insufficient_privilege then null;
+    end;
+    begin
+      perform count(*) from public.google_vinculos;
+      raise exception 'FALHOU: % leu google_vinculos', quem;
+    exception when insufficient_privilege then null;
+    end;
+  end loop;
+  perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated"}', true);
+  begin
+    insert into public.compromissos (empresa_id, titulo, inicio, fim) values ('eeeeeeee-0000-0000-0000-00000000000a', 'Invasão', now(), now());
+    raise exception 'FALHOU: B criou compromisso na A';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'ok  7. Compromissos isolados por empresa e perfil; tokens e vínculos do Google invisíveis para quem está logado';
+end $$;
+reset role;
+set local role anon;
+do $$
+begin
+  perform set_config('request.jwt.claims', '', true);
+  begin
+    perform count(*) from public.compromissos;
+    raise exception 'FALHOU: anon consultou compromissos';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
 reset role;
 \echo 'TESTE DE ISOLAMENTO: TUDO OK'
 rollback;

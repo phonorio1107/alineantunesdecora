@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import { ChevronRight, FileSignature, List, SlidersHorizontal, Users } from 'lucide-react'
+import { ChartColumn, ChevronRight, FileSignature, List, SlidersHorizontal, Users } from 'lucide-react'
 import { useEmpresa } from '../app/contexto'
 
 export default function Mais() {
   const { veFinanceiro, ehProprietaria } = useEmpresa()
   const itens = [
-    ...(veFinanceiro ? [{ para: '/lancamentos', nome: 'Lançamentos', Icone: List }] : []),
+    ...(veFinanceiro ? [{ para: '/relatorios', nome: 'Relatórios', Icone: ChartColumn }, { para: '/lancamentos', nome: 'Lançamentos', Icone: List }] : []),
     { para: '/clientes', nome: 'Clientes', Icone: Users },
     ...(ehProprietaria ? [{ para: '/contratos', nome: 'Contratos', Icone: FileSignature }] : []),
     { para: '/configuracoes', nome: 'Configurações', Icone: SlidersHorizontal },

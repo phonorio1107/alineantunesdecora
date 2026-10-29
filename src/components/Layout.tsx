@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useMemo } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
-import { CalendarDays, ChartColumn, FileSignature, House, List, Menu, Plus, SlidersHorizontal, Users } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { CalendarDays, CalendarHeart, ChartColumn, FileSignature, House, List, Menu, Plus, SlidersHorizontal, Users } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { useEmpresa, useFolhas } from '../app/contexto'
 import { periodoCarregado } from '../app/dados'
@@ -13,24 +13,32 @@ import { useQueryClient } from '@tanstack/react-query'
 // Só existe na prévia: carregado sob demanda para não entrar no build de produção.
 const ArquivoGerado = modoDemo ? lazy(() => import('../demo/ArquivoGerado')) : () => null
 
-// Confetes do site da Aline: posições fixas (sempre iguais), em rosa, amarelo e azul.
+// Confetes do site da Aline: poucos, só no alto da página, em rosa, amarelo e azul. Caem uma vez por sessão.
 function Confete() {
+  const [cai] = useState(() => {
+    try {
+      if (sessionStorage.getItem('confete-caiu')) return false
+      sessionStorage.setItem('confete-caiu', '1')
+    } catch { /* sem armazenamento: fica parado */ return false }
+    return true
+  })
   const pontos = useMemo(() => {
-    let r = 7
+    let r = 11
     const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280
-    return Array.from({ length: 34 }, (_, k) => ({
-      tam: 8 + Math.round(rnd() * 10),
+    return Array.from({ length: 18 }, (_, k) => ({
+      tam: 7 + Math.round(rnd() * 9),
       cor: ['--dot1', '--dot2', '--dot3'][k % 3],
-      esq: rnd() * 100,
-      topo: k < 20 ? rnd() * 14 : 14 + rnd() * 86,
+      esq: 52 + rnd() * 46,
+      topo: rnd() * 120,
+      atraso: rnd() * 0.5,
     }))
   }, [])
   return (
-    <div className="confete" aria-hidden="true">
-      <i style={{ width: 320, height: 320, left: -160, top: '22%', background: 'var(--blob1)' }} />
-      <i style={{ width: 180, height: 180, right: '6%', top: '12%', background: 'var(--blob2)' }} />
+    <div className={`confete${cai ? ' cai' : ''}`} aria-hidden="true">
+      <i style={{ width: 300, height: 300, left: -150, top: '24%', background: 'var(--blob1)' }} />
+      <i style={{ width: 170, height: 170, right: '5%', top: -60, background: 'var(--blob2)' }} />
       {pontos.map((p, i) => (
-        <i key={i} style={{ width: p.tam, height: p.tam, left: `${p.esq}%`, top: `${p.topo}%`, background: `var(${p.cor})` }} />
+        <i key={i} style={{ width: p.tam, height: p.tam, left: `${p.esq}%`, top: p.topo, background: `var(${p.cor})`, ['--atraso' as string]: `${p.atraso}s` }} />
       ))}
     </div>
   )
@@ -40,6 +48,7 @@ export default function Layout() {
   const { empresaId, veFinanceiro, ehProprietaria } = useEmpresa()
   const { abrir } = useFolhas()
   const qc = useQueryClient()
+  const { pathname } = useLocation()
   const gerar = useGerarRecorrencias(empresaId)
   const { mutate } = gerar
 
@@ -50,8 +59,9 @@ export default function Layout() {
 
   const nav = [
     { para: '/', nome: 'Início', Icone: House, fim: true },
-    ...(veFinanceiro ? [{ para: '/lancamentos', nome: 'Lançamentos', Icone: List }] : []),
+    { para: '/agenda', nome: 'Agenda', Icone: CalendarHeart },
     { para: '/eventos', nome: 'Eventos', Icone: CalendarDays },
+    ...(veFinanceiro ? [{ para: '/lancamentos', nome: 'Lançamentos', Icone: List }] : []),
     { para: '/clientes', nome: 'Clientes', Icone: Users },
     ...(ehProprietaria ? [{ para: '/contratos', nome: 'Contratos', Icone: FileSignature }] : []),
     ...(veFinanceiro ? [{ para: '/relatorios', nome: 'Relatórios', Icone: ChartColumn }] : []),
@@ -88,13 +98,13 @@ export default function Layout() {
             {modoDemo ? <span className="pill atencao">Prévia</span> : null}
           </header>
           <main className="conteudo" id="conteudo">
-            <Outlet />
+            <div key={pathname.split('/')[1]} className="troca-tela"><Outlet /></div>
           </main>
           <Credito />
         </div>
         <nav className="abas-celular" aria-label="Menu">
           <NavLink to="/" end><House size={22} aria-hidden="true" /><span>Início</span></NavLink>
-          <NavLink to="/eventos"><CalendarDays size={22} aria-hidden="true" /><span>Eventos</span></NavLink>
+          <NavLink to="/agenda"><CalendarHeart size={22} aria-hidden="true" /><span>Agenda</span></NavLink>
           {veFinanceiro ? (
             <button className="fab" type="button" onClick={() => abrir({ tipo: 'lancar' })}>
               <span className="circulo"><Plus size={24} aria-hidden="true" /></span>
@@ -103,11 +113,7 @@ export default function Layout() {
           ) : (
             <NavLink to="/clientes"><Users size={22} aria-hidden="true" /><span>Clientes</span></NavLink>
           )}
-          {veFinanceiro ? (
-            <NavLink to="/relatorios"><ChartColumn size={22} aria-hidden="true" /><span>Relatórios</span></NavLink>
-          ) : (
-            <NavLink to="/configuracoes"><SlidersHorizontal size={22} aria-hidden="true" /><span>Ajustes</span></NavLink>
-          )}
+          <NavLink to="/eventos"><CalendarDays size={22} aria-hidden="true" /><span>Eventos</span></NavLink>
           <NavLink to="/mais"><Menu size={22} aria-hidden="true" /><span>Mais</span></NavLink>
         </nav>
       </div>

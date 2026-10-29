@@ -89,6 +89,10 @@ O GitHub Actions (`.github/workflows/verificacao.yml`) roda tipos, testes, build
 
 Envio para a `main` → o Cloudflare roda `npm run build` e `npx wrangler deploy`. O `wrangler.jsonc` aponta para `dist/` com fallback de SPA; o build gera `dist/_headers` com CSP, HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy` e bloqueio de iframe. Para clientes em outras contas: `scripts/cliente/publicar.sh` (ver `docs/operacao/novo-cliente.md`).
 
+## Google Agenda
+
+Ligação opcional, feita pela proprietária na tela Agenda. Configuração (Google Cloud, segredos e publicação da Edge Function `google-agenda`): [`docs/google-agenda.md`](docs/google-agenda.md).
+
 ## Backup e restauração
 
 Diário, criptografado, com teste de restauração automático: [`docs/backup.md`](docs/backup.md). Inclui como recuperar de verdade.

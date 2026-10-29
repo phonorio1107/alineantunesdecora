@@ -30,7 +30,8 @@ Só com os fornecedores necessários para o sistema funcionar, que atuam como su
 
 - **Supabase** (banco de dados e login);
 - **Cloudflare** (publicação do sistema e guarda dos backups criptografados);
-- **GitHub** (execução automática dos backups).
+- **GitHub** (execução automática dos backups);
+- **Google** (Google Agenda), só se a proprietária ligar a agenda: recebe o nome do evento, o nome da cliente, o local e os horários, nunca CPF, telefone ou valores.
 
 A lista completa, com país e finalidade, está no anexo de suboperadores. Alguns desses fornecedores podem tratar dados fora do Brasil; nesses casos, a transferência segue o art. 33 da LGPD (cláusulas contratuais dos fornecedores).
 

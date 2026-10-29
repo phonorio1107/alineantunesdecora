@@ -77,6 +77,17 @@ export interface Evento extends Padrao {
   devolucao_em: string | null
 }
 
+export interface Compromisso extends Padrao {
+  titulo: string
+  /** Instantes ISO (com fuso). Dia inteiro: início e fim no mesmo dia, às 12h de São Paulo. */
+  inicio: string
+  fim: string
+  dia_inteiro: boolean
+  local: string | null
+  notas: string | null
+  evento_id: string | null
+}
+
 export interface Conta extends Padrao {
   nome: string
   saldo_inicial: number

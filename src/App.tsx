@@ -18,6 +18,7 @@ import Contratos from './paginas/Contratos'
 import Relatorios from './paginas/Relatorios'
 import Configuracoes from './paginas/Configuracoes'
 import Mais from './paginas/Mais'
+import Agenda from './paginas/Agenda'
 
 export default function App() {
   const { sessao, carregando } = useSessao()
@@ -56,6 +57,7 @@ function ComEmpresa({ usuarioId }: { usuarioId: string }) {
             <Route element={<Layout />}>
               <Route index element={<Inicio />} />
               <Route path="lancamentos" element={fin ? <Lancamentos /> : <Navigate to="/" replace />} />
+              <Route path="agenda" element={<Agenda />} />
               <Route path="eventos" element={<Eventos />} />
               <Route path="eventos/:id" element={<EventoDetalhe />} />
               <Route path="clientes" element={<Clientes />} />

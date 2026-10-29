@@ -119,6 +119,14 @@ function semear() {
     }
     return insc
   })
+  const comp = (titulo: string, inicio: string, fim: string, local: string | null, evento: number | null = null, dia_inteiro = false) =>
+    ({ ...base(), titulo, inicio, fim, dia_inteiro, local, notas: null, evento_id: evento === null ? null : EV(evento) })
+  t.compromissos = [
+    comp('Visita ao Salão Jardim', '2026-11-03T15:00:00-03:00', '2026-11-03T16:00:00-03:00', 'Salão Jardim, Jundiaí', 3),
+    comp('Comprar flores no Ceasa', '2026-11-06T06:30:00-03:00', '2026-11-06T08:00:00-03:00', 'Ceasa Campinas'),
+    comp('Reunião com a Patrícia (15 anos)', '2026-11-11T19:00:00-03:00', '2026-11-11T20:00:00-03:00', 'Ateliê'),
+    comp('Feira de decoração', '2026-11-17T12:00:00-03:00', '2026-11-17T12:00:00-03:00', 'Expo Center Norte', null, true),
+  ]
   t.fechamentos_mensais = []
   t.contratos = []
   t.registros_atividades = []
@@ -134,12 +142,13 @@ export const recomecar = () => {
 // Regras de acesso (as mesmas ideias da RLS do banco real, simplificadas)
 // ---------------------------------------------------------------------------
 let usuario: string | null = null
+let googleLigado = true
 const vinculo = () => T.usuarios_empresas.find((v) => v.usuario_id === usuario && !v.excluido_em)
 const ehProp = () => vinculo()?.papel === 'proprietaria'
 const veFin = () => ehProp() || (vinculo()?.papel === 'assistente' && !!vinculo()?.financeiro_liberado)
 const FINANCEIRO = new Set(['contas', 'categorias', 'recorrencias', 'lancamentos', 'fechamentos_mensais', 'saldos_contas'])
 const SO_PROPRIETARIA = new Set(['clientes_documentos', 'contratos', 'registros_atividades'])
-const CADASTROS = new Set(['clientes', 'eventos', 'inscricoes_workshop', 'resultado_eventos'])
+const CADASTROS = new Set(['clientes', 'eventos', 'inscricoes_workshop', 'resultado_eventos', 'compromissos'])
 function pode(tabela: string, escrita: boolean) {
   if (!vinculo()) return false
   if (tabela === 'usuarios_empresas') return !escrita || ehProp()
@@ -385,6 +394,28 @@ export async function fetchDemo(entrada: RequestInfo | URL, init: RequestInit = 
     if (rota === 'logout') { usuario = null; ultimaSessao = null; return new Response(null, { status: 204 }) }
     if (rota === 'recover') return json({})
     return json({})
+  }
+
+  // Edge Function google-agenda simulada: na prévia, o Google aparece como ligado, com uma agenda pessoal de exemplo.
+  if (url.pathname === '/functions/v1/google-agenda') {
+    if (!usuario) return json({ erro: 'Entre no sistema de novo.' }, 401)
+    const acao = corpo.acao
+    if (acao === 'status') return json({ conectado: googleLigado, email: ehProp() && googleLigado ? 'aline.antunes@gmail.com' : null, erro: null })
+    if (acao === 'conectar') { googleLigado = true; return json({ url: '' }) }
+    if (acao === 'desconectar') { googleLigado = false; return json({ conectado: false }) }
+    if (acao === 'sincronizar' || acao === 'sincronizar_tudo') return json({ conectado: googleLigado, eventos: 4, compromissos: 4 })
+    if (acao === 'listar') {
+      if (!ehProp() || !googleLigado) return json({ conectado: googleLigado, itens: [] })
+      const g = (id: string, titulo: string, inicio: string, fim: string, dia_inteiro = false) => ({ id, titulo, inicio, fim, dia_inteiro, local: null })
+      return json({ conectado: true, itens: [
+        g('p1', 'Dentista', '2026-11-04T10:00:00-03:00', '2026-11-04T11:00:00-03:00'),
+        g('p2', 'Aniversário da Bia (sobrinha)', '2026-11-14', '2026-11-15', true),
+        g('p3', 'Pilates', '2026-11-05T07:00:00-03:00', '2026-11-05T08:00:00-03:00'),
+        g('p4', 'Pilates', '2026-11-12T07:00:00-03:00', '2026-11-12T08:00:00-03:00'),
+        g('p5', 'Almoço com a família', '2026-11-01T12:30:00-03:00', '2026-11-01T14:30:00-03:00'),
+      ].filter((i) => i.inicio.slice(0, 10) >= String(corpo.de) && i.inicio.slice(0, 10) <= String(corpo.ate)) })
+    }
+    return json({ erro: 'Ação desconhecida.' }, 400)
   }
 
   const m = url.pathname.match(/^\/rest\/v1\/(rpc\/)?(\w+)/)

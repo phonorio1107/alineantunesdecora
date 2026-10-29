@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { verificar } from '../lib/erros'
 import { dividirEmParcelas } from '../lib/calculos'
 import { somarMeses } from '../lib/format'
+import { sincronizarGoogle } from './agenda'
 // Os formulários validam com os esquemas Zod (./esquemas); aqui chegam só dados já validados.
 import type { ClienteValido, EventoValido, InscricaoValida, LancamentoValido } from './esquemas'
 import type {
@@ -288,7 +289,7 @@ export function useCriarEvento(empresa: string) {
       }
       return id
     },
-    onSuccess: () => invalidar('eventos', 'resultados', 'lancamentos'),
+    onSuccess: (id) => { sincronizarGoogle('evento', id); return invalidar('eventos', 'resultados', 'lancamentos') },
   })
 }
 
@@ -340,8 +341,9 @@ export function useAtualizarEvento() {
   return useMutation({
     mutationFn: async ({ id, ...campos }: Partial<Evento> & { id: string }) => {
       verificar('atualizar evento', await supabase.from('eventos').update(campos).eq('id', id))
+      return id
     },
-    onSuccess: () => invalidar('eventos', 'resultados'),
+    onSuccess: (id) => { sincronizarGoogle('evento', id); return invalidar('eventos', 'resultados') },
   })
 }
 
