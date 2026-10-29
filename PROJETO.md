@@ -79,7 +79,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] `main` protegida (só por pull request) e branch `dev`
 - [ ] Dependabot e secret scanning ligados (se o plano permitir): `.github/dependabot.yml` pronto; falta ligar os alertas em Settings → Code security
 - [x] `.env.example` sem segredos; `.gitignore` com `.env*` (28/10/2026; `git check-ignore .env.local` confirma)
-- [ ] Projeto Supabase de produção, **na organização gratuita** (decisão do Pedro em 29/10/2026: sem pagar durante o piloto; o padrão da skill é a org Pro). Nome `aline_antunes_decora`, região São Paulo, senha do banco no gerenciador de senhas. **Condição registrada:** antes de qualquer dado real da Aline, assinar o Pro **ou** ter backup próprio com restauração testada (Fase 10); acompanhar o e-mail do Supabase por causa da pausa por inatividade. Aguardando o Pedro criar o projeto.
+- [x] Projeto Supabase de produção: **dispensado por enquanto** (decisão do Pedro em 29/10/2026). Justificativa: já existe o projeto `aline_antunes_decora-dev` (`nqdlsiqunkeaufgravhg`, org gratuita, São Paulo) e ele prefere usar **um projeto só** para testes e uso real. Risco explicado uma vez: mudanças no banco afetam direto os dados reais, e dados de teste se misturam com os reais. **Condições:** (1) apagar todos os dados de teste antes de entrar dado real; (2) fazer `pg_dump` antes de cada mudança no banco; (3) rever a decisão (um ou dois projetos) na Fase 11, antes do go-live. Plano gratuito: vale também a condição do backup (Fase 10) e do e-mail de pausa.
 - [x] Ambiente Supabase de desenvolvimento separado (29/10/2026): projeto `aline_antunes_decora-dev`, organização gratuita, referência `nqdlsiqunkeaufgravhg`. Pedro enviou a URL e a chave pública; a `service_role` e a senha do banco ficam só com ele. **Falta:** aplicar `supabase/aplicar/01` e `02` e rodar `npm run verificar:supabase`. A rede desta sessão bloqueia `*.supabase.co`, então a conferência ao vivo depende de liberar o domínio ou de rodar no computador do Pedro.
 - [ ] Cloudflare Pages ligado: produção em `main`, prévia em `dev`, variáveis por ambiente
 - [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal (adiado pelo Pedro em 28/10/2026; obrigatório antes de qualquer dado real da Aline)
@@ -145,11 +145,12 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] `SECURITY_CHECKLIST.md` completo; isolamento passando; Advisor zerado
 - [x] GitHub Actions em cada PR: tipos, build, `npm audit` e teste de isolamento (`.github/workflows/verificacao.yml`, 28/10/2026). Falta o lint.
 - [ ] Roteiro manual no computador e no celular, nos dois temas
-- [ ] Backups: diário do Supabase, semanal no R2, restauração testada. **Obrigatório antes do go-live porque a produção está no plano gratuito** (sem backup diário garantido): ou assina o Pro, ou a cópia própria e a restauração testada passam a ser o único backup.
+- [ ] Backups: diário do Supabase, semanal no R2, restauração testada. **Obrigatório antes do go-live porque o projeto está no plano gratuito e é o único** (sem backup diário garantido, sem ambiente separado): ou assina o Pro, ou a cópia própria e a restauração testada passam a ser o único backup.
 - [ ] Revisão de segurança do diff completo
 - [ ] Desempenho no celular, imagens otimizadas, listas paginadas
 
 ## Fase 11: Entrega e go-live
+- [ ] Antes do go-live: **apagar os dados de teste** do projeto Supabase e rever a decisão de usar um projeto só (ou criar um segundo, gratuito, para testes)
 - [ ] Dados reais importados e conferidos
 - [ ] Usuários convidados
 - [ ] Versão de teste com o cliente por 3 a 5 dias
@@ -175,7 +176,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - 28/10/2026: protótipo v1 publicado para a rodada de ajustes.
 - 28/10/2026: ajuste 2 do protótipo: entrada de 30% e saldo 5 dias antes, categorias de custo da entrevista (freelancers, deslocamento, taxas de cartão, peças perdidas).
 - 28/10/2026: ajuste 1 do protótipo: fundo branco com confetes como no site e números sem quebrar no celular.
-- 29/10/2026: **Supabase de produção no plano gratuito**, por decisão do Pedro (sem pagar durante o piloto). Risco explicado uma vez: sem backup diário garantido e com pausa por inatividade; condição: Pro ou backup próprio testado antes de dado real.
+- 29/10/2026: **um único projeto Supabase** (o `-dev`) para testes e uso real, plano gratuito, por decisão do Pedro. Riscos explicados uma vez (sem ambiente separado para testar migrações, dados de teste misturados, sem backup diário garantido, pausa por inatividade). Condições nas Fases 10 e 11. Renomear o projeto para `aline_antunes_decora` é opcional e não muda URL nem chave.
 - 29/10/2026: projeto Supabase criado com **Enable Data API: ligado**, **Automatically expose new tables: DESLIGADO** (recomendação do próprio Supabase: o acesso é concedido à mão) e **Enable automatic RLS: ligado** (rede de proteção para tabelas futuras). Migração `20261029100000_permissoes_api.sql` concede o mínimo a cada tabela; teste de isolamento passa nos dois modos da caixa.
 - 29/10/2026: **Fase 2 concluída**: Aline aprovou o protótipo e concordou com os dados e prazos por escrito (WhatsApp). Portão da fase ok: 6 de 6 itens. Pendente, sem travar nada: custos fixos, divisão do lucro e retirada mínima, que ela cadastra em Configurações.
 - 28/10/2026: Fase 1 concluída (portão ok: todos os itens `[x]`, contrato dispensado com justificativa). Fase 2 iniciada.
