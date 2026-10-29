@@ -164,7 +164,7 @@ a{color:var(--link)}
         <li><b>Fazer o teste de uso</b><span>No celular e no computador: entrada e saída em menos de 1 minuto, cliente, evento, PDF de contrato, Excel, "Esqueci a senha". Use nomes como "TESTE Maria".</span></li>
         <li><b>Configurar o backup diário</b><span>Chave de criptografia, bucket no Cloudflare R2 e 6 segredos no GitHub. Obrigatório antes de dado real, pode ficar para depois.</span></li>
         <li><b>Decidir onde fica o Supabase dos clientes</b><span>Na sua conta (Pro) ou na de cada cliente (gratuito). Em aberto, sem pressa.</span></li>
-        <li><b>Levar o contrato a um advogado</b><span>7 pontos para revisar (locação × decoração, multas, prazos).</span></li>
+        <li><b>Levar ao advogado</b><span>O contrato da Aline (7 pontos) e os rascunhos de LGPD em docs/lgpd.</span></li>
       </ol>
     </div>
     <div class="col">
@@ -180,7 +180,7 @@ a{color:var(--link)}
         <li><b>Corrigir o que o teste de uso mostrar</b><span>Uma tela de cada vez, como manda o processo.</span></li>
         <li><b>Ligar o backup na versão no ar</b><span>Quando você configurar a chave e os segredos.</span></li>
         <li><b>Fechar a Fase 5 com evidências</b><span>Recuperar senha, sair de todos os dispositivos, e-mails em português.</span></li>
-        <li><b>Rascunhar a proposta comercial</b><span>Setup, mensalidade, o que está dentro e fora (valores ainda em rascunho).</span></li>
+        <li><b>Conferir os cabeçalhos no ar</b><span>Assim que você abrir o sistema publicado e me contar se tudo funciona.</span></li>
       </ol>
     </div>
   </div>
@@ -235,24 +235,24 @@ const FASES = [
   {n:6, nome:'Telas', titulo:'Construir o sistema', s:'doing', feito:6, total:7, aqui:true,
    o:'Construir as telas de verdade, ligadas ao banco.',
    agora:'<b>Telas da v1 construídas</b> e testadas no navegador: painel, lançamentos, eventos, clientes, contratos, relatórios e configurações, com Excel, CSV e PDFs. <b>O login com o banco de verdade já funciona.</b> Falta o seu teste de uso e a sua aprovação.'},
-  {n:7, nome:'Design', titulo:'Design', s:'todo', feito:1, total:9,
+  {n:7, nome:'Design', titulo:'Design', s:'doing', feito:5, total:9,
    o:'Acabamento visual: cores da Aline, celular, temas claro e escuro, acessibilidade.',
-   agora:'A direção já está definida pelo protótipo.'},
-  {n:8, nome:'No ar', titulo:'Cloudflare, domínio e proteções', s:'todo', feito:0, total:7,
+   agora:'Revisão no celular feita: botões de 44px, foco visível, texto de pelo menos 14px, temas claro e escuro, tela de erro com a marca. Falta a medição formal de contraste e a sua aprovação da direção visual.'},
+  {n:8, nome:'No ar', titulo:'Cloudflare, domínio e proteções', s:'doing', feito:2, total:7,
    o:'Colocar o sistema no endereço app.alineantunesdecora.com.br, com HTTPS e proteções.',
-   agora:'O sistema já está no ar em um endereço provisório. Falta o domínio próprio, os cabeçalhos de segurança e proteger as prévias.'},
+   agora:'No ar em endereço provisório, com cabeçalhos de segurança prontos e testados (falta conferir no endereço publicado). Falta o domínio próprio app.alineantunesdecora.com.br.'},
   {n:9, nome:'LGPD', titulo:'LGPD e jurídico', s:'todo', feito:0, total:4,
    o:'Política de privacidade, termos de uso e plano para incidentes.',
-   agora:'O mapa de dados já foi rascunhado. Os textos precisam de revisão de um advogado.'},
+   agora:'<b>Rascunhos prontos</b>: política de privacidade, termos de uso, lista de fornecedores e plano de incidente. Falta o advogado, os dados da Aline e publicar no sistema.'},
   {n:10, nome:'Qualidade', titulo:'Qualidade antes da entrega', s:'todo', feito:1, total:6,
    o:'Testar tudo, conferir backups e fazer a revisão final de segurança.',
    agora:'A verificação automática do GitHub já está configurada. O backup com teste de restauração está pronto e falta ligar.'},
   {n:11, nome:'Entrega', titulo:'Entrega e go-live', s:'todo', feito:0, total:7,
    o:'Carregar os dados reais, treinar a Aline e colocar no ar.',
    agora:'Fim do projeto.'},
-  {n:12, nome:'Operação', titulo:'Documentação e operação', s:'todo', feito:0, total:8,
+  {n:12, nome:'Operação', titulo:'Documentação e operação', s:'doing', feito:2, total:8,
    o:'Manual, rotinas de manutenção e suporte.',
-   agora:'O backup diário automático já está pronto e testado; falta ligar. Entram aqui o modelo de proposta, o contrato e a rotina de operação.'}
+   agora:'README completo e checklist de novo cliente com scripts de migração e publicação. Proposta comercial em PDF pronta. O backup diário está pronto e testado; falta ligar.'}
 ];
 const ROTULO = {done:'Concluída', doing:'Em andamento', wait:'Esperando', todo:'Não começou'};
 
