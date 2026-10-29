@@ -81,7 +81,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] `.env.example` sem segredos; `.gitignore` com `.env*` (28/10/2026; `git check-ignore .env.local` confirma)
 - [x] Projeto Supabase de produção: **dispensado por enquanto** (decisão do Pedro em 29/10/2026). Justificativa: já existe o projeto `aline_antunes_decora-dev` (`nqdlsiqunkeaufgravhg`, org gratuita, São Paulo) e ele prefere usar **um projeto só** para testes e uso real. Risco explicado uma vez: mudanças no banco afetam direto os dados reais, e dados de teste se misturam com os reais. **Condições:** (1) apagar todos os dados de teste antes de entrar dado real; (2) fazer `pg_dump` antes de cada mudança no banco; (3) rever a decisão (um ou dois projetos) na Fase 11, antes do go-live. Plano gratuito: vale também a condição do backup (Fase 10) e do e-mail de pausa.
 - [x] Ambiente Supabase de desenvolvimento separado (29/10/2026): projeto `aline_antunes_decora-dev`, organização gratuita, referência `nqdlsiqunkeaufgravhg`. Pedro enviou a URL e a chave pública; a `service_role` e a senha do banco ficam só com ele. **Feito em 29/10/2026 pelo Pedro, no SQL Editor:** `supabase/aplicar/01-estrutura-completa.sql` (3 migrações) e `02-primeiro-acesso.sql` (empresa de teste + usuário como proprietária), ambos com sucesso. **Falta:** conferir ao vivo (`npm run verificar:supabase` e login no sistema publicado); esta sessão ainda não alcança `*.supabase.co`.
-- [ ] Cloudflare Pages ligado: produção em `main`, prévia em `dev`, variáveis por ambiente
+- [x] Cloudflare ligado (29/10/2026): projeto `aline-antunes-decora` (Workers com arquivos estáticos, `wrangler.jsonc` com `dist` e fallback de SPA), produção em `main`, build `npm run build`, variáveis de build `NODE_VERSION`, `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (só a chave pública). Endereço: `aline-antunes-decora.phonorio1107.workers.dev`; chave de Preview desligada de propósito (prévias protegidas na Fase 8). **Login testado ao vivo pelo Pedro em 29/10/2026 ("entrei")**, o que confirma banco, chave e usuário. Prévia por branch `dev` não usada: o fluxo é uma branch só
 - [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal (adiado pelo Pedro em 28/10/2026; obrigatório antes de qualquer dado real da Aline)
 
 ## Fase 4: Banco de dados e RLS
@@ -167,6 +167,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ---
 
 ## Histórico
+- 29/10/2026: sistema publicado no Cloudflare e **login testado ao vivo** (Pedro entrou). `main` recebeu o código da v1 por merge. Falta na Fase 3: Dependabot/secret scanning, decisão sobre proteção da `main` (plano gratuito não protege repositório privado) e 2FA.
 - 28/10/2026: `PROJETO.md` criado; Fase 1 iniciada.
 - 28/10/2026: termo da Fase 2 enviado à Aline pelo WhatsApp (aguardando resposta).
 - 28/10/2026: exportação em **Excel formatado + CSV**; PDFs de **contrato, recibo, fechamento do mês, fluxo de caixa e resumo do evento**, com a marca da Aline; aba **Contratos** (só a proprietária) usando o contrato que ela já usa, palavra por palavra. Pontos do contrato para advogado em `docs/contrato-observacoes.md`.
