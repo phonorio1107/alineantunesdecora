@@ -25,7 +25,7 @@
 ## Fase atual
 Página de acompanhamento (linguagem simples): https://claude.ai/artifact/Q5sgxoiMfr7tMEHPBRcM9n · fonte em `docs/acompanhamento/index.html`, atualizar a cada mudança de fase.
 
-**Fase 3: Contas e repositório** (Fases 1 e 2 concluídas; Fase 2 fechada em 29/10/2026)
+**Fase 3: Contas e repositório: concluída em 30/10/2026** (portão ok: 9 de 9 itens, com `main` sem proteção e Cloudflare sem 2FA próprio justificados). Próximo: Fase 5 (autenticação, parte feita) e teste de uso da Fase 6
 
 ## Decisões
 _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
@@ -85,7 +85,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [x] Projeto Supabase de produção: **dispensado por enquanto** (decisão do Pedro em 29/10/2026). Justificativa: já existe o projeto `aline_antunes_decora-dev` (`nqdlsiqunkeaufgravhg`, org gratuita, São Paulo) e ele prefere usar **um projeto só** para testes e uso real. Risco explicado uma vez: mudanças no banco afetam direto os dados reais, e dados de teste se misturam com os reais. **Condições:** (1) apagar todos os dados de teste antes de entrar dado real; (2) fazer `pg_dump` antes de cada mudança no banco; (3) rever a decisão (um ou dois projetos) na Fase 11, antes do go-live. Plano gratuito: vale também a condição do backup (Fase 10) e do e-mail de pausa.
 - [x] Ambiente Supabase de desenvolvimento separado (29/10/2026): projeto `aline_antunes_decora-dev`, organização gratuita, referência `nqdlsiqunkeaufgravhg`. Pedro enviou a URL e a chave pública; a `service_role` e a senha do banco ficam só com ele. **Feito em 29/10/2026 pelo Pedro, no SQL Editor:** `supabase/aplicar/01-estrutura-completa.sql` (3 migrações) e `02-primeiro-acesso.sql` (empresa de teste + usuário como proprietária), ambos com sucesso. **Falta:** conferir ao vivo (`npm run verificar:supabase` e login no sistema publicado); esta sessão ainda não alcança `*.supabase.co`.
 - [x] Cloudflare ligado (29/10/2026): projeto `aline-antunes-decora` (Workers com arquivos estáticos, `wrangler.jsonc` com `dist` e fallback de SPA), produção em `main`, build `npm run build`, variáveis de build `NODE_VERSION`, `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (só a chave pública). Endereço: `aline-antunes-decora.phonorio1107.workers.dev`; chave de Preview desligada de propósito (prévias protegidas na Fase 8). **Login testado ao vivo pelo Pedro em 29/10/2026 ("entrei")**, o que confirma banco, chave e usuário. Prévia por branch `dev` não usada: o fluxo é uma branch só
-- [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal (adiado pelo Pedro em 28/10/2026; obrigatório antes de qualquer dado real da Aline)
+- [x] 2FA (30/10/2026): **Gmail, GitHub e Supabase** com 2FA ligado pelo Pedro (códigos de recuperação do GitHub guardados por ele). **Cloudflare: dispensado, justificado.** A conta entra por login Google/Apple, e o Cloudflare não oferece 2FA próprio nesse tipo de conta; ela fica protegida pelo 2FA do Gmail. Risco residual: quem controlar o Gmail controla o Cloudflare. Rever se um dia o login passar a ser por e-mail e senha, e antes de o Cloudflare guardar chaves de terceiros
 
 ## Fase 4: Banco de dados e RLS
 - [x] Convenções aplicadas (28/10/2026, código; vale em produção quando a migração for aplicada)
@@ -174,6 +174,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 ---
 
 ## Histórico
+- 30/10/2026: **Fase 3 concluída.** 2FA ligado em Gmail, GitHub e Supabase; Cloudflare sem 2FA próprio por usar login Google (justificado).
 - 30/10/2026: **backup diário** escolhido (R2, criptografado, com teste de restauração automático). O teste achou uma falha: o dump só do `public` não levava as funções do schema `privado`; corrigido.
 - 30/10/2026: modelo comercial e de infraestrutura registrados em Decisões (valores em rascunho; **onde fica o Supabase continua em aberto**). Itens de operação e proposta adicionados à Fase 12.
 - 29/10/2026: sistema publicado no Cloudflare e **login testado ao vivo** (Pedro entrou). `main` recebeu o código da v1 por merge. Falta na Fase 3: Dependabot/secret scanning, decisão sobre proteção da `main` (plano gratuito não protege repositório privado) e 2FA.
