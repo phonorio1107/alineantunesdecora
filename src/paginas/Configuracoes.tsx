@@ -9,6 +9,7 @@ import {
 import { cnpjValido, valorEmReais } from '../data/esquemas'
 import type { Empresa, NaturezaCategoria } from '../data/tipos'
 import { Campo, Carregando, Confirmar } from '../components/ui'
+import { DuasEtapas, TrocarSenha } from '../auth/Seguranca'
 import { formatBRL, formatDoc, hoje, soDigitos } from '../lib/format'
 import { formatarValorDigitado, mascaraCNPJ } from '../lib/mascaras'
 import { mensagemErro } from '../lib/erros'
@@ -27,6 +28,7 @@ export default function Configuracoes() {
         {ehProprietaria ? <Equipe /> : null}
         <Aparencia />
         <MinhaConta />
+        <DuasEtapas />
       </div>
     </>
   )
@@ -324,6 +326,7 @@ function MinhaConta() {
     <section className="cartao" aria-labelledby="t-conta">
       <h2 id="t-conta">Minha conta</h2>
       <p className="muted">{sessao?.user.email}</p>
+      <TrocarSenha />
       {confirmando ? (
         <Confirmar titulo="Sair de todos os aparelhos?" texto="Você vai precisar entrar de novo em todos os celulares e computadores." rotulo="Sair de todos" aoCancelar={() => setConfirmando(false)} aoConfirmar={() => sair(true)} />
       ) : (

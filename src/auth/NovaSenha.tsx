@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { registrarErro } from '../lib/erros'
 import logo from '../assets/logo.png'
 import { Girando, Senha } from '../components/ui'
+import { erroDeSenha } from './Seguranca'
 
 // Página aberta pelo link de "Esqueci a senha" (e pelo convite): define a senha nova.
 export default function NovaSenha() {
@@ -15,8 +16,8 @@ export default function NovaSenha() {
   const salvar = async (e: FormEvent) => {
     e.preventDefault()
     setErro(null)
-    if (senha.length < 10) return setErro('Use pelo menos 10 caracteres.')
-    if (!/[A-Za-z]/.test(senha) || !/\d/.test(senha)) return setErro('Misture letras e números.')
+    const regra = erroDeSenha(senha)
+    if (regra) return setErro(regra)
     if (senha !== repetir) return setErro('As duas senhas não são iguais.')
     setSalvando(true)
     const { error } = await supabase.auth.updateUser({ password: senha })

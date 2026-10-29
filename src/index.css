@@ -471,3 +471,9 @@ button.linha:hover { background: var(--rose-50) }
   .google-cartao { padding: 16px }
   .google-cartao .acoes { justify-content: flex-start }
 }
+
+/* Segurança da conta */
+.qr { align-self: center; width: 192px; height: 192px; border-radius: 12px; border: 1px solid var(--line); background: #fff; padding: 8px }
+.chave-manual summary { cursor: pointer; color: var(--accent); font-weight: 600; min-height: 44px; display: flex; align-items: center }
+.chave-manual code { word-break: break-all; font-size: 14px; background: var(--rose-50); padding: 2px 6px; border-radius: 6px }
+.ligado-2fa { display: flex; align-items: center; gap: 8px; color: var(--good); font-weight: 600 }

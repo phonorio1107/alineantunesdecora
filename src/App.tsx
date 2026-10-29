@@ -3,7 +3,9 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-
 import { useSessao } from './auth/Sessao'
 import Entrar from './auth/Entrar'
 import NovaSenha from './auth/NovaSenha'
-import { supabaseConfigurado } from './lib/supabase'
+import { PedirCodigo, useNivel } from './auth/Seguranca'
+import { supabase, supabaseConfigurado } from './lib/supabase'
+import { useQuery } from '@tanstack/react-query'
 import { useVinculo } from './data/consultas'
 import { mensagemErro } from './lib/erros'
 import logo from './assets/logo.png'
@@ -32,7 +34,23 @@ export default function App() {
   if (carregando) return <Abrindo />
   if (pathname === '/nova-senha') return <NovaSenha />
   if (!sessao) return <Entrar />
-  return <ComEmpresa usuarioId={sessao.user.id} />
+  return <ComDuasEtapas usuarioId={sessao.user.id} />
+}
+
+/** Se a pessoa ligou a verificação em duas etapas, pede o código antes de abrir o sistema. */
+function ComDuasEtapas({ usuarioId }: { usuarioId: string }) {
+  const nivel = useNivel(true)
+  const { data } = nivel
+  if (nivel.isPending) return <Abrindo />
+  if (data && data.currentLevel === 'aal1' && data.nextLevel === 'aal2') return <ExigirCodigo />
+  return <ComEmpresa usuarioId={usuarioId} />
+}
+
+function ExigirCodigo() {
+  const fatores = useQuery({ queryKey: ['mfa', 'fatores-login'], queryFn: async () => (await supabase.auth.mfa.listFactors()).data?.totp ?? [] })
+  const fator = fatores.data?.find((f) => f.status === 'verified')
+  if (fatores.isPending) return <Abrindo />
+  return fator ? <PedirCodigo fator={fator.id} /> : <Aviso titulo="Não foi possível pedir o código" texto="Saia e entre de novo." />
 }
 
 function ComEmpresa({ usuarioId }: { usuarioId: string }) {

@@ -136,6 +136,7 @@ function semear() {
 let T = semear()
 export const recomecar = () => {
   T = semear()
+  fatoresDemo = []
 }
 
 // ---------------------------------------------------------------------------
@@ -357,12 +358,14 @@ const RPC: Record<string, (p: Linha) => unknown> = {
 // Login simulado
 // ---------------------------------------------------------------------------
 const b64 = (o: object) => btoa(JSON.stringify(o)).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
-function sessaoPara(email: string) {
+// Verificação em duas etapas simulada: o código certo é sempre 123456. Só a proprietária pode ligar (como no sistema real, qualquer um pode; aqui basta um).
+let fatoresDemo: { id: string; factor_type: string; status: string; friendly_name: string; created_at: string; updated_at: string }[] = []
+function sessaoPara(email: string, aal: 'aal1' | 'aal2' = 'aal1') {
   const id = /assist/i.test(email) ? ASSISTENTE : PROPRIETARIA
-  usuario = id
+  usuario = aal === 'aal2' || fatoresDemo.every((f) => f.status !== 'verified') ? id : null // com duas etapas ligadas, só abre depois do código
   const exp = Math.floor(Date.now() / 1000) + 3600 * 12
-  const user = { id, aud: 'authenticated', role: 'authenticated', email, app_metadata: { provider: 'email' }, user_metadata: {}, created_at: '2026-10-01T00:00:00Z' }
-  const access_token = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: id, exp, role: 'authenticated', aud: 'authenticated', email })}.demo`
+  const user = { id, aud: 'authenticated', role: 'authenticated', email, app_metadata: { provider: 'email' }, user_metadata: {}, created_at: '2026-10-01T00:00:00Z', factors: fatoresDemo }
+  const access_token = `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: id, exp, role: 'authenticated', aud: 'authenticated', email, aal, amr: [{ method: 'password', timestamp: exp - 3600 }] })}.demo`
   return { access_token, token_type: 'bearer', expires_in: 3600 * 12, expires_at: exp, refresh_token: `demo-${id}`, user }
 }
 let ultimaSessao: ReturnType<typeof sessaoPara> | null = null
@@ -390,7 +393,27 @@ export async function fetchDemo(entrada: RequestInfo | URL, init: RequestInit = 
       }
       return ultimaSessao ? json(ultimaSessao) : json({ error: 'invalid_grant' }, 400)
     }
-    if (rota === 'user') return ultimaSessao ? json(ultimaSessao.user) : json({ msg: 'not logged in' }, 401)
+    if (rota === 'user') return ultimaSessao ? json({ ...ultimaSessao.user, factors: fatoresDemo }) : json({ msg: 'not logged in' }, 401)
+    if (rota === 'factors' && metodo === 'POST') {
+      const f = { id: crypto.randomUUID(), factor_type: 'totp', status: 'unverified', friendly_name: String(corpo.friendly_name ?? 'Celular'), created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      fatoresDemo.push(f)
+      // O Supabase devolve o SVG puro; o supabase-js põe o "data:image/svg+xml" na frente.
+      const qr = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21"><rect width="21" height="21" fill="#fff"/><path d="M1 1h7v7H1zM13 1h7v7h-7zM1 13h7v7H1zM10 10h2v2h-2zM14 12h3v3h-3zM9 15h2v4H9zM17 17h3v3h-3z" fill="#3b2130"/></svg>'
+      return json({ id: f.id, type: 'totp', friendly_name: f.friendly_name, totp: { qr_code: qr, secret: 'DEMO5ECRETKEY2345', uri: 'otpauth://totp/demo' } })
+    }
+    const mf = rota.match(/^factors\/([\w-]+)(?:\/(challenge|verify))?$/)
+    if (mf) {
+      const f = fatoresDemo.find((x) => x.id === mf[1])
+      if (!f) return json({ code: 404, msg: 'Fator não encontrado' }, 404)
+      if (mf[2] === 'challenge') return json({ id: crypto.randomUUID(), type: 'totp', expires_at: Math.floor(Date.now() / 1000) + 300 })
+      if (mf[2] === 'verify') {
+        if (String(corpo.code) !== '123456') return json({ code: 400, error_code: 'mfa_verification_failed', msg: 'Invalid TOTP code entered' }, 400)
+        f.status = 'verified'
+        ultimaSessao = sessaoPara(String(ultimaSessao?.user.email ?? 'aline@demo.com'), 'aal2')
+        return json(ultimaSessao)
+      }
+      if (metodo === 'DELETE') { fatoresDemo = fatoresDemo.filter((x) => x.id !== f.id); ultimaSessao = ultimaSessao ? sessaoPara(String(ultimaSessao.user.email), 'aal1') : null; return json({ id: f.id }) }
+    }
     if (rota === 'logout') { usuario = null; ultimaSessao = null; return new Response(null, { status: 204 }) }
     if (rota === 'recover') return json({})
     return json({})

@@ -105,10 +105,10 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Cadastro aberto desligado; entrada por convite; confirmação de e-mail
 - [ ] Senha forte; token curto com renovação; limite de tentativas
 - [x] Redirect URLs só de produção e prévias (informado pelo Pedro em 30/10/2026: Site URL e Redirect URL = endereço `.workers.dev`, feito em 29/10; sem print). Trocar pelo domínio próprio na Fase 8
-- [ ] 2FA disponível (obrigatório para admin se o cliente aceitar)
-- [ ] Perfis administrador e usuário, checados no banco
-- [ ] Recuperar senha, trocar senha, sair de todos os dispositivos (telas prontas em 28/10/2026; falta testar com o Supabase de verdade)
-- [ ] E-mails com remetente do domínio, em português
+- [ ] 2FA disponível (obrigatório para admin se o cliente aceitar): **feito no sistema em 31/10/2026**. Configurações → Verificação em duas etapas (app autenticador, QR code e chave manual); com ela ligada, o login pede o código de 6 números antes de abrir. Testado na prévia: código errado recusado, entrar, desligar. Achado e corrigido: o QR code do Supabase vinha com "#" sem codificar e a imagem não aparecia. Falta conferir que TOTP está ligado no Supabase e a Aline decidir se liga
+- [x] Perfis administrador e usuário, checados no banco (proprietária, assistente com financeiro opcional e freelancer; RLS por operação; teste de isolamento verificações 3a, 3b, 4 e 7 passando a cada envio)
+- [ ] Recuperar senha, trocar senha, sair de todos os dispositivos: telas prontas; **trocar a senha** entrou em Configurações em 31/10/2026 (mesma regra: 10 caracteres, letras e números), testada na prévia. Falta: o "Esqueci a senha" só entrega e-mail para quem é da equipe do Supabase até haver SMTP próprio (ver item de e-mails)
+- [ ] E-mails com remetente do domínio, em português: **modelos em português prontos** em `docs/emails/` (convite, nova senha, confirmação, link, troca de e-mail, código), com a marca. Falta o Pedro colar no Supabase e, depois do domínio (Fase 8), configurar SMTP próprio (Resend). **Atenção:** sem SMTP próprio o Supabase só entrega e-mails para a equipe do projeto, então o "Esqueci a senha" da Aline não chega
 
 ## Fase 6: Construir o sistema
 - [x] Módulos-base (28/10/2026): login por convite, empresa e equipe, painel, listas com busca e filtros, exportação Excel/CSV, configurações, registro de atividades no banco
