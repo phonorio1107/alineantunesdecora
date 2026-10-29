@@ -80,7 +80,7 @@ _(registro das escolhas do Pedro, para nenhum chat perguntar de novo)_
 - [ ] Dependabot e secret scanning ligados (se o plano permitir): `.github/dependabot.yml` pronto; falta ligar os alertas em Settings → Code security
 - [x] `.env.example` sem segredos; `.gitignore` com `.env*` (28/10/2026; `git check-ignore .env.local` confirma)
 - [ ] Projeto Supabase de produção (org Pro, região São Paulo), senha do banco no gerenciador de senhas
-- [ ] Ambiente Supabase de desenvolvimento separado
+- [x] Ambiente Supabase de desenvolvimento separado (29/10/2026): projeto `aline_antunes_decora-dev`, organização gratuita, referência `nqdlsiqunkeaufgravhg`. Pedro enviou a URL e a chave pública; a `service_role` e a senha do banco ficam só com ele. **Falta:** aplicar `supabase/aplicar/01` e `02` e rodar `npm run verificar:supabase`. A rede desta sessão bloqueia `*.supabase.co`, então a conferência ao vivo depende de liberar o domínio ou de rodar no computador do Pedro.
 - [ ] Cloudflare Pages ligado: produção em `main`, prévia em `dev`, variáveis por ambiente
 - [ ] 2FA em GitHub, Cloudflare, Supabase e e-mail principal (adiado pelo Pedro em 28/10/2026; obrigatório antes de qualquer dado real da Aline)
 
