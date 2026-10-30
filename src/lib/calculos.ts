@@ -1,6 +1,6 @@
 // Os números que o sistema responde para a Aline (docs/fase-2-modelagem.md, seção 1).
 // Funções puras: recebem os dados já carregados e não falam com o banco.
-import type { Categoria, FonteReceita, Lancamento, Recorrencia, ResultadoEvento } from '../data/tipos'
+import type { Areas, Categoria, Evento, FonteReceita, ItemVenda, Lancamento, Peca, Recorrencia, ResultadoEvento } from '../data/tipos'
 import { addMes, mesDe } from './format'
 
 const soma = <T,>(lista: T[], valor: (x: T) => number) => lista.reduce((t, x) => t + valor(x), 0)
@@ -151,16 +151,61 @@ export function lucroEvento(r: ResultadoEvento) {
   return { receita: arred(receita), custos: arred(Number(r.custos)), lucro: arred(lucro), margem: receita > 0 ? lucro / receita : 0 }
 }
 
+/**
+ * Quanto de cada evento é de cada área. Venda com várias áreas divide receita e custos na proporção do valor
+ * de cada área (o que a Aline informou ao fechar). Sem valores por área, tudo vai para a área principal.
+ */
+export function partesPorArea(r: Pick<ResultadoEvento, 'fonte' | 'areas'>): [FonteReceita, number][] {
+  const lista = Object.entries(r.areas ?? {}).filter(([, v]) => Number(v) > 0) as [FonteReceita, number][]
+  const total = soma(lista, ([, v]) => Number(v))
+  return total > 0 ? lista.map(([a, v]) => [a, Number(v) / total]) : [[r.fonte, 1]]
+}
+
 export function lucroPorArea(resultados: ResultadoEvento[]): ResultadoArea[] {
   const areas: FonteReceita[] = ['decoracao', 'assessoria', 'workshop']
+  const acc = new Map(areas.map((a) => [a, { receita: 0, custos: 0 }]))
+  for (const r of resultados) {
+    const l = lucroEvento(r)
+    for (const [a, parte] of partesPorArea(r)) {
+      const x = acc.get(a)!
+      x.receita += l.receita * parte
+      x.custos += l.custos * parte
+    }
+  }
   return areas.map((fonte) => {
-    const doTipo = resultados.filter((r) => r.fonte === fonte).map(lucroEvento)
-    const receita = arred(soma(doTipo, (x) => x.receita))
-    const custos = arred(soma(doTipo, (x) => x.custos))
+    const receita = arred(acc.get(fonte)!.receita)
+    const custos = arred(acc.get(fonte)!.custos)
     const lucro = arred(receita - custos)
     return { fonte, receita, custos, lucro, margem: receita > 0 ? lucro / receita : 0 }
   })
 }
+
+/** Áreas marcadas numa venda, na ordem do sistema. */
+export const areasDe = (e: Pick<Evento, 'fonte' | 'areas'>): FonteReceita[] => {
+  const marcadas = (['decoracao', 'assessoria', 'workshop'] as const).filter((a) => e.areas && a in e.areas)
+  return marcadas.length ? marcadas : [e.fonte]
+}
+
+/** Valor do que há no estoque, pelo custo de compra. */
+export const valorEstoque = (pecas: Pick<Peca, 'quantidade' | 'custo_unitario'>[]) =>
+  arred(soma(pecas, (p) => Math.max(0, Number(p.quantidade)) * Number(p.custo_unitario)))
+
+export const totalItens = (itens: Pick<ItemVenda, 'quantidade' | 'valor_unitario'>[]) =>
+  arred(soma(itens, (i) => Number(i.quantidade) * Number(i.valor_unitario)))
+
+/**
+ * Peças de acervo comprometidas em outras vendas fechadas no mesmo dia (para avisar quando não dá).
+ * Consumo não entra: ele já saiu do estoque quando a venda fechou.
+ */
+export function reservadasNoDia(params: { pecaId: string; dia: string; eventoAtual: string; eventos: Pick<Evento, 'id' | 'data_evento' | 'status'>[]; itens: Pick<ItemVenda, 'evento_id' | 'peca_id' | 'quantidade'>[] }) {
+  const { pecaId, dia, eventoAtual, eventos, itens } = params
+  const doDia = new Set(eventos.filter((e) => e.id !== eventoAtual && e.data_evento === dia && (e.status === 'confirmado' || e.status === 'realizado')).map((e) => e.id))
+  return soma(itens.filter((i) => i.peca_id === pecaId && doDia.has(i.evento_id)), (i) => Number(i.quantidade))
+}
+
+/** Confere se o valor de cada área soma o total (centavo a centavo). */
+export const areasSomam = (areas: Areas, total: number) =>
+  Math.round(soma(Object.values(areas), (v) => Number(v ?? 0)) * 100) === Math.round(total * 100)
 
 /** Divide o valor do evento em entrada (percentual) e saldo, como no banco (criar_evento). */
 export function parcelasSugeridas(valor: number, entradaPercentual: number) {

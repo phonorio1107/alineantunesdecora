@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { custoFixoMensal, dividirEmParcelas, fluxoDeCaixa, folego, lucroEvento, lucroPorArea, parcelasSugeridas, podeRetirar, primeiroMesNegativo, resumoMes } from './calculos'
+import { custoFixoMensal, dividirEmParcelas, fluxoDeCaixa, folego, lucroEvento, lucroPorArea, partesPorArea, areasSomam, valorEstoque, reservadasNoDia, totalItens, parcelasSugeridas, podeRetirar, primeiroMesNegativo, resumoMes } from './calculos'
 import { cnpjValido, cpfValido, esquemaCliente, esquemaLancamento, valorEmReais } from '../data/esquemas'
 import { addMes, fimMes, mascararDoc, nomeMes } from './format'
 import type { Categoria, Lancamento, Recorrencia, ResultadoEvento } from '../data/tipos'
@@ -108,6 +108,29 @@ describe('eventos e áreas', () => {
     const a = lucroPorArea([r('decoracao', 4000, 0, 0, 1000), r('decoracao', 2000, 0, 0, 500), r('assessoria', 5000, 0, 0, 600)])
     expect(a.find((x) => x.fonte === 'decoracao')).toMatchObject({ receita: 6000, custos: 1500, lucro: 4500 })
     expect(a.find((x) => x.fonte === 'workshop')).toMatchObject({ receita: 0, margem: 0 })
+  })
+  it('venda com duas áreas divide receita e custos pelo valor de cada área', () => {
+    const misto = { ...r('assessoria', 5000, 0, 0, 1000), areas: { decoracao: 1500, assessoria: 3500 } }
+    const a = lucroPorArea([misto, r('decoracao', 2000, 0, 0, 500)])
+    expect(a.find((x) => x.fonte === 'decoracao')).toMatchObject({ receita: 3500, custos: 800, lucro: 2700 })
+    expect(a.find((x) => x.fonte === 'assessoria')).toMatchObject({ receita: 3500, custos: 700, lucro: 2800 })
+  })
+  it('áreas sem valor (workshop) contam inteiras na área principal', () => {
+    expect(partesPorArea({ fonte: 'workshop', areas: { workshop: 0 } })).toEqual([['workshop', 1]])
+    expect(areasSomam({ decoracao: 1500.1, assessoria: 3499.9 }, 5000)).toBe(true)
+    expect(areasSomam({ decoracao: 1500, assessoria: 3400 }, 5000)).toBe(false)
+  })
+  it('estoque: valor pelo custo e peças reservadas no mesmo dia', () => {
+    expect(valorEstoque([{ quantidade: 3, custo_unitario: 350 }, { quantidade: 500, custo_unitario: 0.5 }, { quantidade: -2, custo_unitario: 10 }])).toBe(1300)
+    const eventos = [
+      { id: 'a', data_evento: '2026-11-21', status: 'confirmado' as const },
+      { id: 'b', data_evento: '2026-11-21', status: 'orcamento' as const },
+      { id: 'c', data_evento: '2026-11-22', status: 'confirmado' as const },
+      { id: 'd', data_evento: '2026-11-21', status: 'confirmado' as const },
+    ]
+    const itens = ['a', 'b', 'c', 'd'].map((evento_id) => ({ evento_id, peca_id: 'mesa', quantidade: 2 }))
+    expect(reservadasNoDia({ pecaId: 'mesa', dia: '2026-11-21', eventoAtual: 'd', eventos, itens })).toBe(2)
+    expect(totalItens([{ quantidade: 2, valor_unitario: 150 }, { quantidade: 1, valor_unitario: 1500.5 }])).toBe(1800.5)
   })
   it('parcelas sugeridas: 30% de entrada', () => {
     expect(parcelasSugeridas(5770, 30)).toEqual({ entrada: 1731, saldo: 4039 })

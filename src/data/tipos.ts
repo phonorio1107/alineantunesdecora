@@ -4,7 +4,10 @@ export type Papel = 'proprietaria' | 'assistente' | 'freelancer'
 export type OrigemCliente = 'instagram' | 'indicacao' | 'whatsapp' | 'site' | 'outra'
 export type TipoEvento = 'infantil' | 'casamento' | 'quinze_anos' | 'cha' | 'batizado' | 'corporativo' | 'workshop' | 'outro'
 export type FonteReceita = 'decoracao' | 'assessoria' | 'workshop'
-export type StatusEvento = 'confirmado' | 'realizado' | 'cancelado'
+/** "orcamento": venda ainda não fechada (sem parcelas, sem baixa no estoque). */
+export type StatusEvento = 'orcamento' | 'confirmado' | 'realizado' | 'cancelado'
+/** Valor de cada área num evento: { decoracao: 3000, assessoria: 1200 }. */
+export type Areas = Partial<Record<FonteReceita, number>>
 export type StatusInscricao = 'reservada' | 'paga' | 'cancelada'
 export type TipoLancamento = 'entrada' | 'saida'
 export type NaturezaCategoria = 'receita' | 'variavel' | 'fixo' | 'retirada'
@@ -75,6 +78,59 @@ export interface Evento extends Padrao {
   local_endereco: string | null
   entrega_em: string | null
   devolucao_em: string | null
+  /** Áreas da venda e o valor de cada uma (migração de 01/11/2026). */
+  areas?: Areas
+  /** Quando a conferência das peças que voltaram da festa foi concluída. */
+  conferido_em?: string | null
+  /** Quando o orçamento virou venda. Cancelado sem esta data = orçamento que não fechou. */
+  fechado_em?: string | null
+  /** Rascunho e anotações do orçamento. */
+  observacoes?: string | null
+}
+
+export type TipoPeca = 'acervo' | 'consumo'
+
+/** Peça do estoque com a quantidade atual (view estoque_pecas). */
+export interface Peca {
+  id: string
+  empresa_id: string
+  codigo: string
+  nome: string
+  categoria: string | null
+  /** Acervo sai e volta; consumo sai de vez. */
+  tipo: TipoPeca
+  custo_unitario: number
+  observacoes: string | null
+  quantidade: number
+  criado_em: string
+  atualizado_em: string
+}
+
+export interface MovimentoEstoque {
+  id: string
+  empresa_id: string
+  peca_id: string
+  evento_id: string | null
+  quantidade: number
+  motivo: 'ajuste' | 'evento'
+  observacao: string | null
+  criado_em: string
+}
+
+/** Item da venda. Peça do estoque pode ter outro nome (descricao) só nesta venda. */
+export interface ItemVenda {
+  id: string
+  empresa_id: string
+  evento_id: string
+  tipo: 'peca' | 'servico'
+  peca_id: string | null
+  descricao: string
+  quantidade: number
+  valor_unitario: number
+  /** Peças de acervo que não voltaram da festa. */
+  perdidas: number
+  ordem: number
+  criado_em: string
 }
 
 export interface Compromisso extends Padrao {
@@ -158,6 +214,7 @@ export interface ResultadoEvento {
   recebido: number
   a_receber: number
   custos: number
+  areas?: Areas
 }
 
 export interface FechamentoMensal extends Padrao {
@@ -183,9 +240,10 @@ export interface DadosContrato {
   /** Prazo do saldo antes do evento, citado na cláusula 3. */
   dias_saldo: number
   empresa: Pick<Empresa, 'nome' | 'razao_social' | 'cnpj' | 'telefones' | 'email_contato' | 'endereco' | 'cidade_foro' | 'banco_nome' | 'banco_agencia' | 'banco_conta' | 'banco_favorecido' | 'pix_chave'>
-  cliente: { nome: string; cpf_cnpj: string | null; telefone: string | null; endereco: string | null; cidade: string | null }
+  cliente: { nome: string; cpf_cnpj: string | null; inscricao_estadual?: string | null; telefone: string | null; endereco: string | null; cidade: string | null }
   evento: { titulo: string; data_evento: string; local_nome: string | null; local_endereco: string | null; entrega_em: string | null; devolucao_em: string | null }
-  itens: { codigo: string; descricao: string; quantidade: number; valor_unitario: number }[]
+  /** "tipo" separa peças e serviços no PDF (contratos antigos não têm: saem como serviço). */
+  itens: { codigo: string; descricao: string; quantidade: number; valor_unitario: number; tipo?: 'peca' | 'servico' }[]
   parcelas: { vencimento: string; descricao: string; valor: number; situacao: 'Pago' | 'Pendente'; forma: string }[]
   totais: { valor_servicos: number; extras: number; total: number; pago: number; pendente: number }
 }

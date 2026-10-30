@@ -1,8 +1,8 @@
 // Monta os arquivos (PDF, Excel, CSV) a partir dos dados das telas e entrega para download.
 // PDF e Excel são carregados só quando usados, para o sistema abrir rápido no celular.
-import type { Cliente, Contrato, DadosContrato, Empresa, Evento, InscricaoWorkshop, Lancamento } from '../data/tipos'
+import type { Cliente, Contrato, DadosContrato, Empresa, Evento, InscricaoWorkshop, Lancamento, Peca } from '../data/tipos'
 import type { MesFluxo, ResumoMes } from '../lib/calculos'
-import { lucroEvento } from '../lib/calculos'
+import { lucroEvento, partesPorArea } from '../lib/calculos'
 import { dataBR, formatTelefone, mascararDoc, nomeMes } from '../lib/format'
 import type { ResultadoEvento } from '../data/tipos'
 import { baixarArquivo, gerarCSV, gerarExcel, nomeArquivo, type Aba } from './planilha'
@@ -105,8 +105,30 @@ export function abaEventos(resultados: ResultadoEvento[]): Aba {
       .sort((a, b) => a.data_evento.localeCompare(b.data_evento))
       .map((r) => {
         const l = lucroEvento(r)
-        return { data: r.data_evento, titulo: r.titulo, area: FONTE[r.fonte], receita: l.receita, recebido: Number(r.recebido), areceber: Number(r.a_receber), custos: l.custos, lucro: l.lucro, margem: l.margem }
+        return { data: r.data_evento, titulo: r.titulo, area: partesPorArea(r).map(([a]) => FONTE[a]).join(' + '), receita: l.receita, recebido: Number(r.recebido), areceber: Number(r.a_receber), custos: l.custos, lucro: l.lucro, margem: l.margem }
       }),
+  }
+}
+
+/** Estoque pelo custo de compra. */
+export function abaEstoque(pecas: Peca[]): Aba {
+  return {
+    nome: 'Estoque',
+    titulo: 'Estoque',
+    subtitulo: 'Valor pelo custo de compra de cada peça',
+    colunas: [
+      { titulo: 'Código', chave: 'codigo', tipo: 'texto', largura: 10 },
+      { titulo: 'Peça', chave: 'nome', tipo: 'texto', largura: 36 },
+      { titulo: 'Categoria', chave: 'categoria', tipo: 'texto', largura: 18 },
+      { titulo: 'Tipo', chave: 'tipo', tipo: 'texto', largura: 12 },
+      { titulo: 'Quantidade', chave: 'quantidade', tipo: 'numero', largura: 12, total: true },
+      { titulo: 'Custo de cada', chave: 'custo', tipo: 'moeda', largura: 14 },
+      { titulo: 'Valor total', chave: 'total', tipo: 'moeda', largura: 14, total: true },
+    ],
+    linhas: pecas.map((p) => ({
+      codigo: p.codigo, nome: p.nome, categoria: p.categoria, tipo: p.tipo === 'consumo' ? 'Consumo' : 'Acervo',
+      quantidade: p.quantidade, custo: Number(p.custo_unitario), total: Math.max(0, p.quantidade) * Number(p.custo_unitario),
+    })),
   }
 }
 

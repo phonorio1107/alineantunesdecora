@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { CalendarDays, CalendarHeart, ChartColumn, FileSignature, House, List, Menu, Plus, SlidersHorizontal, Users } from 'lucide-react'
+import { Boxes, CalendarHeart, ChartColumn, Handshake, House, List, Menu, Plus, SlidersHorizontal, Users } from 'lucide-react'
 import logo from '../assets/logo.png'
 import { useEmpresa, useFolhas } from '../app/contexto'
 import { periodoCarregado } from '../app/dados'
@@ -45,7 +45,7 @@ function Confete() {
 }
 
 export default function Layout() {
-  const { empresaId, veFinanceiro, ehProprietaria } = useEmpresa()
+  const { empresaId, veFinanceiro } = useEmpresa()
   const { abrir } = useFolhas()
   const qc = useQueryClient()
   const { pathname } = useLocation()
@@ -60,10 +60,10 @@ export default function Layout() {
   const nav = [
     { para: '/', nome: 'Início', Icone: House, fim: true },
     { para: '/agenda', nome: 'Agenda', Icone: CalendarHeart },
-    { para: '/eventos', nome: 'Eventos', Icone: CalendarDays },
+    { para: '/vendas', nome: 'Vendas', Icone: Handshake },
     ...(veFinanceiro ? [{ para: '/lancamentos', nome: 'Lançamentos', Icone: List }] : []),
     { para: '/clientes', nome: 'Clientes', Icone: Users },
-    ...(ehProprietaria ? [{ para: '/contratos', nome: 'Contratos', Icone: FileSignature }] : []),
+    { para: '/estoque', nome: 'Estoque', Icone: Boxes },
     ...(veFinanceiro ? [{ para: '/relatorios', nome: 'Relatórios', Icone: ChartColumn }] : []),
     { para: '/configuracoes', nome: 'Configurações', Icone: SlidersHorizontal },
   ]
@@ -113,7 +113,7 @@ export default function Layout() {
           ) : (
             <NavLink to="/clientes"><Users size={22} aria-hidden="true" /><span>Clientes</span></NavLink>
           )}
-          <NavLink to="/eventos"><CalendarDays size={22} aria-hidden="true" /><span>Eventos</span></NavLink>
+          <NavLink to="/vendas"><Handshake size={22} aria-hidden="true" /><span>Vendas</span></NavLink>
           <NavLink to="/mais"><Menu size={22} aria-hidden="true" /><span>Mais</span></NavLink>
         </nav>
       </div>

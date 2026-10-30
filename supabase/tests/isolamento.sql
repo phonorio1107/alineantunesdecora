@@ -400,6 +400,118 @@ begin
   end;
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- 8. Vendas e estoque: orçamento não gera parcela nem baixa; fechar gera; perdas e cancelamento acertam o estoque
+-- ---------------------------------------------------------------------------
+reset role;
+set local role authenticated;
+do $$
+declare
+  a constant uuid := 'eeeeeeee-0000-0000-0000-00000000000a';
+  v_ev uuid; v_mesa uuid; v_balao uuid; v_item uuid; n int; v_qtd int; v_areas jsonb; v_fonte text;
+begin
+  perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
+  insert into public.pecas (empresa_id, codigo, nome, tipo, custo_unitario) values (a, '12', 'Mesa azul baixa', 'acervo', 350) returning id into v_mesa;
+  insert into public.pecas (empresa_id, codigo, nome, tipo, custo_unitario) values (a, '40', 'Balão 9 pol. rosa', 'consumo', 0.5) returning id into v_balao;
+  insert into public.estoque_movimentos (empresa_id, peca_id, quantidade, motivo) values (a, v_mesa, 3, 'ajuste'), (a, v_balao, 500, 'ajuste');
+  begin
+    insert into public.pecas (empresa_id, codigo, nome) values (a, ' 12', 'Código repetido');
+    raise exception 'FALHOU: aceitou código de peça repetido';
+  exception when unique_violation then null;
+  end;
+  begin
+    insert into public.estoque_movimentos (empresa_id, peca_id, evento_id, quantidade, motivo) values (a, v_mesa, 'dddddddd-0000-0000-0000-00000000000a', -1, 'evento');
+    raise exception 'FALHOU: usuário criou movimento de evento direto';
+  exception when insufficient_privilege then null;
+  end;
+
+  -- Orçamento com duas áreas: sem parcela, sem baixa.
+  v_ev := public.criar_evento(a, 'Orçamento com duas áreas', 'infantil', 'decoracao', 'cccccccc-0000-0000-0000-00000000000a',
+                              '2026-12-27', 'Louveira', 0, 30, '2026-11-01', 'aaaaaaaa-0000-0000-0000-00000000000a',
+                              null, null, '{"decoracao":0,"assessoria":0}', true);
+  insert into public.eventos_itens (empresa_id, evento_id, tipo, peca_id, descricao, quantidade, valor_unitario)
+  values (a, v_ev, 'peca', v_mesa, 'Mesa de apoio', 2, 0) returning id into v_item;
+  insert into public.eventos_itens (empresa_id, evento_id, tipo, peca_id, descricao, quantidade, valor_unitario)
+  values (a, v_ev, 'peca', v_balao, 'Arco de balões', 200, 0), (a, v_ev, 'servico', null, 'Assessoria do dia', 1, 1500);
+  select count(*) into n from public.lancamentos where evento_id = v_ev;
+  if n <> 0 then raise exception 'FALHOU: orçamento gerou % parcela(s)', n; end if;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_balao;
+  if v_qtd <> 500 then raise exception 'FALHOU: orçamento baixou balões (estoque %)', v_qtd; end if;
+  select count(*) into n from public.resultado_eventos where evento_id = v_ev;
+  if n <> 0 then raise exception 'FALHOU: orçamento entrou no resultado dos eventos'; end if;
+  begin
+    perform public.emitir_contrato(v_ev, '{}');
+    raise exception 'FALHOU: emitiu contrato de orçamento';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.fechar_orcamento(v_ev, 5000, '{"decoracao":3000,"assessoria":1000}', 30, '2026-11-01', 'aaaaaaaa-0000-0000-0000-00000000000a');
+    raise exception 'FALHOU: fechou com áreas que não somam o valor';
+  exception when invalid_parameter_value then null;
+  end;
+
+  -- Fechar: parcelas, áreas guardadas, área principal pela maior, consumo baixado, acervo não.
+  perform public.fechar_orcamento(v_ev, 5000, '{"decoracao":1500,"assessoria":3500}', 30, '2026-11-01', 'aaaaaaaa-0000-0000-0000-00000000000a');
+  select count(*) into n from public.lancamentos where evento_id = v_ev;
+  if n <> 2 then raise exception 'FALHOU: fechar gerou % parcela(s), esperado 2', n; end if;
+  select areas, fonte::text into v_areas, v_fonte from public.eventos where id = v_ev;
+  if v_areas <> '{"decoracao":1500,"assessoria":3500}'::jsonb or v_fonte <> 'assessoria' then raise exception 'FALHOU: áreas % / principal %', v_areas, v_fonte; end if;
+  if (select fechado_em from public.eventos where id = v_ev) is null then raise exception 'FALHOU: fechar não marcou fechado_em'; end if;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_balao;
+  if v_qtd <> 300 then raise exception 'FALHOU: estoque de balões %, esperado 300', v_qtd; end if;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_mesa;
+  if v_qtd <> 3 then raise exception 'FALHOU: acervo saiu do estoque ao fechar (%)', v_qtd; end if;
+  begin
+    perform public.fechar_orcamento(v_ev, 5000, null, 30, '2026-11-01', 'aaaaaaaa-0000-0000-0000-00000000000a');
+    raise exception 'FALHOU: fechou duas vezes';
+  exception when invalid_parameter_value then null;
+  end;
+
+  -- Conferência: uma mesa não voltou; mais balões depois; cancelar devolve tudo, menos nada.
+  update public.eventos_itens set perdidas = 1 where id = v_item;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_mesa;
+  if v_qtd <> 2 then raise exception 'FALHOU: perda não baixou a mesa (%)', v_qtd; end if;
+  update public.eventos_itens set quantidade = 250 where evento_id = v_ev and peca_id = v_balao;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_balao;
+  if v_qtd <> 250 then raise exception 'FALHOU: mudar quantidade não acertou balões (%)', v_qtd; end if;
+  update public.eventos set status = 'cancelado' where id = v_ev;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_balao;
+  if v_qtd <> 500 then raise exception 'FALHOU: cancelar não devolveu os balões (%)', v_qtd; end if;
+  select quantidade into v_qtd from public.estoque_pecas where id = v_mesa;
+  if v_qtd <> 3 then raise exception 'FALHOU: cancelar não devolveu a mesa (%)', v_qtd; end if;
+
+  -- IE só com CNPJ.
+  begin
+    update public.clientes_documentos set inscricao_estadual = '123456789012' where cliente_id = 'cccccccc-0000-0000-0000-00000000000a';
+    raise exception 'FALHOU: aceitou IE em CPF';
+  exception when check_violation then null;
+  end;
+
+  -- Assistente usa o estoque; freelancer e a outra empresa não veem nada.
+  perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a2","role":"authenticated"}', true);
+  select count(*) into n from public.estoque_pecas;
+  if n <> 2 then raise exception 'FALHOU: assistente vê % peça(s), esperado 2', n; end if;
+  insert into public.estoque_movimentos (empresa_id, peca_id, quantidade, motivo) values (a, v_mesa, 1, 'ajuste');
+  update public.pecas set excluido_em = now() where id = v_balao;
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FALHOU: assistente não arquivou peça'; end if;
+  foreach v_fonte in array array['00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-0000000000b1'] loop
+    perform set_config('request.jwt.claims', format('{"sub":"%s","role":"authenticated"}', v_fonte), true);
+    select (select count(*) from public.pecas) + (select count(*) from public.estoque_movimentos) + (select count(*) from public.eventos_itens)
+         + (select count(*) from public.estoque_pecas) into n;
+    if n <> 0 then raise exception 'FALHOU: % vê % linha(s) do estoque da A', v_fonte, n; end if;
+    begin
+      insert into public.pecas (empresa_id, codigo, nome) values (a, '99', 'Intrusa');
+      raise exception 'FALHOU: % criou peça na A', v_fonte;
+    exception when insufficient_privilege then null;
+    end;
+    update public.eventos_itens set descricao = 'Invasão' where empresa_id = a;
+    get diagnostics n = row_count;
+    if n <> 0 then raise exception 'FALHOU: % alterou itens da A', v_fonte; end if;
+  end loop;
+  raise notice 'ok  8. Orçamento sem parcela nem baixa; fechar baixa consumo e cria parcelas; perdas e cancelamento acertam o estoque; estoque isolado';
+end $$;
+
 reset role;
 \echo 'TESTE DE ISOLAMENTO: TUDO OK'
 rollback;

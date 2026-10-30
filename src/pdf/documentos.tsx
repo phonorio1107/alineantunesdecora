@@ -21,6 +21,27 @@ const FONTE = { decoracao: 'Decoração', assessoria: 'Assessoria', workshop: 'W
 // ---------------------------------------------------------------------------
 // Contrato
 // ---------------------------------------------------------------------------
+type ItemContrato = DadosContrato['itens'][number]
+const totalDe = (itens: ItemContrato[]) => itens.reduce((t, i) => t + i.quantidade * i.valor_unitario, 0)
+
+function TabelaItens({ itens, total }: { itens: ItemContrato[]; total: (string | null)[] }) {
+  return (
+    <Tabela
+      colunas={[{ titulo: 'Item', largura: '52%' }, { titulo: 'Qtd', largura: '10%', num: true }, { titulo: 'Preço unit.', largura: '19%', num: true }, { titulo: 'Total', largura: '19%', num: true }]}
+      linhas={itens.map((i) => [
+        <View key="d" style={{ paddingVertical: 5, paddingHorizontal: 6 }}>
+          {i.codigo ? <Text style={{ fontSize: 6.8, color: cor.cinza }}>{i.codigo}</Text> : null}
+          <Text style={{ fontSize: 8.4 }}>{i.descricao}</Text>
+        </View>,
+        String(i.quantidade),
+        i.valor_unitario ? formatBRL(i.valor_unitario) : 'Incluso',
+        i.valor_unitario ? formatBRL(i.quantidade * i.valor_unitario) : 'Incluso',
+      ])}
+      total={total}
+    />
+  )
+}
+
 export function ContratoPdf({ numero, versao, dados }: { numero: string; versao: number; dados: DadosContrato }) {
   const e = dados.empresa
   const conta = [e.banco_nome, e.banco_agencia && `Ag. ${e.banco_agencia}`, e.banco_conta && `Conta ${e.banco_conta}`].filter(Boolean).join(' · ')
@@ -34,6 +55,10 @@ export function ContratoPdf({ numero, versao, dados }: { numero: string; versao:
     cidadeForo: e.cidade_foro ?? '—',
   })
   const cidade = (e.cidade_foro ?? '').split('/')[0] || 'Louveira'
+  // Contratos a partir de 01/11/2026 separam peças e serviços; os antigos saem numa tabela só.
+  const pecas = dados.itens.filter((i) => i.tipo === 'peca')
+  const servicos = dados.itens.filter((i) => i.tipo !== 'peca')
+  const separar = pecas.length > 0
   return (
     <Documento titulo={`Contrato ${numero} · ${dados.cliente.nome}`} rodape={`${e.nome ?? 'Aline Antunes Decora'} · Contrato ${numero} V.${versao}`}>
       <Cabecalho empresa={e} tipo="Contrato" numero={`${numero}  V.${versao}`} data={`Emitido em ${dataBR(dados.data_pedido)}`} />
@@ -44,7 +69,7 @@ export function ContratoPdf({ numero, versao, dados }: { numero: string; versao:
           <Campo rotulo="Cliente (contratante)" valor={dados.cliente.nome} />
           <Campo rotulo="Data do pedido" valor={dataBR(dados.data_pedido)} largura="25%" />
           <Campo rotulo="Atendente" valor={dados.atendente} largura="25%" />
-          <Campo rotulo="CPF/CNPJ" valor={formatDoc(dados.cliente.cpf_cnpj)} />
+          <Campo rotulo={dados.cliente.inscricao_estadual ? 'CNPJ · Inscrição estadual' : 'CPF/CNPJ'} valor={[formatDoc(dados.cliente.cpf_cnpj), dados.cliente.inscricao_estadual].filter(Boolean).join(' · IE ')} />
           <Campo rotulo="Telefone" valor={formatTelefone(dados.cliente.telefone)} />
           <Campo rotulo="Endereço" valor={[dados.cliente.endereco, dados.cliente.cidade].filter(Boolean).join(', ')} largura="100%" />
           <Campo rotulo="Objetivo" valor={dados.evento.titulo} />
@@ -61,21 +86,24 @@ export function ContratoPdf({ numero, versao, dados }: { numero: string; versao:
         </View>
       </Secao>
 
-      <Secao titulo="Itens contratados">
-        <Tabela
-          colunas={[{ titulo: 'Item', largura: '52%' }, { titulo: 'Qtd', largura: '10%', num: true }, { titulo: 'Preço unit.', largura: '19%', num: true }, { titulo: 'Total', largura: '19%', num: true }]}
-          linhas={dados.itens.map((i) => [
-            <View key="d" style={{ paddingVertical: 5, paddingHorizontal: 6 }}>
-              {i.codigo ? <Text style={{ fontSize: 6.8, color: cor.cinza }}>{i.codigo}</Text> : null}
-              <Text style={{ fontSize: 8.4 }}>{i.descricao}</Text>
-            </View>,
-            String(i.quantidade),
-            formatBRL(i.valor_unitario),
-            formatBRL(i.quantidade * i.valor_unitario),
-          ])}
-          total={['Total geral', null, null, formatBRL(dados.totais.total)]}
-        />
-      </Secao>
+      {separar ? (
+        <>
+          <Secao titulo="Peças">
+            <TabelaItens itens={pecas} total={['Total das peças', null, null, totalDe(pecas) ? formatBRL(totalDe(pecas)) : 'Incluso']} />
+          </Secao>
+          <Secao titulo="Serviços">
+            {servicos.length ? <TabelaItens itens={servicos} total={['Total dos serviços', null, null, formatBRL(totalDe(servicos))]} /> : <Text style={{ fontSize: 8.4, color: cor.cinza }}>Nenhum serviço à parte.</Text>}
+            <View style={[s.totalLinha, { marginTop: 8 }]} wrap={false}>
+              <Text style={[s.td, s.b, { width: '81%' }]}>Total geral</Text>
+              <Text style={[s.td, s.b, s.num, { width: '19%' }]}>{formatBRL(dados.totais.total)}</Text>
+            </View>
+          </Secao>
+        </>
+      ) : (
+        <Secao titulo="Itens contratados">
+          <TabelaItens itens={dados.itens} total={['Total geral', null, null, formatBRL(dados.totais.total)]} />
+        </Secao>
+      )}
 
       <Secao titulo="Parcelas de pagamento">
         <Tabela
@@ -90,8 +118,9 @@ export function ContratoPdf({ numero, versao, dados }: { numero: string; versao:
           linhas={dados.parcelas.map((p) => [dataBR(p.vencimento), p.descricao, formatBRL(p.valor), p.situacao, p.forma, conta || '—'])}
         />
         <View style={[s.kpis, { marginTop: 10 }]} wrap={false}>
+          {separar ? <Kpi rotulo="Peças" valor={totalDe(pecas) ? formatBRL(totalDe(pecas)) : "Incluso"} /> : null}
           <Kpi rotulo="Serviços" valor={formatBRL(dados.totais.valor_servicos)} />
-          <Kpi rotulo="Extras" valor={formatBRL(dados.totais.extras)} />
+          {!separar ? <Kpi rotulo="Extras" valor={formatBRL(dados.totais.extras)} /> : null}
           <Kpi rotulo="Valor total" valor={formatBRL(dados.totais.total)} destaque />
           <Kpi rotulo="Valor pago" valor={formatBRL(dados.totais.pago)} corValor={cor.verde} />
           <Kpi rotulo="Valor pendente" valor={formatBRL(dados.totais.pendente)} />

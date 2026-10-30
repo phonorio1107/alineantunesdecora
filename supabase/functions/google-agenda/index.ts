@@ -110,7 +110,7 @@ export function itensDoEvento(ev: Json, clienteNome: string | null, appUrl: stri
   const id = String(ev.id)
   const titulo = String(ev.titulo)
   const local = [ev.local_nome, ev.local_endereco, ev.cidade].filter(Boolean).join(' · ') || undefined
-  const link = `${appUrl.replace(/\/$/, '')}/eventos/${id}`
+  const link = `${appUrl.replace(/\/$/, '')}/vendas/${id}`
   const descricao = [clienteNome ? `Cliente: ${clienteNome}` : null, `Abrir no sistema: ${link}`].filter(Boolean).join('\n')
   const itens: ItemGoogle[] = [{
     origem: 'evento',
@@ -241,7 +241,8 @@ export function criarFuncao(env: Ambiente, f: Fetch = fetch) {
   async function sincronizarEvento(ctx: { jwt: string; empresaId: string }, token: string, cal: string, id: string) {
     const ev = ((await rest(`eventos?id=eq.${id}&select=*`, { comoUsuario: ctx.jwt })) as Json[])[0]
     const origens: Origem[] = ['evento', 'entrega', 'devolucao']
-    if (!ev || ev.excluido_em || ev.status === 'cancelado') {
+    // Orçamento ainda não é festa marcada: não vai para o Google (e sai de lá se voltar a ser orçamento).
+    if (!ev || ev.excluido_em || ev.status === 'cancelado' || ev.status === 'orcamento') {
       for (const o of origens) await apagar(ctx.empresaId, token, cal, o, id)
       return { apagados: 1 }
     }

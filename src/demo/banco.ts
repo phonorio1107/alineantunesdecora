@@ -35,6 +35,27 @@ const empresa: Linha = {
   banco_conta: '1234567-8', banco_favorecido: 'FAVORECIDA EXEMPLO', pix_chave: 'CNPJ 11.222.333/0001-81', responsavel_nome: 'Aline Antunes',
 }
 
+/** Igual ao gatilho do banco: deixa os movimentos "evento" de uma venda iguais ao que ela pede. */
+function sincronizarEm(t: Record<string, Linha[]>, eventoId: string) {
+  const ev = t.eventos.find((e) => e.id === eventoId)
+  if (!ev) return
+  const ativa = !ev.excluido_em && (ev.status === 'confirmado' || ev.status === 'realizado')
+  const desejado = new Map<string, number>()
+  if (ativa) {
+    for (const i of t.eventos_itens.filter((x) => x.evento_id === eventoId && x.peca_id)) {
+      const p = t.pecas.find((x) => x.id === i.peca_id)
+      if (!p) continue
+      desejado.set(String(i.peca_id), (desejado.get(String(i.peca_id)) ?? 0) + Number(p.tipo === 'consumo' ? i.quantidade : i.perdidas))
+    }
+  }
+  const atual = new Map<string, number>()
+  for (const m of t.estoque_movimentos.filter((x) => x.evento_id === eventoId && x.motivo === 'evento')) atual.set(String(m.peca_id), (atual.get(String(m.peca_id)) ?? 0) - Number(m.quantidade))
+  for (const pid of new Set([...desejado.keys(), ...atual.keys()])) {
+    const dif = (desejado.get(pid) ?? 0) - (atual.get(pid) ?? 0)
+    if (dif) t.estoque_movimentos.push({ ...base(), peca_id: pid, evento_id: eventoId, quantidade: -dif, motivo: 'evento', observacao: String(ev.titulo).slice(0, 200) })
+  }
+}
+
 function semear() {
   const t: Record<string, Linha[]> = {}
   t.empresas = [empresa]
@@ -69,7 +90,8 @@ function semear() {
   ]
   const ev = (titulo: string, ci: number | null, fonte: string, data: string, valor: number, status: string, extra: Linha = {}) => ({
     ...base(), cliente_id: ci === null ? null : CL(ci), titulo, tipo: fonte === 'workshop' ? 'workshop' : 'infantil', fonte, data_evento: data, cidade: 'Jundiaí',
-    valor_fechado: valor, vagas: null, valor_inscricao: null, status, local_nome: null, local_endereco: null, entrega_em: null, devolucao_em: null, ...extra,
+    valor_fechado: valor, vagas: null, valor_inscricao: null, status, local_nome: null, local_endereco: null, entrega_em: null, devolucao_em: null,
+    areas: { [fonte]: valor }, fechado_em: status === 'orcamento' ? null : '2026-09-01T12:00:00Z', conferido_em: null, observacoes: null, ...extra,
   })
   t.eventos = [
     ev('Aniversário de 1 ano · Maria Luísa', 0, 'decoracao', '2026-10-04', 3800, 'realizado'),
@@ -79,7 +101,13 @@ function semear() {
     ev('15 anos · Isabela', 3, 'decoracao', '2026-11-21', 6200, 'confirmado', { local_nome: 'Salão Jardim', local_endereco: 'Av. Exemplo, 400 · Jundiaí/SP', entrega_em: '2026-11-21T14:00:00-03:00', devolucao_em: '2026-11-21T23:30:00-03:00' }),
     ev('Bodas de ouro · Helena e Carlos', 4, 'decoracao', '2026-12-06', 4200, 'confirmado'),
     ev('Aniversário de 4 anos · Theo', 5, 'decoracao', '2026-10-31', 3200, 'confirmado'),
+    ev('Batizado · Antônio', 1, 'decoracao', '2026-12-13', 2800, 'orcamento', {
+      areas: { decoracao: 0, assessoria: 0 }, observacoes: 'Tema anjinhos, tons de azul-claro e branco. Mesa para 30 convidados. Cliente pediu arranjos com flores naturais.',
+    }),
+    ev('Chá de bebê · Lívia', 3, 'decoracao', '2026-11-29', 0, 'orcamento', { observacoes: 'Ainda escolhendo entre safári e jardim.' }),
   ]
+  // Festa do Theo: decoração e assessoria juntas.
+  Object.assign(t.eventos[6], { valor_fechado: 3200, areas: { decoracao: 2600, assessoria: 600 } })
   const EV = (i: number) => t.eventos[i].id as string
   const L = (tipo: string, valor: number, venc: string, pago: string | null, cat: string, evi: number | null, descricao: string) => ({
     ...base(), tipo, valor, data_vencimento: venc, data_pagamento: pago, conta_id: K, categoria_id: C(cat), evento_id: evi === null ? null : EV(evi), recorrencia_id: null, descricao,
@@ -119,6 +147,36 @@ function semear() {
     }
     return insc
   })
+  const peca = (codigo: string, nome: string, categoria: string, tipo: string, custo: number, qtd: number) => {
+    const p = { ...base(), codigo, nome, categoria, tipo, custo_unitario: custo, observacoes: null }
+    t.estoque_movimentos.push({ ...base(), peca_id: p.id, evento_id: null, quantidade: qtd, motivo: 'ajuste', observacao: 'Cadastro' })
+    return p
+  }
+  t.estoque_movimentos = []
+  t.pecas = [
+    peca('1', 'Mesa azul baixa', 'Mesas', 'acervo', 350, 2), peca('2', 'Mesa provençal branca', 'Mesas', 'acervo', 890, 3),
+    peca('3', 'Cilindro branco grande', 'Cilindros', 'acervo', 420, 4), peca('4', 'Cilindro branco médio', 'Cilindros', 'acervo', 320, 4),
+    peca('5', 'Painel redondo de madeira 2 m', 'Painéis', 'acervo', 680, 2), peca('6', 'Boleira de vidro alta', 'Boleiras', 'acervo', 95, 6),
+    peca('7', 'Bandeja espelhada dourada', 'Bandejas', 'acervo', 48, 12), peca('8', 'Vaso de vidro canelado', 'Arranjos', 'acervo', 36, 20),
+    peca('9', 'Toalha de linho off-white 3 m', 'Tecidos', 'acervo', 140, 5), peca('10', 'Cordão de luz quente 10 m', 'Iluminação', 'acervo', 55, 8),
+    peca('40', 'Balão 9 pol. rosa-claro', 'Balões', 'consumo', 0.45, 600), peca('41', 'Balão 16 pol. branco', 'Balões', 'consumo', 1.9, 120),
+    peca('42', 'Fita de cetim rosé (rolo)', 'Fitas', 'consumo', 12, 14),
+  ]
+  const P = (codigo: string) => t.pecas.find((p) => p.codigo === codigo)!.id as string
+  const item = (evi: number, tipo: string, pc: string | null, descricao: string, quantidade: number, valor_unitario: number, ordem: number, perdidas = 0) =>
+    ({ ...base(), evento_id: EV(evi), tipo, peca_id: pc ? P(pc) : null, descricao, quantidade, valor_unitario, perdidas, ordem })
+  t.eventos_itens = [
+    item(4, 'peca', '5', 'Painel redondo', 1, 0, 0), item(4, 'peca', '2', 'Mesa principal provençal', 1, 0, 1), item(4, 'peca', '1', 'Mesa de apoio', 1, 0, 2),
+    item(4, 'peca', '3', 'Cilindro grande', 2, 0, 3), item(4, 'peca', '6', 'Boleira', 3, 0, 4), item(4, 'peca', '40', 'Arco de balões desconstruído', 250, 0, 5),
+    item(4, 'servico', null, 'Projeto de decoração · pacote Excepcional', 1, 5400, 6), item(4, 'servico', null, 'Montagem e desmontagem', 1, 800, 7),
+    item(6, 'peca', '1', 'Mesa de apoio', 1, 0, 0), item(6, 'peca', '8', 'Vasinhos de flores', 6, 0, 1), item(6, 'peca', '40', 'Balões', 180, 0, 2),
+    item(6, 'servico', null, 'Decoração tema Fundo do Mar', 1, 2600, 3), item(6, 'servico', null, 'Assessoria do dia', 1, 600, 4),
+    item(7, 'peca', '2', 'Mesa de doces', 1, 0, 0), item(7, 'peca', '9', 'Toalha off-white', 2, 0, 1), item(7, 'peca', '8', 'Arranjos com flores naturais', 8, 0, 2),
+    item(7, 'servico', null, 'Projeto de decoração · pacote Especial', 1, 2500, 3),
+  ]
+  // Baixas das vendas fechadas (consumo) e a peça que não voltou da festa da Maria Luísa.
+  t.eventos_itens.push(item(0, 'peca', '7', 'Bandejas', 6, 0, 0, 1))
+  t.eventos[0].conferido_em = '2026-10-05T10:00:00Z'
   const comp = (titulo: string, inicio: string, fim: string, local: string | null, evento: number | null = null, dia_inteiro = false) =>
     ({ ...base(), titulo, inicio, fim, dia_inteiro, local, notas: null, evento_id: evento === null ? null : EV(evento) })
   t.compromissos = [
@@ -129,6 +187,7 @@ function semear() {
   ]
   t.fechamentos_mensais = []
   t.contratos = []
+  for (const e of t.eventos) sincronizarEm(t, e.id as string)
   t.registros_atividades = []
   return t
 }
@@ -149,7 +208,7 @@ const ehProp = () => vinculo()?.papel === 'proprietaria'
 const veFin = () => ehProp() || (vinculo()?.papel === 'assistente' && !!vinculo()?.financeiro_liberado)
 const FINANCEIRO = new Set(['contas', 'categorias', 'recorrencias', 'lancamentos', 'fechamentos_mensais', 'saldos_contas'])
 const SO_PROPRIETARIA = new Set(['clientes_documentos', 'contratos', 'registros_atividades'])
-const CADASTROS = new Set(['clientes', 'eventos', 'inscricoes_workshop', 'resultado_eventos', 'compromissos'])
+const CADASTROS = new Set(['clientes', 'eventos', 'inscricoes_workshop', 'resultado_eventos', 'compromissos', 'pecas', 'eventos_itens', 'estoque_movimentos', 'estoque_pecas'])
 function pode(tabela: string, escrita: boolean) {
   if (!vinculo()) return false
   if (tabela === 'usuarios_empresas') return !escrita || ehProp()
@@ -173,13 +232,19 @@ function view(nome: string): Linha[] | null {
         .reduce((t, l) => t + (l.tipo === 'entrada' ? num(l.valor) : -num(l.valor)), 0),
     }))
   }
+  if (nome === 'estoque_pecas') {
+    return T.pecas.filter((p) => !p.excluido_em).map((p) => ({
+      ...p, quantidade: T.estoque_movimentos.filter((m) => m.peca_id === p.id).reduce((t, m) => t + num(m.quantidade), 0),
+    }))
+  }
   if (nome === 'resultado_eventos') {
-    return T.eventos.filter((e) => !e.excluido_em).map((e) => {
+    return T.eventos.filter((e) => !e.excluido_em && e.status !== 'orcamento').map((e) => {
       const ls = veFin() ? T.lancamentos.filter((l) => l.evento_id === e.id && !l.excluido_em) : []
       const soma = (f: (l: Linha) => boolean) => ls.filter(f).reduce((t, l) => t + num(l.valor), 0)
       return {
         empresa_id: E, evento_id: e.id, titulo: e.titulo, fonte: e.fonte, data_evento: e.data_evento, valor_fechado: e.valor_fechado,
         recebido: soma((l) => l.tipo === 'entrada' && !!l.data_pagamento), a_receber: soma((l) => l.tipo === 'entrada' && !l.data_pagamento), custos: soma((l) => l.tipo === 'saida'),
+        areas: e.areas,
       }
     })
   }
@@ -189,8 +254,10 @@ function view(nome: string): Linha[] | null {
 // ---------------------------------------------------------------------------
 // Filtros no formato do PostgREST: col=eq.x, is.null, gte, lte, or=(and(...),and(...))
 // ---------------------------------------------------------------------------
-function condicao(linha: Linha, col: string, op: string, val: string) {
+function condicao(linha: Linha, col: string, op: string, val: string): boolean {
   const v = linha[col]
+  if (op === 'not') { const [op2, ...r] = val.split('.'); return !condicao(linha, col, op2, r.join('.')) }
+  if (op === 'in') return val.replace(/^\(|\)$/g, '').split(',').map((x) => x.replace(/^"|"$/g, '')).includes(String(v))
   if (op === 'eq') return String(v) === val
   if (op === 'neq') return String(v) !== val
   if (op === 'is') return val === 'null' ? v == null : String(v) === val
@@ -252,28 +319,38 @@ function travar(l: Linha) {
 }
 const PADROES: Record<string, Linha> = {
   clientes: { origem: 'outra', email: null, endereco: null, cidade: null, telefone: null },
-  eventos: { status: 'confirmado', tipo: 'infantil', fonte: 'decoracao', valor_fechado: 0, vagas: null, valor_inscricao: null, cidade: null, local_nome: null, local_endereco: null, entrega_em: null, devolucao_em: null },
+  eventos: { status: 'confirmado', tipo: 'infantil', fonte: 'decoracao', valor_fechado: 0, vagas: null, valor_inscricao: null, cidade: null, local_nome: null, local_endereco: null, entrega_em: null, devolucao_em: null, areas: {}, fechado_em: null, conferido_em: null, observacoes: null },
   lancamentos: { data_pagamento: null, evento_id: null, recorrencia_id: null, descricao: null },
   contas: { ativa: true, saldo_inicial: 0 },
   categorias: { ativa: true, fonte: null },
   recorrencias: { ativa: true },
   inscricoes_workshop: { status: 'reservada', lancamento_id: null },
   fechamentos_mensais: { resumo: {} },
+  pecas: { categoria: null, tipo: 'acervo', custo_unitario: 0, observacoes: null },
+  eventos_itens: { peca_id: null, quantidade: 1, valor_unitario: 0, perdidas: 0, ordem: 0 },
+  estoque_movimentos: { evento_id: null, observacao: null },
 }
 function inserir(tabela: string, dados: Linha): Linha {
   const linha: Linha = { ...base(usuario ?? PROPRIETARIA), ...PADROES[tabela], ...dados, criado_por: usuario, criado_em: agora(), atualizado_em: agora() }
   if (tabela === 'lancamentos') travar(linha)
+  if (tabela === 'estoque_movimentos' && (linha.motivo !== 'ajuste' || linha.evento_id)) throw new ErroBanco('42501', 'new row violates row-level security policy')
+  if (tabela === 'pecas' && T.pecas.some((p) => !p.excluido_em && String(p.codigo).trim().toLowerCase() === String(linha.codigo).trim().toLowerCase())) {
+    throw new ErroBanco('23505', 'duplicate key value violates unique constraint "pecas_codigo_idx"', 409)
+  }
   if (tabela === 'clientes_documentos') {
     const atual = T.clientes_documentos.find((d) => d.cliente_id === linha.cliente_id)
     if (atual) { Object.assign(atual, dados, { atualizado_em: agora() }); return atual }
   }
   T[tabela].push(linha)
+  if (tabela === 'eventos_itens') sincronizarEm(T, String(linha.evento_id))
   return linha
 }
 function atualizar(tabela: string, linha: Linha, dados: Linha) {
   if (tabela === 'lancamentos') { travar(linha); travar({ ...linha, ...dados }) }
   if ('empresa_id' in dados && dados.empresa_id !== linha.empresa_id) throw new ErroBanco('42501', 'Não é permitido mover um registro para outra empresa.')
   Object.assign(linha, dados, { atualizado_em: agora() })
+  if (tabela === 'eventos_itens') sincronizarEm(T, String(linha.evento_id))
+  if (tabela === 'eventos' && ('status' in dados || 'excluido_em' in dados)) sincronizarEm(T, String(linha.id))
 }
 
 const addDias = (iso: string, n: number) => {
@@ -282,23 +359,42 @@ const addDias = (iso: string, n: number) => {
   return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`
 }
 
+/** Área principal: a de maior valor entre decoração e assessoria; workshop só quando é a única. */
+const principal = (areas: Linha, padrao: string) =>
+  Object.entries(areas).filter(([k]) => k !== 'workshop').sort((a, b) => num(b[1]) - num(a[1]) || a[0].localeCompare(b[0]))[0]?.[0] ?? ('workshop' in areas ? 'workshop' : padrao)
+
 const RPC: Record<string, (p: Linha) => unknown> = {
   criar_evento(p) {
     if (vinculo()?.papel === 'freelancer') throw new ErroBanco('42501', 'Sem permissão.')
+    const areas = (p.p_areas as Linha | null) ?? { [String(p.p_fonte)]: num(p.p_valor_fechado) }
     const ev = inserir('eventos', {
-      cliente_id: p.p_cliente ?? null, titulo: p.p_titulo, tipo: p.p_tipo, fonte: p.p_fonte, data_evento: p.p_data_evento, cidade: p.p_cidade ?? null,
-      valor_fechado: num(p.p_valor_fechado), vagas: p.p_vagas ?? null, valor_inscricao: p.p_valor_inscricao ?? null,
+      cliente_id: p.p_cliente ?? null, titulo: p.p_titulo, tipo: p.p_tipo, fonte: principal(areas, String(p.p_fonte)), data_evento: p.p_data_evento, cidade: p.p_cidade ?? null,
+      valor_fechado: num(p.p_valor_fechado), vagas: p.p_vagas ?? null, valor_inscricao: p.p_valor_inscricao ?? null, areas, status: 'orcamento',
     })
-    const valor = num(p.p_valor_fechado)
-    if (p.p_fonte !== 'workshop' && valor > 0 && veFin()) {
-      const cat = T.categorias.find((c) => c.natureza === 'receita' && c.fonte === p.p_fonte && !c.excluido_em)
+    if (!p.p_orcamento) RPC.fechar_orcamento({ p_evento: ev.id, p_valor: num(p.p_valor_fechado), p_areas: areas, p_entrada_percentual: p.p_entrada_percentual, p_data_entrada: p.p_data_entrada, p_conta: p.p_conta })
+    return ev.id
+  },
+  fechar_orcamento(p) {
+    if (vinculo()?.papel === 'freelancer') throw new ErroBanco('42501', 'Sem permissão.')
+    const ev = T.eventos.find((e) => e.id === p.p_evento && !e.excluido_em)
+    if (!ev) throw new ErroBanco('42501', 'Orçamento não encontrado.')
+    if (ev.status !== 'orcamento') throw new ErroBanco('22023', 'Este orçamento já foi fechado.', 400)
+    const valor = Math.round(num(p.p_valor) * 100) / 100
+    let areas = (p.p_areas as Linha | null) ?? (ev.areas as Linha)
+    if (!Object.keys(areas).length) areas = { [String(ev.fonte)]: valor }
+    if (Object.keys(areas).length === 1) areas = { [Object.keys(areas)[0]]: valor }
+    else if (Math.round(Object.values(areas).reduce((t: number, v) => t + num(v), 0) * 100) !== Math.round(valor * 100)) throw new ErroBanco('22023', 'A soma das áreas precisa dar o valor fechado.', 400)
+    const fonte = principal(areas, String(ev.fonte))
+    atualizar('eventos', ev, { status: 'confirmado', valor_fechado: valor, areas, fonte, fechado_em: agora() })
+    if (fonte !== 'workshop' && valor > 0 && veFin()) {
+      const cat = T.categorias.find((c) => c.natureza === 'receita' && c.fonte === fonte && !c.excluido_em)
       const pct = Math.min(100, Math.max(0, num(p.p_entrada_percentual)))
       const entrada = Math.round(valor * pct) / 100
       const rot = Number.isInteger(pct) ? String(pct) : pct.toFixed(1).replace('.', ',')
       if (entrada > 0) inserir('lancamentos', { tipo: 'entrada', valor: entrada, data_vencimento: p.p_data_entrada, conta_id: p.p_conta, categoria_id: cat?.id, evento_id: ev.id, descricao: `Entrada (${rot}%)` })
-      if (valor - entrada > 0) inserir('lancamentos', { tipo: 'entrada', valor: Math.round((valor - entrada) * 100) / 100, data_vencimento: addDias(String(p.p_data_evento), -num(empresa.dias_saldo_antes_evento)), conta_id: p.p_conta, categoria_id: cat?.id, evento_id: ev.id, descricao: 'Saldo' })
+      if (valor - entrada > 0) inserir('lancamentos', { tipo: 'entrada', valor: Math.round((valor - entrada) * 100) / 100, data_vencimento: addDias(String(ev.data_evento), -num(empresa.dias_saldo_antes_evento)), conta_id: p.p_conta, categoria_id: cat?.id, evento_id: ev.id, descricao: 'Saldo' })
     }
-    return ev.id
+    return null
   },
   pagar_inscricao(p) {
     if (!veFin()) throw new ErroBanco('42501', 'Sem permissão.')
@@ -315,6 +411,7 @@ const RPC: Record<string, (p: Linha) => unknown> = {
     if (!ehProp()) throw new ErroBanco('42501', 'Só a proprietária emite contratos.')
     const ev = T.eventos.find((e) => e.id === p.p_evento)
     if (!ev) throw new ErroBanco('42501', 'Evento não encontrado.')
+    if (ev.status === 'orcamento') throw new ErroBanco('22023', 'Feche o orçamento antes de gerar o contrato.', 400)
     const doEvento = T.contratos.filter((c) => c.evento_id === ev.id && !c.excluido_em)
     let numero: string, versao: number
     if (doEvento.length) {
@@ -486,6 +583,7 @@ export async function fetchDemo(entrada: RequestInfo | URL, init: RequestInit = 
     if (metodo === 'DELETE') {
       const alvo = new Set(filtrar(T[nome], url.searchParams))
       T[nome] = T[nome].filter((l) => !alvo.has(l))
+      if (nome === 'eventos_itens') for (const l of alvo) sincronizarEm(T, String(l.evento_id))
       return new Response(null, { status: 204 })
     }
     return json({}, 405)

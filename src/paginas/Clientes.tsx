@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Plus, Search } from 'lucide-react'
 import { useAvisar, useEmpresa, useFolhas } from '../app/contexto'
 import { useAtualizarCliente, useClientes, useDocumentos, useEventos, useExcluirCliente, useSalvarDocumento } from '../data/consultas'
-import { cpfCnpj } from '../data/esquemas'
+import { cpfCnpj, inscricaoEstadual } from '../data/esquemas'
 import type { Cliente } from '../data/tipos'
 import { Campo, Carregando, Confirmar, ErroCaixa, Exportar, Folha, Vazio } from '../components/ui'
 import { abaClientes, baixarCSV, baixarExcel } from '../export/acoes'
@@ -21,6 +21,7 @@ export default function Clientes() {
   const [busca, setBusca] = useState('')
   const [aberta, setAberta] = useState<Cliente | null>(null)
   const mapaDocs = useMemo(() => new Map((docs.data ?? []).map((d) => [d.cliente_id, d.cpf_cnpj])), [docs.data])
+  const mapaIE = useMemo(() => new Map((docs.data ?? []).map((d) => [d.cliente_id, d.inscricao_estadual])), [docs.data])
   const q = busca.trim().toLowerCase()
   const lista = (clientes.data ?? []).filter((c) => !q || `${c.nome} ${c.cidade ?? ''} ${c.telefone ?? ''}`.toLowerCase().includes(q))
   const aba = () => abaClientes(lista, mapaDocs)
@@ -36,7 +37,7 @@ export default function Clientes() {
             { rotulo: 'Planilha Excel', formato: 'xlsx', gerar: () => baixarExcel([aba()], empresa, 'clientes') },
             { rotulo: 'CSV', formato: 'csv', gerar: async () => baixarCSV(aba(), 'clientes') },
           ]} />
-          <button type="button" className="btn btn-p" onClick={() => abrir({ tipo: 'novo-cliente' })}><Plus size={20} aria-hidden="true" />Nova cliente</button>
+          <button type="button" className="btn btn-p" onClick={() => abrir({ tipo: 'novo-cliente' })}><Plus size={20} aria-hidden="true" />Novo cliente</button>
         </div>
       </div>
       <label className="busca" style={{ flex: 'none' }}>
@@ -55,16 +56,16 @@ export default function Clientes() {
                 </span>
                 <span className="pill neutro">{ORIGEM[c.origem]}</span>
               </button>
-            )) : <Vazio titulo={q ? 'Nenhuma cliente com essa busca.' : 'Nenhuma cliente cadastrada.'} texto="Toque em “Nova cliente” para cadastrar." />}
+            )) : <Vazio titulo={q ? 'Nenhum cliente com essa busca.' : 'Nenhum cliente cadastrado.'} texto="Toque em “Novo cliente” para cadastrar." />}
           </div>
         )}
       </section>
-      {aberta ? <ClienteFolha cliente={aberta} doc={mapaDocs.get(aberta.id) ?? null} aoFechar={() => setAberta(null)} /> : null}
+      {aberta ? <ClienteFolha cliente={aberta} doc={mapaDocs.get(aberta.id) ?? null} ie={mapaIE.get(aberta.id) ?? null} aoFechar={() => setAberta(null)} /> : null}
     </>
   )
 }
 
-function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: string | null; aoFechar: () => void }) {
+function ClienteFolha({ cliente: c, doc, ie, aoFechar }: { cliente: Cliente; doc: string | null; ie: string | null; aoFechar: () => void }) {
   const { empresaId, ehProprietaria } = useEmpresa()
   const avisar = useAvisar()
   const eventos = useEventos(empresaId)
@@ -74,7 +75,7 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
   const [excluindo, setExcluindo] = useState(false)
   const [ver, setVer] = useState(false)
   const [editando, setEditando] = useState(false)
-  const [v, setV] = useState({ nome: c.nome, telefone: formatTelefone(c.telefone), email: c.email ?? '', cep: mascaraCEP(c.cep ?? ''), endereco: c.endereco ?? '', cidade: c.cidade ?? '', doc: doc ? formatDoc(doc) : '' })
+  const [v, setV] = useState({ nome: c.nome, telefone: formatTelefone(c.telefone), email: c.email ?? '', cep: mascaraCEP(c.cep ?? ''), endereco: c.endereco ?? '', cidade: c.cidade ?? '', doc: doc ? formatDoc(doc) : '', ie: ie ?? '' })
   const [erro, setErro] = useState<string | null>(null)
   const dela = (eventos.data ?? []).filter((e) => e.cliente_id === c.id)
   const salvar = async () => {
@@ -87,10 +88,13 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
     if (v.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email.trim())) return setErro('Confira o e-mail.')
     const d = cpfCnpj.safeParse(v.doc)
     if (!d.success) return setErro('Confira o CPF ou o CNPJ.')
+    const i = inscricaoEstadual.safeParse(v.ie)
+    if (!i.success) return setErro('Confira a inscrição estadual (só números, ou ISENTO).')
+    const novaIE = d.data?.length === 14 ? i.data : null
     await atualizar.mutateAsync({ id: c.id, nome: capitalizarNome(v.nome), telefone: tel || null, email: v.email.trim().toLowerCase() || null, cep: cep || null, endereco: v.endereco.trim() || null, cidade: v.cidade.trim() ? capitalizarNome(v.cidade) : null })
-    if (ehProprietaria && d.data && d.data !== doc) await salvarDoc.mutateAsync({ cliente: c.id, cpf_cnpj: d.data })
+    if (ehProprietaria && d.data && (d.data !== doc || novaIE !== ie)) await salvarDoc.mutateAsync({ cliente: c.id, cpf_cnpj: d.data, inscricao_estadual: novaIE })
     setEditando(false)
-    avisar('Cliente atualizada')
+    avisar('Cliente atualizado')
   }
   return (
     <Folha titulo={c.nome} aoFechar={aoFechar}>
@@ -109,6 +113,11 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
             <Campo id="ce-cid" rotulo="Cidade"><input id="ce-cid" autoCapitalize="words" maxLength={80} value={v.cidade} onChange={(e) => setV({ ...v, cidade: e.target.value })} /></Campo>
             {ehProprietaria ? <Campo id="ce-doc" rotulo="CPF ou CNPJ"><input id="ce-doc" inputMode="numeric" placeholder="000.000.000-00" maxLength={18} value={v.doc} onChange={(e) => setV({ ...v, doc: mascaraDoc(e.target.value) })} /></Campo> : null}
           </div>
+          {ehProprietaria && v.doc.replace(/\D/g, '').length === 14 ? (
+            <Campo id="ce-ie" rotulo="Inscrição estadual" dica="Só números. Se a empresa não tem, escreva ISENTO.">
+              <input id="ce-ie" autoCapitalize="characters" placeholder="000.000.000.000" maxLength={20} value={v.ie} onChange={(e) => setV({ ...v, ie: e.target.value })} />
+            </Campo>
+          ) : null}
           {erro || atualizar.isError || salvarDoc.isError ? <p className="erro-caixa" role="alert">{erro ?? mensagemErro(atualizar.error ?? salvarDoc.error)}</p> : null}
           <div className="acoes">
             <button type="button" className="btn btn-s" onClick={() => setEditando(false)}>Cancelar</button>
@@ -131,21 +140,22 @@ function ClienteFolha({ cliente: c, doc, aoFechar }: { cliente: Cliente; doc: st
                 </span>
               </div>
             ) : null}
+            {ehProprietaria && doc?.length === 14 ? <div className="l"><span className="muted">Inscrição estadual</span><span>{ie ?? '—'}</span></div> : null}
           </div>
           <div>
-            <h3 style={{ marginBottom: 8 }}>Eventos</h3>
-            {dela.length ? <div className="linhas">{dela.map((e) => <Link key={e.id} className="linha" to={`/eventos/${e.id}`} onClick={aoFechar} style={{ color: 'inherit', textDecoration: 'none' }}><span className="cresce"><span className="t">{e.titulo}</span><span className="s">{dataBR(e.data_evento)}</span></span></Link>)}</div> : <p className="muted">Nenhum evento ainda.</p>}
+            <h3 style={{ marginBottom: 8 }}>Vendas</h3>
+            {dela.length ? <div className="linhas">{dela.map((e) => <Link key={e.id} className="linha" to={`/vendas/${e.id}`} onClick={aoFechar} style={{ color: 'inherit', textDecoration: 'none' }}><span className="cresce"><span className="t">{e.titulo}</span><span className="s">{dataBR(e.data_evento)}{e.status === 'orcamento' ? ' · orçamento' : ''}</span></span></Link>)}</div> : <p className="muted">Nenhuma venda ainda.</p>}
           </div>
           {excluindo ? (
             <Confirmar
               titulo={`Excluir ${c.nome}?`}
               texto={dela.length
-                ? `Ela tem ${dela.length} evento${dela.length > 1 ? 's' : ''}. Os dados pessoais (nome, telefone, e-mail, endereço e CPF/CNPJ) são apagados; o histórico financeiro dos eventos fica, com o nome “Cliente removida”. Contratos já emitidos continuam guardados.`
+                ? `Tem ${dela.length} venda${dela.length > 1 ? 's' : ''}. Os dados pessoais (nome, telefone, e-mail, endereço e CPF/CNPJ) são apagados; o histórico financeiro dos eventos fica, com o nome “Cliente removido”. Contratos já emitidos continuam guardados.`
                 : 'O cadastro e o CPF/CNPJ são apagados de vez. Não dá para desfazer.'}
               rotulo="Excluir cliente"
               ocupado={excluir.isPending}
               aoCancelar={() => setExcluindo(false)}
-              aoConfirmar={async () => { await excluir.mutateAsync({ id: c.id, temEventos: dela.length > 0 }); avisar('Cliente excluída'); aoFechar() }}
+              aoConfirmar={async () => { await excluir.mutateAsync({ id: c.id, temEventos: dela.length > 0 }); avisar('Cliente excluído'); aoFechar() }}
             />
           ) : (
             <div className="acoes">

@@ -22,7 +22,7 @@ interface Item {
   compromisso?: Compromisso
 }
 
-const ROTULO: Record<Tipo, string> = { festa: 'Festa', logistica: 'Entrega e devolução', compromisso: 'Compromisso', google: 'Do seu Google' }
+const ROTULO: Record<Tipo, string> = { festa: 'Evento', logistica: 'Entrega e devolução', compromisso: 'Compromisso', google: 'Do seu Google' }
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
 const FUSO = 'America/Sao_Paulo'
 const diaSP = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso))
@@ -65,10 +65,10 @@ export default function Agenda() {
   const itens = useMemo(() => {
     const out: Item[] = []
     for (const e of eventos.data ?? []) {
-      if (e.status === 'cancelado') continue
-      if (e.data_evento >= ini && e.data_evento <= fim) out.push({ chave: `f-${e.id}`, tipo: 'festa', titulo: e.titulo, dia: e.data_evento, hora: null, sub: [e.local_nome, e.cidade].filter(Boolean).join(', ') || null, link: `/eventos/${e.id}` })
-      if (e.entrega_em) out.push({ chave: `e-${e.id}`, tipo: 'logistica', titulo: `Entrega: ${e.titulo}`, dia: diaSP(e.entrega_em), hora: horaSP(e.entrega_em), sub: e.local_nome, link: `/eventos/${e.id}` })
-      if (e.devolucao_em) out.push({ chave: `d-${e.id}`, tipo: 'logistica', titulo: `Devolução: ${e.titulo}`, dia: diaSP(e.devolucao_em), hora: horaSP(e.devolucao_em), sub: e.local_nome, link: `/eventos/${e.id}` })
+      if (e.status === 'cancelado' || e.status === 'orcamento') continue
+      if (e.data_evento >= ini && e.data_evento <= fim) out.push({ chave: `f-${e.id}`, tipo: 'festa', titulo: e.titulo, dia: e.data_evento, hora: null, sub: [e.local_nome, e.cidade].filter(Boolean).join(', ') || null, link: `/vendas/${e.id}` })
+      if (e.entrega_em) out.push({ chave: `e-${e.id}`, tipo: 'logistica', titulo: `Entrega: ${e.titulo}`, dia: diaSP(e.entrega_em), hora: horaSP(e.entrega_em), sub: e.local_nome, link: `/vendas/${e.id}` })
+      if (e.devolucao_em) out.push({ chave: `d-${e.id}`, tipo: 'logistica', titulo: `Devolução: ${e.titulo}`, dia: diaSP(e.devolucao_em), hora: horaSP(e.devolucao_em), sub: e.local_nome, link: `/vendas/${e.id}` })
     }
     for (const c of comps.data ?? []) out.push({ chave: `c-${c.id}`, tipo: 'compromisso', titulo: c.titulo, dia: diaSP(c.inicio), hora: c.dia_inteiro ? null : horaSP(c.inicio), sub: c.local, compromisso: c })
     for (const g of doGoogle.data ?? []) out.push({ chave: `g-${g.id}-${g.inicio}`, tipo: 'google', titulo: g.titulo, dia: g.dia_inteiro ? g.inicio.slice(0, 10) : diaSP(g.inicio), hora: g.dia_inteiro ? null : horaSP(g.inicio), sub: g.local })
@@ -94,7 +94,7 @@ export default function Agenda() {
       <div className="cabecalho">
         <div>
           <h1>Agenda</h1>
-          <p className="muted">Festas, entregas, devoluções e compromissos{ligado ? ', junto com o seu Google Agenda' : ''}.</p>
+          <p className="muted">Eventos, entregas, devoluções e compromissos{ligado ? ', junto com o seu Google Agenda' : ''}.</p>
         </div>
         <div className="acoes">
           <button type="button" className="btn btn-p" onClick={() => setFolha({ dia })}><Plus size={20} aria-hidden="true" />Novo compromisso</button>
@@ -194,7 +194,7 @@ function CartaoGoogle() {
         <SeloGoogle />
         <div className="google-texto">
           <h2 id="t-google">Ligue o seu Google Agenda</h2>
-          <p>As festas, entregas e compromissos daqui passam a aparecer numa agenda “Aline Antunes Decora” no seu Google, e os seus compromissos pessoais aparecem aqui. Leva um minuto.</p>
+          <p>Os eventos, entregas e compromissos daqui passam a aparecer numa agenda “Aline Antunes Decora” no seu Google, e os seus compromissos pessoais aparecem aqui. Leva um minuto.</p>
           {acao.isError ? <p className="erro-caixa" role="alert">{mensagemErro(acao.error)}</p> : null}
         </div>
         <button type="button" className="btn btn-p" disabled={acao.isPending} onClick={() => acao.mutate('conectar', { onSuccess: () => { if (modoDemo) avisar('Na prévia, a ligação é simulada') } })}>Ligar o Google Agenda</button>
@@ -259,7 +259,7 @@ function CompromissoFolha({ comp, diaInicial, aoFechar }: { comp?: Compromisso; 
     notas: comp?.notas ?? '',
   }))
   const [erro, setErro] = useState<string | null>(null)
-  const proximos = (eventos.data ?? []).filter((e) => e.status !== 'cancelado' && e.data_evento >= addDias(hoje(), -30)).sort((a, b) => a.data_evento.localeCompare(b.data_evento))
+  const proximos = (eventos.data ?? []).filter((e) => e.status !== 'cancelado' && e.status !== 'orcamento' && e.data_evento >= addDias(hoje(), -30)).sort((a, b) => a.data_evento.localeCompare(b.data_evento))
 
   const enviar = async () => {
     setErro(null)
@@ -299,7 +299,7 @@ function CompromissoFolha({ comp, diaInicial, aoFechar }: { comp?: Compromisso; 
       ) : (
         <div className="acoes">
           {comp ? <button type="button" className="btn btn-g" onClick={() => setExcluindo(true)}>Excluir</button> : null}
-          {comp?.evento_id ? <button type="button" className="btn btn-g" onClick={() => { aoFechar(); navegar(`/eventos/${comp.evento_id}`) }}>Abrir evento</button> : null}
+          {comp?.evento_id ? <button type="button" className="btn btn-g" onClick={() => { aoFechar(); navegar(`/vendas/${comp.evento_id}`) }}>Abrir evento</button> : null}
           <button type="button" className="btn btn-s" onClick={aoFechar}>Cancelar</button>
           <button type="button" className="btn btn-p" onClick={enviar} disabled={salvar.isPending}>{comp ? 'Salvar compromisso' : 'Marcar compromisso'}</button>
         </div>

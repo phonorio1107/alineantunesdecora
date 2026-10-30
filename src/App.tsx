@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useSessao } from './auth/Sessao'
 import Entrar from './auth/Entrar'
 import NovaSenha from './auth/NovaSenha'
@@ -14,9 +14,10 @@ import { AvisoProvider, EmpresaProvider, FolhasProvider } from './app/contexto'
 import Layout from './components/Layout'
 import Inicio from './paginas/Inicio'
 import Lancamentos from './paginas/Lancamentos'
-import Eventos, { EventoDetalhe } from './paginas/Eventos'
+import { EventoDetalhe } from './paginas/Eventos'
+import Vendas from './paginas/Vendas'
+import Estoque from './paginas/Estoque'
 import Clientes from './paginas/Clientes'
-import Contratos from './paginas/Contratos'
 import Relatorios from './paginas/Relatorios'
 import Configuracoes from './paginas/Configuracoes'
 import Mais from './paginas/Mais'
@@ -76,10 +77,14 @@ function ComEmpresa({ usuarioId }: { usuarioId: string }) {
               <Route index element={<Inicio />} />
               <Route path="lancamentos" element={fin ? <Lancamentos /> : <Navigate to="/" replace />} />
               <Route path="agenda" element={<Agenda />} />
-              <Route path="eventos" element={<Eventos />} />
-              <Route path="eventos/:id" element={<EventoDetalhe />} />
+              <Route path="vendas" element={<Vendas />} />
+              <Route path="vendas/:id" element={<EventoDetalhe />} />
+              <Route path="estoque" element={<Estoque />} />
+              {/* Endereços antigos (links já salvos e o Google Agenda): levam para Vendas. */}
+              <Route path="eventos" element={<Navigate to="/vendas?aba=eventos" replace />} />
+              <Route path="eventos/:id" element={<ParaVenda />} />
+              <Route path="contratos" element={<Navigate to="/vendas?aba=contratos" replace />} />
               <Route path="clientes" element={<Clientes />} />
-              <Route path="contratos" element={<Contratos />} />
               <Route path="relatorios" element={fin ? <Relatorios /> : <Navigate to="/" replace />} />
               <Route path="configuracoes" element={<Configuracoes />} />
               <Route path="mais" element={<Mais />} />
@@ -123,4 +128,9 @@ function Aviso({ titulo, texto }: { titulo: string; texto?: string }) {
       </div>
     </main>
   )
+}
+
+function ParaVenda() {
+  const { id = '' } = useParams()
+  return <Navigate to={`/vendas/${id}`} replace />
 }

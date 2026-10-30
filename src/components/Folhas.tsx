@@ -274,13 +274,13 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
 }
 
 // ---------------------------------------------------------------------------
-// Novo evento (entrada de 30% e saldo 5 dias antes, editáveis)
+// Novo orçamento (ou venda já fechada, ou turma de workshop)
 // ---------------------------------------------------------------------------
-const FONTES = [['decoracao', 'Decoração'], ['assessoria', 'Assessoria'], ['workshop', 'Workshop']] as const
+export const FONTES = [['decoracao', 'Decoração'], ['assessoria', 'Assessoria'], ['workshop', 'Workshop']] as const
 const TIPOS = [['infantil', 'Festa infantil'], ['casamento', 'Casamento'], ['quinze_anos', '15 anos'], ['cha', 'Chá'], ['batizado', 'Batizado'], ['corporativo', 'Corporativo'], ['outro', 'Outro']] as const
 
 function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
-  const { empresaId, empresa } = useEmpresa()
+  const { empresaId, empresa, veFinanceiro } = useEmpresa()
   const avisar = useAvisar()
   const navegar = useNavigate()
   const { abrir } = useFolhas()
@@ -288,43 +288,62 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
   const contas = useContas(empresaId)
   const criar = useCriarEvento(empresaId)
   const [logistica, setLogistica] = useState(false)
+  const [erroConta, setErroConta] = useState(false)
   const { register, handleSubmit, watch, setValue, control, formState: { errors } } = useForm<NovoEvento, unknown, EventoValido>({
     resolver: zodResolver(esquemaEvento),
     defaultValues: {
-      titulo: '', tipo: 'infantil', fonte: 'decoracao', cliente_id: null, data_evento: '', cidade: '', valor_fechado: '',
-      entrada_percentual: Number(empresa.entrada_percentual), data_entrada: hoje(), conta_id: '', vagas: null, valor_inscricao: null,
+      titulo: '', tipo: 'infantil', areas: ['decoracao'], fechado: false, cliente_id: null, data_evento: '', cidade: '', valor_fechado: '',
+      valores: { decoracao: '', assessoria: '', workshop: '' }, entrada_percentual: Number(empresa.entrada_percentual), data_entrada: hoje(),
+      conta_id: '', vagas: null, valor_inscricao: null, observacoes: '',
     },
   })
   useEffect(() => {
     if (contas.data?.[0]) setValue('conta_id', contas.data[0].id)
   }, [contas.data, setValue])
-  const fonte = watch('fonte')
-  const ws = fonte === 'workshop'
-  const valor = Number(String(watch('valor_fechado') ?? '').replace(/\./g, '').replace(',', '.')) || 0
+  const areas = watch('areas')
+  const ws = areas.length === 1 && areas[0] === 'workshop'
+  const fechado = watch('fechado')
+  const reais = (v: unknown) => {
+    const r = valorEmReais.safeParse(v ?? '')
+    return r.success ? r.data : 0
+  }
+  const valor = reais(watch('valor_fechado'))
+  const valores = watch('valores')
+  const somaAreas = areas.reduce((t, a) => t + reais(valores?.[a]), 0)
   const pct = Number(watch('entrada_percentual')) || 0
   const dataEv = watch('data_evento')
   const prev = useMemo(() => parcelasSugeridas(valor, pct), [valor, pct])
 
   const enviar = handleSubmit(async (v) => {
-    const payload = ws ? { ...v, tipo: 'workshop' as const, cliente_id: null, valor_fechado: 0 } : { ...v, vagas: null, valor_inscricao: null }
-    const id = await criar.mutateAsync(payload)
-    avisar('Evento salvo')
+    if (v.fechado && !v.turma && veFinanceiro && !v.conta_id) return setErroConta(true)
+    const id = await criar.mutateAsync(v)
+    avisar(v.turma ? 'Workshop salvo' : v.fechado ? 'Venda fechada: já está em Contratos' : 'Orçamento salvo')
     aoFechar()
-    navegar(`/eventos/${id}`)
+    navegar(`/vendas/${id}`)
   })
 
   return (
-    <Folha titulo="Novo evento" aoFechar={aoFechar}>
+    <Folha titulo={ws ? 'Novo workshop' : 'Novo orçamento'} aoFechar={aoFechar}>
       <form onSubmit={enviar} noValidate style={{ display: 'contents' }}>
         <Campo id="n-tit" rotulo="Nome do evento" erro={errors.titulo?.message}>
           <input id="n-tit" placeholder="Ex.: Aniversário de 5 anos · Laura" maxLength={120} autoFocus aria-invalid={!!errors.titulo} {...register('titulo')} />
         </Campo>
-        <Controller control={control} name="fonte" render={({ field }) => (
+        <Controller control={control} name="areas" render={({ field }) => (
           <div className="campo">
-            <span className="rotulo" id="n-fonte">Área</span>
-            <div className="chips" role="group" aria-labelledby="n-fonte">
-              {FONTES.map(([k, t]) => <button key={k} type="button" className="chip" aria-pressed={field.value === k} onClick={() => field.onChange(k)}>{t}</button>)}
+            <span className="rotulo" id="n-areas">Áreas <span className="muted" style={{ fontWeight: 400 }}>(marque quantas quiser)</span></span>
+            <div className="chips" role="group" aria-labelledby="n-areas">
+              {FONTES.map(([k, t]) => {
+                const marcada = field.value.includes(k)
+                return (
+                  <button key={k} type="button" className="chip" aria-pressed={marcada}
+                    onClick={() => field.onChange(marcada ? field.value.filter((x) => x !== k) : FONTES.map(([f]) => f).filter((f) => f === k || field.value.includes(f)))}>
+                    {marcada ? <Check size={16} aria-hidden="true" /> : null}{t}
+                  </button>
+                )
+              })}
             </div>
+            {errors.areas ? <span className="erro" role="alert">{errors.areas.message}</span> : null}
+            {ws ? <span className="dica">Só workshop: é uma turma aberta, com inscrições. Vai direto para Eventos.</span> : null}
           </div>
         )} />
         {!ws ? (
@@ -332,7 +351,7 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
             <div className="duas">
               <Campo id="n-cli" rotulo="Cliente" erro={errors.cliente_id?.message}>
                 <select id="n-cli" aria-invalid={!!errors.cliente_id} {...register('cliente_id', { setValueAs: (v) => v || null })}>
-                  <option value="">Escolha a cliente</option>
+                  <option value="">Escolha o cliente</option>
                   {(clientes.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
               </Campo>
@@ -340,7 +359,7 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
                 <select id="n-tipo" {...register('tipo')}>{TIPOS.map(([k, t]) => <option key={k} value={k}>{t}</option>)}</select>
               </Campo>
             </div>
-            <button type="button" className="btn btn-g btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => abrir({ tipo: 'novo-cliente' })}>Cadastrar nova cliente</button>
+            <button type="button" className="btn btn-g btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => abrir({ tipo: 'novo-cliente' })}>Cadastrar novo cliente</button>
           </>
         ) : null}
         <div className="duas">
@@ -360,22 +379,57 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
           </div>
         ) : (
           <>
-            <Campo id="n-valor" rotulo="Valor fechado" erro={errors.valor_fechado?.message}>
+            <Controller control={control} name="fechado" render={({ field }) => (
+              <div className="campo">
+                <span className="rotulo" id="n-etapa">Em que pé está?</span>
+                <div className="seg" role="group" aria-labelledby="n-etapa">
+                  <button type="button" aria-pressed={!field.value} onClick={() => field.onChange(false)}>Orçamento</button>
+                  <button type="button" aria-pressed={field.value} onClick={() => field.onChange(true)}>Já fechou</button>
+                </div>
+                <span className="dica">{field.value ? 'Vira contrato agora, com a entrada e o saldo previstos.' : 'Ainda não fechou: fica em Orçamentos, sem parcelas e sem tirar nada do estoque.'}</span>
+              </div>
+            )} />
+            <Campo id="n-valor" rotulo={fechado ? 'Valor fechado' : 'Valor estimado (opcional)'} erro={errors.valor_fechado?.message}
+              dica={!fechado ? 'Se montar a lista de peças e serviços, o total sai dela.' : undefined}>
               <input id="n-valor" inputMode="decimal" placeholder="R$ 0,00" aria-invalid={!!errors.valor_fechado} {...comValor(register('valor_fechado'))} />
             </Campo>
-            <div className="duas">
-              <Campo id="n-pct" rotulo="Entrada (%)"><input id="n-pct" type="number" min={0} max={100} {...register('entrada_percentual', { valueAsNumber: true })} /></Campo>
-              <Campo id="n-dent" rotulo="Data da entrada"><input id="n-dent" type="date" {...register('data_entrada')} /></Campo>
-            </div>
-            <Campo id="n-conta" rotulo="Conta que recebe">
-              <select id="n-conta" {...register('conta_id')}>{(contas.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}</select>
-            </Campo>
-            <div className="previa" aria-live="polite">
-              <b>Parcelas previstas</b>
-              <span className="num">Entrada {formatBRL(prev.entrada)} em {diaMes(watch('data_entrada') || hoje())}</span>
-              <span className="num">Saldo {formatBRL(prev.saldo)} até {dataEv ? diaMes(addDias(dataEv, -Number(empresa.dias_saldo_antes_evento))) : '—'} ({empresa.dias_saldo_antes_evento} dias antes)</span>
-              <span className="muted">Depois de salvar, dá para mudar valores e datas e dividir em mais parcelas.</span>
-            </div>
+            {fechado && areas.length > 1 ? (
+              <div className="campo">
+                <span className="rotulo" id="n-va">Quanto é de cada área?</span>
+                <div className="duas" role="group" aria-labelledby="n-va">
+                  {FONTES.filter(([k]) => areas.includes(k)).map(([k, t]) => (
+                    <Campo key={k} id={`n-va-${k}`} rotulo={t}>
+                      <input id={`n-va-${k}`} inputMode="decimal" placeholder="R$ 0,00" {...comValor(register(`valores.${k}`))} />
+                    </Campo>
+                  ))}
+                </div>
+                <span className={errors.valores ? 'erro' : 'dica'} role={errors.valores ? 'alert' : undefined}>
+                  {errors.valores?.message ?? `Somando ${formatBRL(somaAreas)} de ${formatBRL(valor)}.`} Serve para o relatório de lucro por área.
+                </span>
+              </div>
+            ) : null}
+            {fechado && veFinanceiro ? (
+              <>
+                <div className="duas">
+                  <Campo id="n-pct" rotulo="Entrada (%)"><input id="n-pct" type="number" min={0} max={100} {...register('entrada_percentual', { valueAsNumber: true })} /></Campo>
+                  <Campo id="n-dent" rotulo="Data da entrada"><input id="n-dent" type="date" {...register('data_entrada')} /></Campo>
+                </div>
+                <Campo id="n-conta" rotulo="Conta que recebe" erro={erroConta ? 'Cadastre uma conta em Configurações.' : undefined}>
+                  <select id="n-conta" {...register('conta_id')}>{(contas.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}</select>
+                </Campo>
+                <div className="previa" aria-live="polite">
+                  <b>Parcelas previstas</b>
+                  <span className="num">Entrada {formatBRL(prev.entrada)} em {diaMes(watch('data_entrada') || hoje())}</span>
+                  <span className="num">Saldo {formatBRL(prev.saldo)} até {dataEv ? diaMes(addDias(dataEv, -Number(empresa.dias_saldo_antes_evento))) : '—'} ({empresa.dias_saldo_antes_evento} dias antes)</span>
+                  <span className="muted">Depois de salvar, dá para mudar valores e datas e dividir em mais parcelas.</span>
+                </div>
+              </>
+            ) : null}
+            {!fechado ? (
+              <Campo id="n-obs" rotulo="Rascunho (opcional)" dica="Ideias, tema, cores, combinados com o cliente. Só a equipe vê.">
+                <textarea id="n-obs" rows={3} maxLength={2000} placeholder="Ex.: tema jardim encantado, tons de rosa e verde, mesa para 40 convidados" {...register('observacoes')} />
+              </Campo>
+            ) : null}
           </>
         )}
         <label className="chave">
@@ -397,7 +451,9 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
         {criar.isError ? <p className="erro-caixa" role="alert">{mensagemErro(criar.error)}</p> : null}
         <div className="acoes">
           <button type="button" className="btn btn-s" onClick={aoFechar}>Cancelar</button>
-          <button type="submit" className="btn btn-p" disabled={criar.isPending}><Check size={18} aria-hidden="true" />{criar.isPending ? 'Salvando…' : 'Salvar evento'}</button>
+          <button type="submit" className="btn btn-p" disabled={criar.isPending}>
+            <Check size={18} aria-hidden="true" />{criar.isPending ? 'Salvando…' : ws ? 'Salvar workshop' : fechado ? 'Fechar venda' : 'Salvar orçamento'}
+          </button>
         </div>
       </form>
     </Folha>
@@ -405,23 +461,24 @@ function NovoEventoFolha({ aoFechar }: { aoFechar: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
-// Nova cliente (CPF/CNPJ só para a proprietária, que é quem pode gravá-lo)
+// Novo cliente (CPF/CNPJ e IE só para a proprietária, que é quem pode gravá-los)
 // ---------------------------------------------------------------------------
 function NovoClienteFolha({ aoFechar }: { aoFechar: () => void }) {
   const { empresaId, ehProprietaria } = useEmpresa()
   const avisar = useAvisar()
   const criar = useCriarCliente(empresaId)
-  const { register, handleSubmit, formState: { errors } } = useForm<NovoCliente, unknown, ClienteValido>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<NovoCliente, unknown, ClienteValido>({
     resolver: zodResolver(esquemaCliente),
-    defaultValues: { nome: '', telefone: '', email: '', cep: '', endereco: '', cidade: '', origem: 'instagram', cpf_cnpj: '' },
+    defaultValues: { nome: '', telefone: '', email: '', cep: '', endereco: '', cidade: '', origem: 'instagram', cpf_cnpj: '', inscricao_estadual: '' },
   })
+  const ehCnpj = (watch('cpf_cnpj') ?? '').replace(/\D/g, '').length === 14
   const enviar = handleSubmit(async (v) => {
-    await criar.mutateAsync(ehProprietaria ? v : { ...v, cpf_cnpj: null })
-    avisar('Cliente salva')
+    await criar.mutateAsync(ehProprietaria ? v : { ...v, cpf_cnpj: null, inscricao_estadual: null })
+    avisar('Cliente salvo')
     aoFechar()
   })
   return (
-    <Folha titulo="Nova cliente" aoFechar={aoFechar}>
+    <Folha titulo="Novo cliente" aoFechar={aoFechar}>
       <form onSubmit={enviar} noValidate style={{ display: 'contents' }}>
         <Campo id="c-nome" rotulo="Nome completo" erro={errors.nome?.message}>
           <input id="c-nome" autoComplete="off" autoCapitalize="words" autoFocus maxLength={120} aria-invalid={!!errors.nome} {...comNome(register('nome'))} />
@@ -448,9 +505,16 @@ function NovoClienteFolha({ aoFechar }: { aoFechar: () => void }) {
           </Campo>
         </div>
         {ehProprietaria ? (
-          <Campo id="c-doc" rotulo="CPF ou CNPJ" erro={errors.cpf_cnpj?.message} dica="Só se for preciso para contrato ou nota fiscal.">
-            <input id="c-doc" inputMode="numeric" autoComplete="off" placeholder="000.000.000-00" maxLength={18} aria-invalid={!!errors.cpf_cnpj} {...comMascara(register('cpf_cnpj'), mascaraDoc)} />
-          </Campo>
+          <div className="duas">
+            <Campo id="c-doc" rotulo="CPF ou CNPJ" erro={errors.cpf_cnpj?.message} dica="Só se for preciso para contrato ou nota fiscal.">
+              <input id="c-doc" inputMode="numeric" autoComplete="off" placeholder="000.000.000-00" maxLength={18} aria-invalid={!!errors.cpf_cnpj} {...comMascara(register('cpf_cnpj'), mascaraDoc)} />
+            </Campo>
+            {ehCnpj ? (
+              <Campo id="c-ie" rotulo="Inscrição estadual" erro={errors.inscricao_estadual?.message} dica="Só números. Se a empresa não tem, escreva ISENTO.">
+                <input id="c-ie" autoComplete="off" autoCapitalize="characters" placeholder="000.000.000.000" maxLength={20} aria-invalid={!!errors.inscricao_estadual} {...register('inscricao_estadual')} />
+              </Campo>
+            ) : null}
+          </div>
         ) : null}
         {criar.isError ? <p className="erro-caixa" role="alert">{mensagemErro(criar.error)}</p> : null}
         <div className="acoes">

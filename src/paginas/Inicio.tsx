@@ -88,7 +88,7 @@ function Convite({ evento: e, resultado, clienteNome }: { evento: Evento; result
             <span className="fio" role="img" aria-label={`${Math.round(pct)}% recebido`}><i style={{ width: `${pct}%` }} /></span>
           </div>
         ) : null}
-        <Link className="btn btn-s convite-abrir" to={`/eventos/${e.id}`}>Abrir evento</Link>
+        <Link className="btn btn-s convite-abrir" to={`/vendas/${e.id}`}>Abrir evento</Link>
       </div>
     </article>
   )
@@ -113,7 +113,7 @@ export default function Inicio() {
   const eventos = useEventos(empresaId)
   const resultados = useResultadosEventos(empresaId)
   const clientes = useClientes(empresaId)
-  const proximos = (eventos.data ?? []).filter((e) => e.data_evento >= hoje() && e.status !== 'cancelado').sort((a, b) => a.data_evento.localeCompare(b.data_evento))
+  const proximos = (eventos.data ?? []).filter((e) => e.data_evento >= hoje() && e.status !== 'cancelado' && e.status !== 'orcamento').sort((a, b) => a.data_evento.localeCompare(b.data_evento))
   const [primeiro, ...depois] = proximos
   const nomeCliente = (id: string | null) => clientes.data?.find((c) => c.id === id)?.nome
   const nome = (empresa.responsavel_nome ?? 'Aline').split(' ')[0]
@@ -141,7 +141,7 @@ export default function Inicio() {
           <ol className="fila">
             {depois.slice(0, 4).map((e) => (
               <li key={e.id}>
-                <Link to={`/eventos/${e.id}`}>
+                <Link to={`/vendas/${e.id}`}>
                   <span className="fila-data"><b>{Number(e.data_evento.slice(8, 10))}</b>{MESES[Number(e.data_evento.slice(5, 7)) - 1].slice(0, 3)}</span>
                   <span className="fila-t">{e.titulo}<small>{nomeCliente(e.cliente_id) ?? e.cidade ?? ''}</small></span>
                   <span className="fila-falta">{faltam(e.data_evento)}</span>

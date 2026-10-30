@@ -7,10 +7,10 @@ import { dividirEmParcelas } from '../lib/calculos'
 import { somarMeses } from '../lib/format'
 import { sincronizarGoogle } from './agenda'
 // Os formulários validam com os esquemas Zod (./esquemas); aqui chegam só dados já validados.
-import type { ClienteValido, EventoValido, InscricaoValida, LancamentoValido } from './esquemas'
+import type { ClienteValido, EventoValido, InscricaoValida, LancamentoValido, PecaValida } from './esquemas'
 import type {
-  Categoria, Cliente, Conta, Contrato, DadosContrato, Empresa, Evento, FechamentoMensal, InscricaoWorkshop, Lancamento, Papel,
-  Recorrencia, ResultadoEvento, SaldoConta, Vinculo,
+  Areas, Categoria, Cliente, Conta, Contrato, DadosContrato, Empresa, Evento, FechamentoMensal, InscricaoWorkshop, ItemVenda, Lancamento,
+  MovimentoEstoque, Papel, Peca, Recorrencia, ResultadoEvento, SaldoConta, Vinculo,
 } from './tipos'
 
 export const chaves = {
@@ -28,6 +28,8 @@ export const chaves = {
   documentos: (e: string) => ['documentos', e] as const,
   contratos: (e: string) => ['contratos', e] as const,
   equipe: (e: string) => ['equipe', e] as const,
+  itens: (ev: string) => ['itens', ev] as const,
+  estoque: (e: string) => ['estoque', e] as const,
 }
 
 /**
@@ -145,6 +147,12 @@ export function useInscricoes(evento: string) {
   })
 }
 
+/** CPF/CNPJ e inscrição estadual (para o contrato). Só a proprietária recebe algo. */
+export async function buscarDadosFiscais(cliente: string): Promise<{ cpf_cnpj: string; inscricao_estadual: string | null } | null> {
+  const r = await supabase.from('clientes_documentos').select('cpf_cnpj, inscricao_estadual').eq('cliente_id', cliente).maybeSingle()
+  return verificar('documento', r) as { cpf_cnpj: string; inscricao_estadual: string | null } | null
+}
+
 /** CPF/CNPJ de uma cliente. Só a proprietária recebe algo; para os outros perfis o banco devolve vazio. */
 export async function buscarDocumento(cliente: string): Promise<string | null> {
   const r = await supabase.from('clientes_documentos').select('cpf_cnpj').eq('cliente_id', cliente).maybeSingle()
@@ -250,15 +258,15 @@ export function useExcluirLancamento() {
 export function useCriarCliente(empresa: string) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async ({ cpf_cnpj, ...dados }: ClienteValido) => {
+    mutationFn: async ({ cpf_cnpj, inscricao_estadual, ...dados }: ClienteValido) => {
       const r = await supabase.from('clientes').insert({ ...dados, empresa_id: empresa }).select('id').single()
       const { id } = verificar('criar cliente', r) as { id: string }
       if (cpf_cnpj) {
-        verificar('documento do cliente', await supabase.from('clientes_documentos').insert({ cliente_id: id, empresa_id: empresa, cpf_cnpj }))
+        verificar('documento do cliente', await supabase.from('clientes_documentos').insert({ cliente_id: id, empresa_id: empresa, cpf_cnpj, inscricao_estadual }))
       }
       return id
     },
-    onSuccess: () => invalidar('clientes'),
+    onSuccess: () => invalidar('clientes', 'documentos'),
   })
 }
 
@@ -269,27 +277,126 @@ export function useCriarEvento(empresa: string) {
       const r = await supabase.rpc('criar_evento', {
         p_empresa: empresa,
         p_titulo: e.titulo,
-        p_tipo: e.tipo,
+        p_tipo: e.turma ? 'workshop' : e.tipo,
         p_fonte: e.fonte,
-        p_cliente: e.cliente_id,
+        p_cliente: e.turma ? null : e.cliente_id,
         p_data_evento: e.data_evento,
         p_cidade: e.cidade,
-        p_valor_fechado: e.valor_fechado,
+        p_valor_fechado: e.turma ? 0 : e.valor_fechado,
         p_entrada_percentual: e.entrada_percentual,
         p_data_entrada: e.data_entrada,
         p_conta: e.conta_id,
-        p_vagas: e.vagas,
-        p_valor_inscricao: e.valor_inscricao,
+        p_vagas: e.turma ? e.vagas : null,
+        p_valor_inscricao: e.turma ? e.valor_inscricao : null,
+        p_areas: e.areasValores,
+        p_orcamento: !e.fechado,
       })
       const id = verificar('criar evento', r) as string
-      if (e.local_nome || e.local_endereco || e.entrega_em || e.devolucao_em) {
+      if (e.local_nome || e.local_endereco || e.entrega_em || e.devolucao_em || e.observacoes) {
         verificar('logística do evento', await supabase.from('eventos').update({
-          local_nome: e.local_nome, local_endereco: e.local_endereco, entrega_em: e.entrega_em, devolucao_em: e.devolucao_em,
+          local_nome: e.local_nome, local_endereco: e.local_endereco, entrega_em: e.entrega_em, devolucao_em: e.devolucao_em, observacoes: e.observacoes,
         }).eq('id', id))
       }
       return id
     },
     onSuccess: (id) => { sincronizarGoogle('evento', id); return invalidar('eventos', 'resultados', 'lancamentos') },
+  })
+}
+
+/** Fecha o orçamento: vira contrato, guarda o valor de cada área e cria entrada e saldo. */
+export function useFecharOrcamento() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (p: { evento: string; valor: number; areas: Areas; entrada_percentual: number; data_entrada: string; conta: string | null }) => {
+      verificar('fechar orçamento', await supabase.rpc('fechar_orcamento', {
+        p_evento: p.evento, p_valor: p.valor, p_areas: p.areas, p_entrada_percentual: p.entrada_percentual, p_data_entrada: p.data_entrada, p_conta: p.conta,
+      }))
+      return p.evento
+    },
+    onSuccess: (id) => { sincronizarGoogle('evento', id); return invalidar('eventos', 'resultados', 'lancamentos', 'estoque', 'saldos') },
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Itens da venda (peças e serviços) e estoque
+// ---------------------------------------------------------------------------
+export function useItens(evento: string) {
+  return useQuery({
+    queryKey: chaves.itens(evento),
+    enabled: !!evento,
+    queryFn: () => ativos<ItemVenda[]>('itens')(supabase.from('eventos_itens').select('*').eq('evento_id', evento).order('ordem').order('criado_em')),
+  })
+}
+
+/** Itens com peça do estoque de várias vendas (para saber o que já está reservado no mesmo dia). */
+export function useItensDasVendas(eventos: string[]) {
+  return useQuery({
+    queryKey: ['itens', 'varios', ...eventos],
+    enabled: eventos.length > 0,
+    queryFn: () => ativos<ItemVenda[]>('itens')(supabase.from('eventos_itens').select('*').in('evento_id', eventos).not('peca_id', 'is', null)),
+  })
+}
+
+type ItemNovo = Pick<ItemVenda, 'tipo' | 'peca_id' | 'descricao' | 'quantidade' | 'valor_unitario'> & { ordem?: number }
+export function useSalvarItem(empresa: string, evento: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, ...campos }: Partial<ItemNovo> & { id?: string; perdidas?: number }) => {
+      if (id) verificar('atualizar item', await supabase.from('eventos_itens').update(campos).eq('id', id))
+      else verificar('adicionar item', await supabase.from('eventos_itens').insert({ ...campos, empresa_id: empresa, evento_id: evento }))
+    },
+    onSuccess: () => invalidar('itens', 'estoque'),
+  })
+}
+
+export function useExcluirItem() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (id: string) => { verificar('tirar item', await supabase.from('eventos_itens').delete().eq('id', id)) },
+    onSuccess: () => invalidar('itens', 'estoque'),
+  })
+}
+
+export function useEstoque(empresa: string) {
+  return useQuery({
+    queryKey: chaves.estoque(empresa),
+    queryFn: () => ativos<Peca[]>('estoque')(supabase.from('estoque_pecas').select('*').eq('empresa_id', empresa).order('nome').range(0, 1999)),
+  })
+}
+
+export function useMovimentos(peca: string) {
+  return useQuery({
+    queryKey: ['estoque', 'movimentos', peca],
+    enabled: !!peca,
+    queryFn: () => ativos<MovimentoEstoque[]>('movimentos')(supabase.from('estoque_movimentos').select('*').eq('peca_id', peca).order('criado_em', { ascending: false }).range(0, 49)),
+  })
+}
+
+/** Cadastra ou altera uma peça. A quantidade vira um movimento de ajuste (a diferença para a atual). */
+export function useSalvarPeca(empresa: string) {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async ({ id, atual = 0, p }: { id?: string; atual?: number; p: PecaValida }) => {
+      const { quantidade, ...campos } = p
+      let pecaId = id
+      if (id) verificar('atualizar peça', await supabase.from('pecas').update(campos).eq('id', id))
+      else pecaId = (verificar('cadastrar peça', await supabase.from('pecas').insert({ ...campos, empresa_id: empresa }).select('id').single()) as { id: string }).id
+      const dif = quantidade - atual
+      if (dif !== 0) {
+        verificar('ajustar quantidade', await supabase.from('estoque_movimentos').insert({
+          empresa_id: empresa, peca_id: pecaId, quantidade: dif, motivo: 'ajuste', observacao: id ? 'Ajuste de quantidade' : 'Cadastro',
+        }))
+      }
+    },
+    onSuccess: () => invalidar('estoque'),
+  })
+}
+
+export function useArquivarPeca() {
+  const invalidar = useInvalidar()
+  return useMutation({
+    mutationFn: async (id: string) => { verificar('tirar peça', await supabase.from('pecas').update({ excluido_em: new Date().toISOString() }).eq('id', id)) },
+    onSuccess: () => invalidar('estoque'),
   })
 }
 
@@ -343,7 +450,7 @@ export function useAtualizarEvento() {
       verificar('atualizar evento', await supabase.from('eventos').update(campos).eq('id', id))
       return id
     },
-    onSuccess: (id) => { sincronizarGoogle('evento', id); return invalidar('eventos', 'resultados') },
+    onSuccess: (id) => { sincronizarGoogle('evento', id); return invalidar('eventos', 'resultados', 'estoque') },
   })
 }
 
@@ -466,8 +573,8 @@ export function useDocumentos(empresa: string, ativo: boolean) {
     queryKey: chaves.documentos(empresa),
     enabled: ativo,
     queryFn: () =>
-      ativos<{ cliente_id: string; cpf_cnpj: string }[]>('documentos')(
-        supabase.from('clientes_documentos').select('cliente_id, cpf_cnpj').eq('empresa_id', empresa).is('excluido_em', null),
+      ativos<{ cliente_id: string; cpf_cnpj: string; inscricao_estadual: string | null }[]>('documentos')(
+        supabase.from('clientes_documentos').select('cliente_id, cpf_cnpj, inscricao_estadual').eq('empresa_id', empresa).is('excluido_em', null),
       ),
   })
 }
@@ -475,8 +582,8 @@ export function useDocumentos(empresa: string, ativo: boolean) {
 export function useSalvarDocumento(empresa: string) {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async ({ cliente, cpf_cnpj }: { cliente: string; cpf_cnpj: string }) => {
-      verificar('salvar documento', await supabase.from('clientes_documentos').upsert({ cliente_id: cliente, empresa_id: empresa, cpf_cnpj }))
+    mutationFn: async ({ cliente, cpf_cnpj, inscricao_estadual }: { cliente: string; cpf_cnpj: string; inscricao_estadual: string | null }) => {
+      verificar('salvar documento', await supabase.from('clientes_documentos').upsert({ cliente_id: cliente, empresa_id: empresa, cpf_cnpj, inscricao_estadual }))
     },
     onSuccess: () => invalidar('documentos'),
   })
@@ -494,7 +601,7 @@ export function useAtualizarCliente() {
 
 /**
  * Exclui uma cliente. Sem eventos: apaga de vez (o CPF/CNPJ vai junto). Com eventos: apaga os dados pessoais
- * (LGPD) e mantém o histórico financeiro dos eventos, com o nome "Cliente removida".
+ * (LGPD) e mantém o histórico financeiro dos eventos, com o nome "Cliente removido".
  */
 export function useExcluirCliente() {
   const invalidar = useInvalidar()
@@ -506,7 +613,7 @@ export function useExcluirCliente() {
       }
       verificar('apagar documento', await supabase.from('clientes_documentos').delete().eq('cliente_id', id))
       verificar('apagar dados pessoais', await supabase.from('clientes').update({
-        nome: 'Cliente removida', telefone: null, email: null, cep: null, endereco: null, cidade: null, excluido_em: new Date().toISOString(),
+        nome: 'Cliente removido', telefone: null, email: null, cep: null, endereco: null, cidade: null, excluido_em: new Date().toISOString(),
       }).eq('id', id))
     },
     onSuccess: () => invalidar('clientes', 'documentos', 'eventos'),
