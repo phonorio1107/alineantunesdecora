@@ -125,7 +125,7 @@ function Metas() {
         <Campo id="m-pp" rotulo="Lucro para a proprietária (%)"><input id="m-pp" type="number" min={0} max={100} value={v.pctProp} placeholder="a definir" onChange={(e) => setV({ ...v, pctProp: e.target.value })} /></Campo>
       </div>
       {erro || atualizar.isError ? <p className="erro-caixa" role="alert">{erro ?? mensagemErro(atualizar.error)}</p> : null}
-      <div className="acoes" style={{ justifyContent: 'flex-end' }}><button type="submit" className="btn btn-p" disabled={atualizar.isPending}>Salvar metas</button></div>
+      <div className="acoes" style={{ justifyContent: 'flex-end' }}><button type="submit" className="btn btn-s" disabled={atualizar.isPending}>Salvar metas</button></div>
     </form>
   )
 }
@@ -161,7 +161,7 @@ function Contas() {
           {criar.isError ? <p className="erro-caixa" style={{ gridColumn: '1/-1' }}>{mensagemErro(criar.error)}</p> : null}
           <div className="acoes" style={{ gridColumn: '1/-1', justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-s" onClick={() => setNova(null)}>Cancelar</button>
-            <button type="submit" className="btn btn-p" disabled={criar.isPending}>Salvar conta</button>
+            <button type="submit" className="btn btn-s" disabled={criar.isPending}>Salvar conta</button>
           </div>
         </form>
       ) : null}
@@ -225,7 +225,7 @@ function CustosFixos() {
           {erro || criar.isError ? <p className="erro-caixa" role="alert">{erro ?? mensagemErro(criar.error)}</p> : null}
           <div className="acoes" style={{ justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-s" onClick={() => setNovo(null)}>Cancelar</button>
-            <button type="submit" className="btn btn-p" disabled={criar.isPending}>Salvar custo fixo</button>
+            <button type="submit" className="btn btn-s" disabled={criar.isPending}>Salvar custo fixo</button>
           </div>
         </form>
       ) : null}
@@ -262,7 +262,7 @@ function Categorias() {
           {criar.isError ? <p className="erro-caixa" style={{ gridColumn: '1/-1' }}>{mensagemErro(criar.error)}</p> : null}
           <div className="acoes" style={{ gridColumn: '1/-1', justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-s" onClick={() => setNova(null)}>Cancelar</button>
-            <button type="submit" className="btn btn-p" disabled={criar.isPending}>Salvar categoria</button>
+            <button type="submit" className="btn btn-s" disabled={criar.isPending}>Salvar categoria</button>
           </div>
         </form>
       ) : null}

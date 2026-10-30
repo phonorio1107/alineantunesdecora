@@ -248,7 +248,7 @@ function Rascunho({ evento: ev }: { evento: Evento }) {
       {mudou ? (
         <div className="acoes" style={{ justifyContent: 'flex-end' }}>
           <button type="button" className="btn btn-s btn-sm" onClick={() => setTexto(ev.observacoes ?? '')}>Desfazer</button>
-          <button type="button" className="btn btn-p btn-sm" disabled={atualizar.isPending} onClick={async () => { await atualizar.mutateAsync({ id: ev.id, observacoes: texto.trim() || null }); avisar('Rascunho salvo') }}><Check size={16} aria-hidden="true" />Salvar rascunho</button>
+          <button type="button" className="btn btn-s btn-sm" disabled={atualizar.isPending} onClick={async () => { await atualizar.mutateAsync({ id: ev.id, observacoes: texto.trim() || null }); avisar('Rascunho salvo') }}><Check size={16} aria-hidden="true" />Salvar rascunho</button>
         </div>
       ) : null}
     </section>
@@ -387,7 +387,7 @@ function Logistica({ evento: ev }: { evento: Evento }) {
           {atualizar.isError ? <p className="erro-caixa" role="alert">{mensagemErro(atualizar.error)}</p> : null}
           <div className="acoes" style={{ justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-s" onClick={() => setEditando(false)}>Cancelar</button>
-            <button type="button" className="btn btn-p" onClick={salvar} disabled={atualizar.isPending}><Check size={18} aria-hidden="true" />Salvar logística</button>
+            <button type="button" className="btn btn-s" onClick={salvar} disabled={atualizar.isPending}><Check size={18} aria-hidden="true" />Salvar logística</button>
           </div>
         </>
       ) : (

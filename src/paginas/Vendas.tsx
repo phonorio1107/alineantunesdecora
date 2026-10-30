@@ -30,7 +30,7 @@ export default function Vendas() {
   return (
     <>
       <div className="cabecalho">
-        <div><h1>Vendas</h1><p className="muted">Do orçamento ao contrato e à festa, tudo no mesmo lugar.</p></div>
+        <div><h1>Vendas</h1><p className="muted">Do orçamento ao contrato e ao evento, tudo no mesmo lugar.</p></div>
         <div className="acoes">
           {veFinanceiro ? (
             <Exportar opcoes={[
@@ -68,7 +68,7 @@ function Orcamentos({ eventos }: { eventos: Evento[] }) {
   const nome = (id: string | null) => clientes.data?.find((c) => c.id === id)?.nome
   return (
     <>
-      <p className="muted">Festa ainda não fechada. Monte a lista de peças e serviços, anote o rascunho e toque em “Fechar venda” quando a cliente confirmar.</p>
+      <p className="muted">Evento ainda não fechado. Monte a lista de peças e serviços, anote o rascunho e toque em “Fechar venda” quando o cliente confirmar.</p>
       {abertos.length ? (
         <section className="cartao">
           <div className="linhas">
@@ -87,7 +87,7 @@ function Orcamentos({ eventos }: { eventos: Evento[] }) {
             })}
           </div>
         </section>
-      ) : <Vazio titulo="Nenhum orçamento em aberto." texto="Toque em “Novo orçamento” quando uma cliente pedir preço." />}
+      ) : <Vazio titulo="Nenhum orçamento em aberto." texto="Toque em “Novo orçamento” quando alguém pedir preço." />}
       {naoFecharam.length ? (
         <>
           <button type="button" className="btn btn-g btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => setVerTodos(!verTodos)}>{verTodos ? 'Esconder' : 'Ver'} os que não fecharam ({naoFecharam.length})</button>
@@ -107,7 +107,7 @@ function Contratos({ eventos, proprietaria }: { eventos: Evento[]; proprietaria:
   const semContrato = proprietaria ? fechadas.filter((e) => e.cliente_id && !comContrato.has(e.id)) : []
   return (
     <>
-      <p className="muted">Venda fechada vira contrato (a ordem de serviço da festa). Daqui sai o PDF para o cliente assinar.</p>
+      <p className="muted">Venda fechada vira contrato (a ordem de serviço do evento). Daqui sai o PDF para o cliente assinar.</p>
       {semContrato.length ? (
         <section className="cartao" aria-labelledby="t-sem">
           <div className="cartao-h"><h2 id="t-sem">Fechadas, sem contrato ainda</h2></div>
@@ -150,7 +150,7 @@ function Eventos({ eventos }: { eventos: Evento[] }) {
       </div>
       {lista.length
         ? <div className="grade-eventos">{lista.map((e) => <CartaoEvento key={e.id} evento={e} resultado={resultados.data?.find((r) => r.evento_id === e.id)} />)}</div>
-        : <Vazio titulo={quais === 'proximos' ? 'Nenhum evento marcado.' : 'Nenhum evento realizado ainda.'} texto="Entrada, saída, logística e custos de cada festa ficam aqui." />}
+        : <Vazio titulo={quais === 'proximos' ? 'Nenhum evento marcado.' : 'Nenhum evento realizado ainda.'} texto="Entrada, saída, logística e custos de cada evento ficam aqui." />}
     </>
   )
 }

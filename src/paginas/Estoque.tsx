@@ -122,7 +122,7 @@ function PecaFolha({ peca, todas, aoFechar }: { peca: Peca | null; todas: Peca[]
               <button type="button" aria-pressed={field.value === 'acervo'} onClick={() => field.onChange('acervo')}>Acervo</button>
               <button type="button" aria-pressed={field.value === 'consumo'} onClick={() => field.onChange('consumo')}>Consumo</button>
             </div>
-            <span className="dica">{field.value === 'acervo' ? 'Sai para a festa e volta (mesas, painéis, boleiras…). Só sai do estoque se não voltar.' : 'Sai de vez quando a venda fecha (balões, fitas, flores…).'}</span>
+            <span className="dica">{field.value === 'acervo' ? 'Sai para o evento e volta (mesas, painéis, boleiras…). Só sai do estoque se não voltar.' : 'Sai de vez quando a venda fecha (balões, fitas, flores…).'}</span>
           </div>
         )} />
         <div className="duas">

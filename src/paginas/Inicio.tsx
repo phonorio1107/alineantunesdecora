@@ -99,9 +99,9 @@ function ConviteVazio() {
   return (
     <article className="convite convite-vazio">
       <div className="convite-corpo">
-        <h2 className="convite-titulo">Nenhuma festa marcada por enquanto.</h2>
+        <h2 className="convite-titulo">Nenhum evento marcado por enquanto.</h2>
         <p className="convite-cliente">Quando fechar a próxima, ela aparece aqui com a contagem dos dias.</p>
-        <button type="button" className="btn btn-p" onClick={() => abrir({ tipo: 'novo-evento' })}><Plus size={18} aria-hidden="true" />Novo evento</button>
+        <button type="button" className="btn btn-p" onClick={() => abrir({ tipo: 'novo-evento' })}><Plus size={18} aria-hidden="true" />Novo orçamento</button>
       </div>
     </article>
   )

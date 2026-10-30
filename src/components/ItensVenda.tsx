@@ -79,7 +79,7 @@ export function ItensVenda({ evento: ev }: { evento: Evento }) {
           <div className="itens-colunas">{grupo('peca')}{grupo('servico')}</div>
           <p className="muted" style={{ fontSize: 14 }}>
             {fechada
-              ? 'Material de consumo já saiu do estoque. Peças de acervo voltam depois da festa: confira na devolução.'
+              ? 'Material de consumo já saiu do estoque. Peças de acervo voltam depois do evento: confira na devolução.'
               : 'Enquanto for orçamento, nada sai do estoque. O nome de cada item é o que aparece no contrato.'}
           </p>
           {fechada && lista.length && total > 0 && Math.abs(total - Number(ev.valor_fechado)) > 0.009 ? (
@@ -146,7 +146,7 @@ function ItemFolha({ evento: ev, item, tipo, ordem, aoFechar }: { evento: Evento
             <span className="codigo">{peca.codigo}</span>
             <span className="cresce">
               <b>{peca.nome}</b>
-              <span className="muted">{peca.tipo === 'consumo' ? 'Consumo' : 'Acervo'} · {peca.quantidade} no estoque{reservadas ? ` · ${reservadas} em outra festa em ${dataBR(ev.data_evento)}` : ''}</span>
+              <span className="muted">{peca.tipo === 'consumo' ? 'Consumo' : 'Acervo'} · {peca.quantidade} no estoque{reservadas ? ` · ${reservadas} em outro evento em ${dataBR(ev.data_evento)}` : ''}</span>
             </span>
             <button type="button" className="btn btn-g btn-sm" onClick={() => setPecaId(null)}>Trocar</button>
           </div>
@@ -172,7 +172,7 @@ function ItemFolha({ evento: ev, item, tipo, ordem, aoFechar }: { evento: Evento
         )
       ) : null}
       {tipo === 'peca' && avulsa ? (
-        <p className="muted">Peça fora do estoque (alugada, comprada para esta festa…). Não dá baixa em nada.{' '}
+        <p className="muted">Peça fora do estoque (alugada, comprada para este evento…). Não dá baixa em nada.{' '}
           <button type="button" className="btn btn-g btn-sm" style={{ padding: 0, minHeight: 0 }} onClick={() => setAvulsa(false)}>Escolher do estoque</button>
         </p>
       ) : null}
@@ -192,7 +192,7 @@ function ItemFolha({ evento: ev, item, tipo, ordem, aoFechar }: { evento: Evento
           {peca && n > livres ? (
             <Alerta>
               {peca.tipo === 'acervo'
-                ? <>Só <b>{Math.max(0, livres)}</b> livre{livres === 1 ? '' : 's'} em {dataBR(ev.data_evento)}{reservadas ? ` (${reservadas} já vão para outra festa no mesmo dia)` : ''}. Dá para salvar assim mesmo.</>
+                ? <>Só <b>{Math.max(0, livres)}</b> livre{livres === 1 ? '' : 's'} em {dataBR(ev.data_evento)}{reservadas ? ` (${reservadas} já vão para outro evento no mesmo dia)` : ''}. Dá para salvar assim mesmo.</>
                 : <>Só há <b>{Math.max(0, livres)}</b> no estoque. Ao fechar a venda o estoque fica negativo: lembre de repor.</>}
             </Alerta>
           ) : null}
@@ -246,7 +246,7 @@ export function Conferencia({ evento: ev }: { evento: Evento }) {
         <h2 id="t-conf">Conferência da devolução</h2>
         {conferido ? <span className="pill bom"><PackageCheck size={16} aria-hidden="true" />Conferido em {dataBR(ev.conferido_em!.slice(0, 10))}</span> : <span className="pill atencao">A conferir</span>}
       </div>
-      {!conferido ? <p className="muted">Depois da festa, marque o que não voltou (perdido ou quebrado). Sai do estoque e o prejuízo aparece aqui.</p> : null}
+      {!conferido ? <p className="muted">Depois do evento, marque o que não voltou (perdido ou quebrado). Sai do estoque e o prejuízo aparece aqui.</p> : null}
       <div className="linhas">
         {acervo.map((i) => {
           const p = pecaDe(i.peca_id)!
@@ -266,11 +266,11 @@ export function Conferencia({ evento: ev }: { evento: Evento }) {
           )
         })}
       </div>
-      {prejuizo > 0 ? <p className="num"><b>Prejuízo pelo custo das peças: {formatBRL(prejuizo)}.</b> <span className="muted">Para entrar no lucro da festa, lance em Custos do evento (categoria “Peças perdidas ou quebradas”).</span></p> : null}
+      {prejuizo > 0 ? <p className="num"><b>Prejuízo pelo custo das peças: {formatBRL(prejuizo)}.</b> <span className="muted">Para entrar no lucro do evento, lance em Custos do evento (categoria “Peças perdidas ou quebradas”).</span></p> : null}
       {salvar.isError || atualizar.isError ? <p className="erro-caixa" role="alert">{mensagemErro(salvar.error ?? atualizar.error)}</p> : null}
       <div className="acoes" style={{ justifyContent: 'flex-end' }}>
         {conferido ? <button type="button" className="btn btn-g btn-sm" onClick={() => setEditando(true)}>Corrigir conferência</button> : (
-          <button type="button" className="btn btn-p" onClick={concluir} disabled={salvar.isPending || atualizar.isPending}><PackageCheck size={18} aria-hidden="true" />Concluir conferência</button>
+          <button type="button" className="btn btn-s" onClick={concluir} disabled={salvar.isPending || atualizar.isPending}><PackageCheck size={18} aria-hidden="true" />Concluir conferência</button>
         )}
       </div>
     </section>
