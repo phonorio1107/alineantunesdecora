@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Reels: Aline Antunes Decora · Pedro Hoffman</title>
+<style>
+  @font-face{font-family:'Inter';font-weight:500;src:url(../../docs/modelos/planos/fontes/inter-latin-500-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter';font-weight:600;src:url(../../docs/modelos/planos/fontes/inter-latin-600-normal.woff2) format('woff2')}
+  @font-face{font-family:'Inter Tight';font-weight:700;src:url(../../docs/modelos/planos/fontes/inter-tight-latin-700-normal.woff2) format('woff2')}
+  :root{--ink:#0E0E10;--muted:#5A5A62;--line:#E6E6E8;--navy:#0B1F3A;--display:'Inter Tight',system-ui,sans-serif;--text:'Inter',system-ui,sans-serif}
+  html,body{margin:0;background:#000}
+  #palco{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--ink);font-family:var(--text)}
+  .camada{position:absolute;inset:0}
+  #branco{background:#fff;transform:translateY(100%)}
+  .frase{position:absolute;left:96px;right:96px;font:700 112px/1.02 var(--display);letter-spacing:-.045em;color:#fff}
+  .frase span{display:inline-block;opacity:0;will-change:transform}
+  #f2{color:#6A6A72}
+  .legenda{position:absolute;left:96px;right:96px;top:250px;font:700 84px/1.04 var(--display);letter-spacing:-.04em;color:var(--ink);opacity:0}
+  #cliente{position:absolute;left:96px;top:150px;display:flex;align-items:center;gap:16px;font:500 32px var(--text);color:var(--muted);opacity:0}
+  #cliente i{width:14px;height:14px;border-radius:50%;background:#DA6F9A}
+  #cel{position:absolute;left:220px;top:600px;width:640px;border-radius:92px;background:var(--ink);padding:20px;box-shadow:0 80px 120px -50px rgba(14,14,16,.5)}
+  #cel::before{content:"";position:absolute;top:38px;left:50%;width:168px;height:48px;margin-left:-84px;border-radius:999px;background:var(--ink);z-index:3}
+  #tela{position:relative;border-radius:73px;overflow:hidden;aspect-ratio:1170/2532;background:#fff}
+  #tela img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+  #anel{position:absolute;border:5px solid var(--navy);border-radius:28px;opacity:0;z-index:4}
+  #degraus{position:absolute;left:96px;bottom:96px;display:flex;align-items:flex-end;gap:8px;opacity:0}
+  #degraus i{width:16px;border-radius:4px 4px 1px 1px;background:var(--line)}
+  #degraus i.feito{background:var(--ink)} #degraus i.aqui{background:var(--navy)}
+  #marca-topo{position:absolute;right:96px;top:150px;display:flex;align-items:center;gap:12px;font:700 30px var(--display);letter-spacing:-.02em;color:var(--ink);opacity:0}
+  #marca-topo svg{width:34px;height:34px}
+  #fim{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;text-align:center;opacity:0}
+  #fim .simbolo svg{width:200px;height:200px}
+  #fim .nome{font:700 104px/1 var(--display);letter-spacing:-.045em;color:var(--ink)}
+  #fim .lema{font:500 42px/1.35 var(--text);color:var(--muted);max-width:760px}
+  #fim .cta{margin-top:40px;background:var(--navy);color:#fff;font:700 46px var(--display);padding:34px 56px;border-radius:999px;letter-spacing:-.01em}
+</style>
+</head>
+<body>
+<div id="palco">
+  <div class="frase" id="f1" style="top:680px">{{f1}}</div>
+  <div class="frase" id="f2" style="top:920px">{{f2}}</div>
+  <div class="camada" id="branco">
+    <span id="cliente"><i></i>Aline Antunes Decora</span>
+    <span id="marca-topo">{{simbolo}}Pedro Hoffman</span>
+    <div class="legenda" id="leg"></div>
+    <div id="cel"><div id="tela">
+      <img id="s0" src="capturas/entrar.png" alt="">
+      <img id="s1" src="capturas/inicio.png" alt="">
+      <img id="s2" src="capturas/lancar.png" alt="">
+      <img id="s3" src="capturas/evento.png" alt="">
+      <img id="s4" src="capturas/agenda.png" alt="">
+      <div id="anel"></div>
+    </div></div>
+    <div id="degraus">{{degraus}}</div>
+    <div id="fim">
+      <span class="simbolo">{{simbolo}}</span>
+      <span class="nome">Pedro Hoffman</span>
+      <span class="lema">Sistemas de gestão sob medida para pequenos negócios.</span>
+      <span class="cta">Me chame no direct</span>
+    </div>
+  </div>
+</div>
+<script>
+// Linha do tempo determinística: quadro(t) desenha o instante t (segundos). O gerador chama quadro a quadro.
+const DUR = 22
+const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3)
+const entre = (t, a, b) => ease((t - a) / (b - a))
+const $ = (id) => document.getElementById(id)
+const CENAS = [
+  { de: 6.0, ate: 8.6, tela: 0, leg: 'Então criamos um sistema só dela.' },
+  { de: 8.6, ate: 11.2, tela: 1, leg: 'O próximo evento, sempre à vista.' },
+  { de: 11.2, ate: 13.8, tela: 2, leg: 'Lançar leva menos de um minuto.' },
+  { de: 13.8, ate: 16.4, tela: 3, leg: 'O lucro de cada festa, já calculado.', anel: [195, 312, 185, 111] },
+  { de: 16.4, ate: 19.0, tela: 4, leg: 'Agenda junto com o Google.' },
+]
+function palavras(el, t, inicio) {
+  ;[...el.children].forEach((s, i) => {
+    const k = entre(t, inicio + i * 0.12, inicio + i * 0.12 + 0.55)
+    s.style.opacity = k
+    s.style.transform = `translateY(${(1 - k) * 40}px)`
+  })
+}
+function quadro(t) {
+  // 1. Fundo escuro: as duas frases do problema
+  palavras($('f1'), t, 0.3)
+  palavras($('f2'), t, 2.4)
+  const saiTexto = entre(t, 4.6, 5.4)
+  $('f1').style.transform = $('f2').style.transform = `translateY(${-saiTexto * 120}px)`
+  $('f1').style.opacity = $('f2').style.opacity = 1 - saiTexto
+  // 2. O papel branco sobe
+  $('branco').style.transform = `translateY(${(1 - entre(t, 4.9, 5.9)) * 100}%)`
+  const cab = entre(t, 5.7, 6.3) * (1 - entre(t, 18.8, 19.3))
+  $('cliente').style.opacity = cab
+  $('marca-topo').style.opacity = cab
+  // 3. O celular sobe e as telas trocam
+  const sobe = entre(t, 5.6, 6.6), desce = entre(t, 18.9, 19.7)
+  $('cel').style.transform = `translateY(${(1 - sobe) * 900 + desce * 1500}px) rotate(${(1 - sobe) * 4}deg)`
+  let atual = CENAS.findIndex((c) => t >= c.de && t < c.ate)
+  if (t >= 19) atual = CENAS.length - 1
+  for (let i = 0; i < 5; i++) {
+    const c = CENAS.find((x) => x.tela === i)
+    const entra = i === 0 ? 1 : entre(t, c.de - 0.15, c.de + 0.35)
+    const seguinte = CENAS.find((x) => x.tela === i + 1)
+    const sai = seguinte ? entre(t, seguinte.de + 0.2, seguinte.de + 0.5) : 0
+    $('s' + i).style.opacity = Math.max(0, entra - sai)
+  }
+  // Legenda: troca com um pequeno deslize
+  const cena = CENAS[Math.max(0, atual)]
+  const leg = $('leg')
+  if (leg.textContent !== cena.leg) leg.textContent = cena.leg
+  const kIn = entre(t, cena.de, cena.de + 0.45), kOut = entre(t, cena.ate - 0.3, cena.ate)
+  const visivel = t < 5.8 ? 0 : (cena === CENAS.at(-1) ? kIn * (1 - entre(t, 18.7, 19.1)) : kIn * (1 - kOut))
+  leg.style.opacity = visivel
+  leg.style.transform = `translateY(${(1 - kIn) * 30}px)`
+  // Anel no lucro (cena 4)
+  const anel = $('anel'), ca = CENAS[3]
+  const ka = entre(t, ca.de + 0.5, ca.de + 0.9) * (1 - entre(t, ca.ate - 0.3, ca.ate))
+  const esc = 600 / 390
+  anel.style.left = ca.anel[0] * esc + 'px'; anel.style.top = ca.anel[1] * esc + 'px'
+  anel.style.width = ca.anel[2] * esc + 'px'; anel.style.height = ca.anel[3] * esc + 'px'
+  anel.style.opacity = ka
+  anel.style.transform = `scale(${1.15 - 0.15 * ka})`
+  // Degraus: avançam com as cenas
+  const dg = $('degraus')
+  dg.style.opacity = cab
+  ;[...dg.children].forEach((d, i) => { d.className = i < atual ? 'feito' : i === atual ? 'aqui' : '' })
+  // 4. Fim: a marca
+  const fim = entre(t, 19.4, 20.2)
+  $('fim').style.opacity = fim
+  $('fim').style.transform = `translateY(${(1 - fim) * 40}px)`
+}
+window.DUR = DUR
+quadro(0)
+</script>
+</body>
+</html>
