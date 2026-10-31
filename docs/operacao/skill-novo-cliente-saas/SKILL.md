@@ -79,6 +79,9 @@ O primeiro uso de verdade sempre traz uma lista. Não comece a construir pelo it
 4. Construa tudo, teste, entregue com prints e diga o que o Pedro precisa fazer (SQL, conferência no ar).
 Exemplos do que já apareceu estão em `references/licoes.md`. Vale olhar antes de modelar um cliente parecido.
 
+## Divulgação e vídeo
+Quando o Pedro pedir Reels, post ou edição de vídeo sobre um cliente: use `docs/operacao/ferramentas-pedro-hoffman.md` (catálogo de skills, como a `reel`, com origem, versão revisada e como instalar). Peça autorização do cliente antes de postar e use só dados fictícios nas telas.
+
 ## Fechamento do projeto
 Ao terminar, gere um **relatório final**: todos os itens com status, o que foi dispensado e por quê, riscos que ficaram e o próximo passo. Pergunte se alguma lição deve ir para o `template-base` ou para esta skill. Se sim, proponha o texto exato.
 
