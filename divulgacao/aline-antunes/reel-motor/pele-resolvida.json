@@ -1,0 +1,5 @@
+{
+  "_nota": "Pele da marca Pedro Hoffman (design system Degrau): preto, branco e marinho; no escuro, marinho claro com borda azul. Fontes Inter Tight (títulos) e Inter (texto).",
+  "cores": { "origem": "marca Pedro Hoffman · Degrau", "fundo": "#0E0E10", "texto": "#ffffff", "destaque": "#1E3F73", "apoio": "#8FB0E3", "acento2": "#A0A0A8" },
+  "fontes": { "destaque": { "familia": "Inter Tight" }, "texto": { "familia": "Inter" } }
+}

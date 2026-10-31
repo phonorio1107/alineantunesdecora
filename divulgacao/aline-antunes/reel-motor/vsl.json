@@ -1,0 +1,25 @@
+{
+  "_leia": "Valores da referência aprovada. face/head/punch/fullPos/splitPos mudam por vídeo (meça num quadro do clean com o punch aplicado); grade e tinta NÃO mudam (R4). sfxModo: 'enxuto' (padrão, regra R2: ≤ 0,8 efeito/s com a digitação) ou 'referencia' (o som exato do vídeo aprovado, ~1,4/s — reprova o item de SFX do verificar.py).",
+  "theme": "roxo",
+  "font": "padrao",
+  "punch": 1.04,
+  "fullPos": "50% 30%",
+  "splitPos": "50% 22%",
+  "pipPos": "50% 24%",
+  "face": {
+    "x": 1000,
+    "y": 1700,
+    "w": 10,
+    "h": 10
+  },
+  "head": {
+    "x": 1005,
+    "y": 1700
+  },
+  "topY": 240,
+  "capY": 1430,
+  "gradeFilter": "saturate(1.04) contrast(1.05) brightness(0.97)",
+  "tint": 0.55,
+  "tint2": 0.3,
+  "sfxModo": "enxuto"
+}
