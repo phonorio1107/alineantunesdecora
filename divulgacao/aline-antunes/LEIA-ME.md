@@ -10,6 +10,8 @@ node divulgacao/aline-antunes/gerar-post.cjs
 node divulgacao/aline-antunes/gerar-reels.cjs
 ```
 
+**Versão em Remotion** (mesmo pique, telas atuais com Vendas e Estoque, 25 s): `saida/reels-remotion.mp4` e `saida/reels-remotion-capa.png`; código em `reel-remotion/` (veja o LEIA-ME de lá).
+
 Saída em `saida/`: `post-1.png` a `post-6.png`, `reels.mp4` e `reels-capa.png`. As telas vêm de `capturas/` (prévia do sistema, **dados fictícios**). Textos do carrossel em `post.html`; roteiro e tempos do Reels em `reels.html` (lista `CENAS`).
 
 **Antes de publicar:** pedir a autorização da Aline para mostrar a marca e o sistema dela.
