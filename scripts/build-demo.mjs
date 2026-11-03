@@ -1,5 +1,5 @@
 // Junta o build "demo" num único arquivo HTML (CSS, JS, imagens e fontes embutidos) para testar sem servidor.
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
 const dir = 'dist-demo'
@@ -29,3 +29,12 @@ writeFileSync(join(dir, 'previa-aline-antunes.html'), pagina)
 const corpo = pagina.replace(/^<!doctype html>\n<html lang="pt-BR">\n<head>\n/, '').replace('</head>\n<body>\n', '').replace(/<\/body>\n<\/html>\n$/, '').replace(/<meta charset="utf-8">\n<meta name="viewport"[^>]*>\n/, '')
 writeFileSync(join(dir, 'previa-pagina.html'), corpo)
 console.log(`dist-demo/previa-aline-antunes.html (${(pagina.length / 1024 / 1024).toFixed(1)} MB)`)
+// Cabeçalhos para publicar a prévia como site (Cloudflare): não indexar, não deixar embutir em outro site.
+if (!existsSync(join(dir, '_headers'))) {
+  writeFileSync(join(dir, '_headers'), `/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+`)
+}

@@ -1,0 +1,9 @@
+{
+  // Prévia pública do sistema (dados fictícios, sem banco). Worker separado do sistema real.
+  "name": "aline-antunes-previa",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist-demo",
+    "not_found_handling": "single-page-application"
+  }
+}
