@@ -173,6 +173,16 @@ export interface Lancamento extends Padrao {
   parcela_grupo?: string | null
   parcela_num?: number | null
   parcela_total?: number | null
+  /** Como o cliente paga (aparece no contrato). Antes de 26/11/2026 não existia: fica vazio. */
+  forma_pagamento?: FormaPagamento | null
+  /** Cartão de crédito: em quantas vezes o cliente parcelou e os juros da operadora repassados a ele (fora do lucro). */
+  cartao_vezes?: number | null
+  cartao_juros?: number | null
+}
+
+export type FormaPagamento = 'pix' | 'transferencia' | 'dinheiro' | 'cartao_credito' | 'cartao_debito' | 'boleto'
+export const FORMA_NOME: Record<FormaPagamento, string> = {
+  pix: 'Pix', transferencia: 'Transferência', dinheiro: 'Dinheiro', cartao_credito: 'Cartão de crédito', cartao_debito: 'Cartão de débito', boleto: 'Boleto',
 }
 
 export interface Recorrencia extends Padrao {
@@ -245,5 +255,7 @@ export interface DadosContrato {
   /** "tipo" separa peças e serviços no PDF (contratos antigos não têm: saem como serviço). */
   itens: { codigo: string; descricao: string; quantidade: number; valor_unitario: number; tipo?: 'peca' | 'servico' }[]
   parcelas: { vencimento: string; descricao: string; valor: number; situacao: 'Pago' | 'Pendente'; forma: string }[]
+  /** Pagamentos no cartão de crédito com os juros da operadora repassados ao cliente (contratos antigos não têm). */
+  cartao?: { valor: number; juros: number; vezes: number }[]
   totais: { valor_servicos: number; extras: number; total: number; pago: number; pendente: number }
 }

@@ -10,12 +10,12 @@ import {
 } from '../data/consultas'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
-import type { Lancamento } from '../data/tipos'
+import { FORMA_NOME, type FormaPagamento, type Lancamento } from '../data/tipos'
 import {
   esquemaCliente, esquemaEvento, esquemaLancamento, valorEmReais, type ClienteValido, type EventoValido, type LancamentoValido, type NovoCliente, type NovoEvento, type NovoLancamento,
 } from '../data/esquemas'
 import { baixarRecibo } from '../export/acoes'
-import { dividirEmParcelas, parcelasSugeridas } from '../lib/calculos'
+import { cartaoComJuros, dividirEmParcelas, parcelasSugeridas } from '../lib/calculos'
 import { comMascara, comNome, comValor, formatarValorDigitado, mascaraCEP, mascaraDoc, mascaraTelefone } from '../lib/mascaras'
 import { mensagemErro, verificar } from '../lib/erros'
 import { addDias, dataBR, diaMes, formatBRL, hoje, mesDe, nomeMes, somarMeses } from '../lib/format'
@@ -56,6 +56,10 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
   const repetir = watch('repetir')
   const nParcelas = Number(watch('parcelas')) || 0
   const totalDigitado = valorEmReais.safeParse(watch('valor') ?? '')
+  const forma = watch('forma_pagamento')
+  const noCredito = tipo === 'entrada' && forma === 'cartao_credito'
+  const totalCartao = valorEmReais.safeParse(watch('cartao_total') ?? '')
+  const vezesCartao = Number(watch('cartao_vezes')) || 0
   useEffect(() => {
     if (contas.data?.[0] && !watch('conta_id')) setValue('conta_id', contas.data[0].id)
   }, [contas.data, setValue, watch])
@@ -93,6 +97,37 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
             {errors.categoria_id ? <span className="erro" role="alert">{errors.categoria_id.message}</span> : null}
           </div>
         )} />
+        {tipo === 'entrada' ? (
+          <Campo id="l-forma" rotulo="Como o cliente pagou?">
+            <select id="l-forma" {...register('forma_pagamento', { setValueAs: (v) => v || null, onChange: (e) => { if (e.target.value === 'cartao_credito') { setValue('repetir', 'nao'); if (!vezesCartao) setValue('cartao_vezes', 1) } } })}>
+              <option value="">Não informar</option>
+              {(Object.keys(FORMA_NOME) as FormaPagamento[]).map((f) => <option key={f} value={f}>{FORMA_NOME[f]}</option>)}
+            </select>
+          </Campo>
+        ) : null}
+        {noCredito ? (
+          <>
+            <div className="duas">
+              <Campo id="l-vezes" rotulo="Em quantas vezes?" erro={errors.cartao_vezes?.message}>
+                <select id="l-vezes" {...register('cartao_vezes')}>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}x</option>)}
+                </select>
+              </Campo>
+              <Campo id="l-ctotal" rotulo="Total com juros" dica="O que a maquininha mostra" erro={errors.cartao_total?.message}>
+                <input id="l-ctotal" className="dinheiro" inputMode="decimal" placeholder="R$ 0,00" autoComplete="off" aria-invalid={!!errors.cartao_total} {...comValor(register('cartao_total'))} />
+              </Campo>
+            </div>
+            {totalDigitado.success && totalDigitado.data > 0 ? (() => {
+              const c = cartaoComJuros(totalDigitado.data, totalCartao.success ? totalCartao.data : null, vezesCartao || 1)
+              return (
+                <div className="previa" aria-live="polite">
+                  <b className="num">Cliente paga {formatBRL(c.total)} em {c.vezes}x de {formatBRL(c.parcela)}</b>
+                  <span className="num">{c.juros > 0 ? `Juros da maquininha: ${formatBRL(c.juros)}, repassados ao cliente.` : 'Sem juros.'} Você recebe {formatBRL(totalDigitado.data)} de uma vez; os juros não entram no lucro.</span>
+                </div>
+              )
+            })() : null}
+          </>
+        ) : null}
         <Campo id="l-ev" rotulo="Evento (opcional)">
           <select id="l-ev" {...register('evento_id', { setValueAs: (v) => v || null })}>
             <option value="">Sem evento</option>
@@ -112,7 +147,7 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
         <Campo id="l-desc" rotulo="Descrição (opcional)" erro={errors.descricao?.message}>
           <input id="l-desc" placeholder="Ex.: flores do painel" maxLength={120} {...register('descricao')} />
         </Campo>
-        <Controller control={control} name="repetir" render={({ field }) => (
+        {noCredito ? null : <Controller control={control} name="repetir" render={({ field }) => (
           <div className="campo">
             <span className="rotulo" id="l-rep">Repetir</span>
             <div className="seg tres" role="group" aria-labelledby="l-rep">
@@ -121,8 +156,8 @@ function LancarFolha({ tipoInicial = 'saida', eventoId, aoFechar }: { tipoInicia
               ))}
             </div>
           </div>
-        )} />
-        {repetir === 'parcelado' ? (
+        )} />}
+        {noCredito ? null : repetir === 'parcelado' ? (
           <>
             <Campo id="l-parc" rotulo="Em quantas vezes?" erro={errors.parcelas?.message}>
               <input id="l-parc" type="number" inputMode="numeric" min={2} max={60} aria-invalid={!!errors.parcelas} {...register('parcelas')} />
@@ -186,6 +221,10 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
   const [editando, setEditando] = useState(false)
   const [valor, setValor] = useState('')
   const [venc, setVenc] = useState('')
+  const [formaEd, setFormaEd] = useState<FormaPagamento | ''>('')
+  const [vezesEd, setVezesEd] = useState(1)
+  const [totalEd, setTotalEd] = useState('')
+  const [erroEd, setErroEd] = useState<string | null>(null)
   const [gerando, setGerando] = useState(false)
   const l = lanc.data
   if (lanc.isPending) return <Folha titulo="Lançamento" aoFechar={aoFechar}><p className="muted">Carregando…</p></Folha>
@@ -202,7 +241,19 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
     const r = valorEmReais.safeParse(valor)
     const v = r.success ? r.data : 0
     if (!(v > 0) || !/^\d{4}-\d{2}-\d{2}$/.test(venc)) return
-    await atualizar.mutateAsync({ id: l.id, valor: v, data_vencimento: venc })
+    setErroEd(null)
+    const credito = l.tipo === 'entrada' && formaEd === 'cartao_credito'
+    const t = valorEmReais.safeParse(totalEd)
+    const total = totalEd.trim() && t.success ? t.data : null
+    if (credito && total !== null && total < v) return setErroEd('O total no cartão não pode ser menor que o valor.')
+    await atualizar.mutateAsync({
+      id: l.id, valor: v, data_vencimento: venc,
+      ...(l.tipo === 'entrada' ? {
+        forma_pagamento: formaEd || null,
+        cartao_vezes: credito ? vezesEd : null,
+        cartao_juros: credito ? cartaoComJuros(v, total, vezesEd).juros : null,
+      } : {}),
+    })
     setEditando(false)
     avisar('Lançamento atualizado')
   }
@@ -227,6 +278,10 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
         <div className="l"><span className="muted">Situação</span><span>{l.data_pagamento ? `${l.tipo === 'entrada' ? 'Recebido' : 'Pago'} em ${dataBR(l.data_pagamento)}` : 'Previsto'}</span></div>
         {l.recorrencia_id ? <div className="l"><span className="muted">Repetição</span><span>Todo mês</span></div> : null}
         {l.parcela_grupo ? <div className="l"><span className="muted">Parcela</span><span>{l.parcela_num} de {l.parcela_total}</span></div> : null}
+        {l.forma_pagamento ? <div className="l"><span className="muted">Forma</span><span>{FORMA_NOME[l.forma_pagamento]}{l.cartao_vezes ? ` em ${l.cartao_vezes}x` : ''}</span></div> : null}
+        {l.forma_pagamento === 'cartao_credito' && Number(l.cartao_juros) > 0 ? (
+          <div className="l"><span className="muted">Cliente paga</span><span className="num">{formatBRL(Number(l.valor) + Number(l.cartao_juros))} (juros {formatBRL(Number(l.cartao_juros))})</span></div>
+        ) : null}
       </div>
       {erro ? <p className="erro-caixa" role="alert">{mensagemErro(erro)}</p> : null}
       {travado ? (
@@ -235,6 +290,27 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
         <div className="duas">
           <Campo id="e-valor" rotulo="Valor"><input id="e-valor" inputMode="decimal" value={valor} onChange={(e) => setValor(e.target.value)} onBlur={(e) => setValor(formatarValorDigitado(e.target.value))} /></Campo>
           <Campo id="e-venc" rotulo="Vencimento"><input id="e-venc" type="date" value={venc} onChange={(e) => setVenc(e.target.value)} /></Campo>
+          {l.tipo === 'entrada' ? (
+            <Campo id="e-forma" rotulo="Como o cliente paga?">
+              <select id="e-forma" value={formaEd} onChange={(e) => setFormaEd(e.target.value as FormaPagamento | '')}>
+                <option value="">Não informar</option>
+                {(Object.keys(FORMA_NOME) as FormaPagamento[]).map((f) => <option key={f} value={f}>{FORMA_NOME[f]}</option>)}
+              </select>
+            </Campo>
+          ) : null}
+          {l.tipo === 'entrada' && formaEd === 'cartao_credito' ? (
+            <>
+              <Campo id="e-vezes" rotulo="Em quantas vezes?">
+                <select id="e-vezes" value={vezesEd} onChange={(e) => setVezesEd(Number(e.target.value))}>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}x</option>)}
+                </select>
+              </Campo>
+              <Campo id="e-ctotal" rotulo="Total com juros" dica="O que a maquininha mostra">
+                <input id="e-ctotal" inputMode="decimal" placeholder="R$ 0,00" value={totalEd} onChange={(e) => setTotalEd(e.target.value)} onBlur={(e) => setTotalEd(formatarValorDigitado(e.target.value))} />
+              </Campo>
+            </>
+          ) : null}
+          {erroEd ? <p className="erro-caixa" role="alert" style={{ gridColumn: '1 / -1' }}>{erroEd}</p> : null}
           <div className="acoes" style={{ gridColumn: '1 / -1' }}>
             <button type="button" className="btn btn-s" onClick={() => setEditando(false)}>Cancelar</button>
             <button type="button" className="btn btn-p" onClick={salvarEdicao} disabled={atualizar.isPending}>Salvar alteração</button>
@@ -257,7 +333,7 @@ function LancamentoFolha({ id, aoFechar }: { id: string; aoFechar: () => void })
           <button type="button" className="btn btn-g" onClick={() => setConfirmando('um')}>{l.parcela_grupo ? 'Excluir parcela' : 'Excluir'}</button>
           {temSeguintes ? <button type="button" className="btn btn-g" onClick={() => setConfirmando('seguintes')}>Excluir esta e as seguintes</button> : null}
           {l.recorrencia_id ? <button type="button" className="btn btn-g" onClick={() => setConfirmando('parar')}>Parar de repetir</button> : null}
-          <button type="button" className="btn btn-s" onClick={() => { setValor(formatarValorDigitado(String(l.valor).replace('.', ','))); setVenc(l.data_vencimento); setEditando(true) }}>Editar</button>
+          <button type="button" className="btn btn-s" onClick={() => { setValor(formatarValorDigitado(String(l.valor).replace('.', ','))); setVenc(l.data_vencimento); setFormaEd(l.forma_pagamento ?? ''); setVezesEd(l.cartao_vezes ?? 1); setTotalEd(Number(l.cartao_juros) > 0 ? formatarValorDigitado((Number(l.valor) + Number(l.cartao_juros)).toFixed(2).replace('.', ',')) : ''); setErroEd(null); setEditando(true) }}>Editar</button>
           {l.tipo === 'entrada' && l.data_pagamento ? (
             <button type="button" className="btn btn-s" onClick={recibo} disabled={gerando}><Receipt size={18} aria-hidden="true" />{gerando ? 'Gerando…' : 'Recibo em PDF'}</button>
           ) : null}

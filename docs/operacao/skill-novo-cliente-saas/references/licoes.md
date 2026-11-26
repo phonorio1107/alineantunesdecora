@@ -8,6 +8,7 @@ Decoração de festas, assessoria e workshops; proprietária usa no celular. Út
 - **Estoque simples:** código, descrição do jeito do dono, custo de compra, quantidade. "Dar baixa" **depende**: acervo sai e volta (só baixa o que não voltou, na conferência da devolução); consumo sai de vez quando a venda fecha. Mostrar o valor total em peças.
 - **Nome diferente só no contrato:** o item da venda guarda o próprio nome e a ligação com o estoque pelo código. O dono sabe o que saiu; o cliente final lê o nome bonito.
 - **Contrato separado em peças e serviços;** peça sem preço sai como "Incluso".
+- **Cartão de crédito com juros repassados:** pergunte cedo como o dinheiro cai (de uma vez ou mês a mês) e quem paga os juros. No piloto: cai de uma vez, a dona digita o total da maquininha, a parcela guarda o valor do serviço (lucro intacto) e os juros vão à parte para o contrato. Forma de pagamento mora na parcela.
 - **Inscrição estadual** quando o documento é CNPJ (junto do CPF/CNPJ, só a proprietária vê).
 - **Rótulos:** o cliente quer palavras mais amplas ("Evento", não "Festa") e o masculino genérico ("Novo cliente").
 - Antes, no primeiro teste: excluir cliente (LGPD: anonimizar se tem histórico), parcelado e "todo mês", olho na senha, carregando ao entrar, máscaras, campos que estouravam no celular.

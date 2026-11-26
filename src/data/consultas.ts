@@ -9,6 +9,7 @@ import { sincronizarGoogle } from './agenda'
 // Os formulários validam com os esquemas Zod (./esquemas); aqui chegam só dados já validados.
 import type { ClienteValido, EventoValido, InscricaoValida, LancamentoValido, PecaValida } from './esquemas'
 import type {
+  FormaPagamento,
   Areas, Categoria, Cliente, Conta, Contrato, DadosContrato, Empresa, Evento, FechamentoMensal, InscricaoWorkshop, ItemVenda, Lancamento,
   MovimentoEstoque, Papel, Peca, Recorrencia, ResultadoEvento, SaldoConta, Vinculo,
 } from './tipos'
@@ -177,6 +178,9 @@ export function useCriarLancamento(empresa: string) {
         conta_id: l.conta_id,
         categoria_id: l.categoria_id,
         evento_id: l.evento_id ?? null,
+        forma_pagamento: l.forma_pagamento ?? null,
+        cartao_vezes: l.cartao_vezes,
+        cartao_juros: l.cartao_juros,
       }
       if (l.repetir === 'parcelado' && l.parcelas) {
         // Todas as parcelas num insert só: ou entram todas, ou nenhuma.
@@ -307,9 +311,14 @@ export function useCriarEvento(empresa: string) {
 export function useFecharOrcamento() {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async (p: { evento: string; valor: number; areas: Areas; entrada_percentual: number; data_entrada: string; conta: string | null }) => {
+    mutationFn: async (p: {
+      evento: string; valor: number; areas: Areas; entrada_percentual: number; data_entrada: string; conta: string | null
+      /** Saldo no cartão de crédito: cai de uma vez na data informada, com as vezes e os juros repassados ao cliente. */
+      cartao?: { vezes: number; juros: number; data: string } | null
+    }) => {
       verificar('fechar orçamento', await supabase.rpc('fechar_orcamento', {
         p_evento: p.evento, p_valor: p.valor, p_areas: p.areas, p_entrada_percentual: p.entrada_percentual, p_data_entrada: p.data_entrada, p_conta: p.conta,
+        ...(p.cartao ? { p_forma_saldo: 'cartao_credito', p_cartao_vezes: p.cartao.vezes, p_cartao_juros: p.cartao.juros, p_data_saldo: p.cartao.data } : {}),
       }))
       return p.evento
     },
@@ -436,7 +445,10 @@ export function useFecharMes(empresa: string) {
 export function useAtualizarLancamento() {
   const invalidar = useInvalidar()
   return useMutation({
-    mutationFn: async ({ id, ...campos }: { id: string; valor?: number; data_vencimento?: string; data_pagamento?: string | null; descricao?: string | null }) => {
+    mutationFn: async ({ id, ...campos }: {
+      id: string; valor?: number; data_vencimento?: string; data_pagamento?: string | null; descricao?: string | null
+      forma_pagamento?: FormaPagamento | null; cartao_vezes?: number | null; cartao_juros?: number | null
+    }) => {
       verificar('atualizar lançamento', await supabase.from('lancamentos').update(campos).eq('id', id))
     },
     onSuccess: () => invalidar('lancamentos', 'saldos', 'resultados'),

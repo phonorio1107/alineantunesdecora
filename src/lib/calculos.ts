@@ -63,6 +63,16 @@ export function dividirEmParcelas(total: number, n: number) {
   return Array.from({ length: n }, (_, i) => (i === 0 ? cada + (centavos - cada * n) : cada) / 100)
 }
 
+/**
+ * Cartão de crédito com juros repassados: a Aline digita o total que a maquininha mostra.
+ * Os juros são a diferença (nunca negativos); a parcela que o cliente vê é o total dividido pelas vezes.
+ */
+export function cartaoComJuros(valor: number, totalNoCartao: number | null | undefined, vezes: number) {
+  const total = totalNoCartao && totalNoCartao > valor ? arred(totalNoCartao) : arred(valor)
+  const n = Math.max(1, Math.trunc(vezes) || 1)
+  return { juros: arred(total - valor), total, vezes: n, parcela: dividirEmParcelas(total, n)[n - 1] }
+}
+
 /** Quantos meses a empresa aguenta sem receber nada: saldo ÷ (custos fixos + retirada mínima). */
 export function folego(saldo: number, fixosMensais: number, retiradaMinima: number) {
   const gastoMensal = fixosMensais + retiradaMinima

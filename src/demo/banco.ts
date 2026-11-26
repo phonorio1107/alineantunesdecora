@@ -379,6 +379,9 @@ const RPC: Record<string, (p: Linha) => unknown> = {
     const ev = T.eventos.find((e) => e.id === p.p_evento && !e.excluido_em)
     if (!ev) throw new ErroBanco('42501', 'Orçamento não encontrado.')
     if (ev.status !== 'orcamento') throw new ErroBanco('22023', 'Este orçamento já foi fechado.', 400)
+    const cartao = p.p_forma_saldo === 'cartao_credito'
+    if (cartao && !(num(p.p_cartao_vezes) >= 1 && num(p.p_cartao_vezes) <= 12)) throw new ErroBanco('22023', 'Informe em quantas vezes no cartão (de 1 a 12).', 400)
+    if (num(p.p_cartao_juros) < 0) throw new ErroBanco('22023', 'O total no cartão não pode ser menor que o saldo.', 400)
     const valor = Math.round(num(p.p_valor) * 100) / 100
     let areas = (p.p_areas as Linha | null) ?? (ev.areas as Linha)
     if (!Object.keys(areas).length) areas = { [String(ev.fonte)]: valor }
@@ -392,7 +395,15 @@ const RPC: Record<string, (p: Linha) => unknown> = {
       const entrada = Math.round(valor * pct) / 100
       const rot = Number.isInteger(pct) ? String(pct) : pct.toFixed(1).replace('.', ',')
       if (entrada > 0) inserir('lancamentos', { tipo: 'entrada', valor: entrada, data_vencimento: p.p_data_entrada, conta_id: p.p_conta, categoria_id: cat?.id, evento_id: ev.id, descricao: `Entrada (${rot}%)` })
-      if (valor - entrada > 0) inserir('lancamentos', { tipo: 'entrada', valor: Math.round((valor - entrada) * 100) / 100, data_vencimento: addDias(String(ev.data_evento), -num(empresa.dias_saldo_antes_evento)), conta_id: p.p_conta, categoria_id: cat?.id, evento_id: ev.id, descricao: 'Saldo' })
+      if (valor - entrada > 0) inserir('lancamentos', {
+        tipo: 'entrada', valor: Math.round((valor - entrada) * 100) / 100,
+        data_vencimento: cartao ? String(p.p_data_saldo ?? p.p_data_entrada) : String(p.p_data_saldo ?? addDias(String(ev.data_evento), -num(empresa.dias_saldo_antes_evento))),
+        conta_id: p.p_conta, categoria_id: cat?.id, evento_id: ev.id,
+        descricao: cartao ? `Saldo no cartão (${num(p.p_cartao_vezes)}x)` : 'Saldo',
+        forma_pagamento: (p.p_forma_saldo as string | undefined) ?? null,
+        cartao_vezes: cartao ? num(p.p_cartao_vezes) : null,
+        cartao_juros: cartao ? Math.round(num(p.p_cartao_juros) * 100) / 100 : null,
+      })
     }
     return null
   },

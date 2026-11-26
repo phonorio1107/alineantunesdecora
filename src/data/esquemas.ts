@@ -83,7 +83,25 @@ export const esquemaLancamento = z.object({
   /** "parcelado": divide o valor em N meses; "mensal": repete todo mês até ser parado. */
   repetir: z.enum(['nao', 'parcelado', 'mensal']).default('nao'),
   parcelas: z.coerce.number<string | number>().int('Use um número inteiro.').min(2, 'Mínimo de 2 parcelas.').max(60, 'Máximo de 60 parcelas.').optional(),
-}).refine((l) => l.repetir !== 'parcelado' || l.parcelas !== undefined, { message: 'Informe em quantas vezes.', path: ['parcelas'] })
+  /** Só nas entradas: como o cliente pagou. No cartão de crédito o dinheiro cai de uma vez (sem "Repetir"). */
+  forma_pagamento: z.enum(['pix', 'transferencia', 'dinheiro', 'cartao_credito', 'cartao_debito', 'boleto']).nullable().optional(),
+  cartao_vezes: z.coerce.number<string | number>().int('Use um número inteiro.').min(1, 'De 1 a 12 vezes.').max(12, 'De 1 a 12 vezes.').optional(),
+  /** Total que a maquininha mostra, com os juros. Vazio = sem juros. */
+  cartao_total: z.union([z.literal(''), valorEmReais]).optional(),
+})
+  .refine((l) => l.repetir !== 'parcelado' || l.parcelas !== undefined, { message: 'Informe em quantas vezes.', path: ['parcelas'] })
+  .refine((l) => l.forma_pagamento !== 'cartao_credito' || l.cartao_vezes !== undefined, { message: 'Informe em quantas vezes no cartão.', path: ['cartao_vezes'] })
+  .refine((l) => l.forma_pagamento !== 'cartao_credito' || !l.cartao_total || l.cartao_total >= l.valor, { message: 'O total no cartão não pode ser menor que o valor.', path: ['cartao_total'] })
+  .transform((l) => {
+    const cartao = l.tipo === 'entrada' && l.forma_pagamento === 'cartao_credito'
+    return {
+      ...l,
+      forma_pagamento: l.tipo === 'entrada' ? l.forma_pagamento ?? null : null,
+      repetir: cartao ? ('nao' as const) : l.repetir,
+      cartao_vezes: cartao ? l.cartao_vezes ?? 1 : null,
+      cartao_juros: cartao && l.cartao_total ? Math.max(0, Math.round((l.cartao_total - l.valor) * 100) / 100) : cartao ? 0 : null,
+    }
+  })
 export type NovoLancamento = z.input<typeof esquemaLancamento>
 export type LancamentoValido = z.output<typeof esquemaLancamento>
 

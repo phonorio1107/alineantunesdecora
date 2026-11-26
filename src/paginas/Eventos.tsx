@@ -12,7 +12,7 @@ import { LinhaLancamento, Situacao } from '../components/LinhaLancamento'
 import { Campo, Carregando, Confirmar, ErroCaixa, Exportar, Folha, Vazio } from '../components/ui'
 import { Conferencia, ItensVenda } from '../components/ItensVenda'
 import { baixarPdfEvento, baixarRecibo } from '../export/acoes'
-import { areasDe, areasSomam, lucroEvento, parcelasSugeridas, totalItens } from '../lib/calculos'
+import { areasDe, areasSomam, cartaoComJuros, lucroEvento, parcelasSugeridas, totalItens } from '../lib/calculos'
 import { addDias, dataBR, formatBRL, formatBRL0, formatPct, formatTelefone, hoje, MESES } from '../lib/format'
 import { mensagemErro, verificar } from '../lib/erros'
 import { capitalizarNome, formatarValorDigitado, mascaraTelefone } from '../lib/mascaras'
@@ -271,6 +271,10 @@ function FecharFolha({ evento: ev, aoFechar }: { evento: Evento; aoFechar: () =>
   const [pct, setPct] = useState(String(empresa.entrada_percentual))
   const [dataEntrada, setDataEntrada] = useState(hoje())
   const [conta, setConta] = useState('')
+  const [noCartao, setNoCartao] = useState(false)
+  const [vezes, setVezes] = useState(1)
+  const [totalCartao, setTotalCartao] = useState('')
+  const [dataCartao, setDataCartao] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [fechou, setFechou] = useState(false)
   const reais = (v: string) => { const r = valorEmReais.safeParse(v || '0'); return r.success ? r.data : NaN }
@@ -278,6 +282,9 @@ function FecharFolha({ evento: ev, aoFechar }: { evento: Evento; aoFechar: () =>
   const somaAreas = areas.reduce((t, a) => t + (reais(porArea[a] ?? '') || 0), 0)
   const contaEscolhida = conta || contas.data?.[0]?.id || null
   const prev = parcelasSugeridas(Number.isFinite(total) ? total : 0, Number(pct) || 0)
+  const cartaoNoSaldo = noCartao && prev.saldo > 0
+  const totalCartaoReais = totalCartao.trim() ? reais(totalCartao) : null
+  const cartao = cartaoComJuros(prev.saldo, totalCartaoReais, vezes)
 
   const confirmar = async () => {
     setErro(null)
@@ -287,7 +294,11 @@ function FecharFolha({ evento: ev, aoFechar }: { evento: Evento; aoFechar: () =>
     for (const a of areas) valores[a] = areas.length === 1 ? total : reais(porArea[a] ?? '') || 0
     if (areas.length > 1 && !areasSomam(valores, total)) return setErro(`A soma das áreas (${formatBRL(somaAreas)}) precisa dar ${formatBRL(total)}.`)
     if (veFinanceiro && !contaEscolhida) return setErro('Cadastre uma conta em Configurações para receber as parcelas.')
-    await fechar.mutateAsync({ evento: ev.id, valor: total, areas: valores, entrada_percentual: Number(pct) || 0, data_entrada: dataEntrada, conta: contaEscolhida })
+    if (veFinanceiro && cartaoNoSaldo && totalCartaoReais !== null && !(totalCartaoReais >= prev.saldo)) return setErro(`O total no cartão não pode ser menor que ${formatBRL(prev.saldo)}.`)
+    await fechar.mutateAsync({
+      evento: ev.id, valor: total, areas: valores, entrada_percentual: Number(pct) || 0, data_entrada: dataEntrada, conta: contaEscolhida,
+      cartao: veFinanceiro && cartaoNoSaldo ? { vezes, juros: cartao.juros, data: dataCartao || dataEntrada || hoje() } : null,
+    })
     avisar('Venda fechada! Agora ela é um contrato.')
     if (ehProprietaria) setFechou(true)
     else aoFechar()
@@ -342,10 +353,43 @@ function FecharFolha({ evento: ev, aoFechar }: { evento: Evento; aoFechar: () =>
           <Campo id="f-conta" rotulo="Conta que recebe">
             <select id="f-conta" value={contaEscolhida ?? ''} onChange={(e) => setConta(e.target.value)}>{(contas.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}</select>
           </Campo>
+          {prev.saldo > 0 ? (
+            <div className="campo">
+              <span className="rotulo" id="f-forma">{prev.entrada > 0 ? 'Como o cliente paga o saldo?' : 'Como o cliente paga?'}</span>
+              <div className="seg" role="group" aria-labelledby="f-forma">
+                <button type="button" aria-pressed={!noCartao} onClick={() => setNoCartao(false)}>Pix ou transferência</button>
+                <button type="button" aria-pressed={noCartao} onClick={() => setNoCartao(true)}>Cartão de crédito</button>
+              </div>
+            </div>
+          ) : null}
+          {cartaoNoSaldo ? (
+            <>
+              <div className="duas">
+                <Campo id="f-vezes" rotulo="Em quantas vezes?">
+                  <select id="f-vezes" value={vezes} onChange={(e) => setVezes(Number(e.target.value))}>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n}x</option>)}
+                  </select>
+                </Campo>
+                <Campo id="f-ctotal" rotulo="Total com juros" dica="O que a maquininha mostra">
+                  <input id="f-ctotal" inputMode="decimal" placeholder={formatBRL(prev.saldo)} value={totalCartao} onChange={(e) => setTotalCartao(e.target.value)} onBlur={(e) => setTotalCartao(formatarValorDigitado(e.target.value))} />
+                </Campo>
+              </div>
+              <Campo id="f-dcartao" rotulo="Dia que passa no cartão" dica="O valor cai de uma vez na conta">
+                <input id="f-dcartao" type="date" value={dataCartao || dataEntrada} onChange={(e) => setDataCartao(e.target.value)} />
+              </Campo>
+            </>
+          ) : null}
           <div className="previa" aria-live="polite">
             <b>Parcelas previstas</b>
-            <span className="num">Entrada {formatBRL(prev.entrada)} em {dataBR(dataEntrada || hoje())}</span>
-            <span className="num">Saldo {formatBRL(prev.saldo)} até {dataBR(addDias(ev.data_evento, -Number(empresa.dias_saldo_antes_evento)))}</span>
+            {prev.entrada > 0 ? <span className="num">Entrada {formatBRL(prev.entrada)} em {dataBR(dataEntrada || hoje())}</span> : null}
+            {prev.saldo > 0 ? (cartaoNoSaldo ? (
+              <>
+                <span className="num">{prev.entrada > 0 ? 'Saldo' : 'Valor'} {formatBRL(prev.saldo)} no cartão em {dataBR(dataCartao || dataEntrada || hoje())}, de uma vez</span>
+                <span className="num">Cliente paga {formatBRL(cartao.total)} em {cartao.vezes}x de {formatBRL(cartao.parcela)}{cartao.juros > 0 ? ` (juros ${formatBRL(cartao.juros)}, fora do lucro)` : ''}</span>
+              </>
+            ) : (
+              <span className="num">Saldo {formatBRL(prev.saldo)} até {dataBR(addDias(ev.data_evento, -Number(empresa.dias_saldo_antes_evento)))}</span>
+            )) : null}
           </div>
         </>
       ) : <p className="muted">As parcelas ficam para quem cuida do financeiro cadastrar.</p>}

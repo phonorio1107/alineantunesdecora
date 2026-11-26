@@ -4,7 +4,7 @@ import type { Cliente, Contrato, DadosContrato, Empresa, Evento, InscricaoWorksh
 import type { MesFluxo, ResumoMes } from '../lib/calculos'
 import { lucroEvento, partesPorArea } from '../lib/calculos'
 import { dataBR, formatTelefone, mascararDoc, nomeMes } from '../lib/format'
-import type { ResultadoEvento } from '../data/tipos'
+import { FORMA_NOME, type ResultadoEvento } from '../data/tipos'
 import { baixarArquivo, gerarCSV, gerarExcel, nomeArquivo, type Aba } from './planilha'
 
 const nomeEmpresa = (e: Partial<Empresa>) => e.nome ?? 'Aline Antunes Decora'
@@ -197,7 +197,7 @@ export async function baixarRecibo(p: { empresa: Partial<Empresa>; lancamento: L
   const numero = `REC-${data.slice(2, 4)}${data.slice(5, 7)}${data.slice(8, 10)}-${l.id.slice(0, 4).toUpperCase()}`
   const parte = (l.descricao ?? 'pagamento').replace(/^./, (c) => c.toLowerCase())
   const referente = p.evento ? `${parte} do evento “${p.evento.titulo}” de ${dataBR(p.evento.data_evento)}` : parte
-  const blob = await m.pdfRecibo({ empresa: p.empresa, r: { numero, valor: Number(l.valor), data, clienteNome: p.clienteNome, clienteDoc: p.clienteDoc, referente, forma: 'transferência ou Pix' } })
+  const blob = await m.pdfRecibo({ empresa: p.empresa, r: { numero, valor: Number(l.valor), data, clienteNome: p.clienteNome, clienteDoc: p.clienteDoc, referente, forma: l.forma_pagamento ? FORMA_NOME[l.forma_pagamento].toLowerCase() + (l.cartao_vezes ? ` em ${l.cartao_vezes}x` : '') : 'transferência ou Pix' } })
   baixarArquivo(blob, nomeArquivo(`recibo-${numero}`, 'pdf'))
 }
 

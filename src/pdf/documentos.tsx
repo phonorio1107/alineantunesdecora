@@ -1,6 +1,7 @@
 import { Rect, Svg, Line as SvgLine, Text, View } from '@react-pdf/renderer'
 import type { DadosContrato, Empresa, Evento, Lancamento } from '../data/tipos'
 import type { MesFluxo, ResumoMes } from '../lib/calculos'
+import { dividirEmParcelas } from '../lib/calculos'
 import { reaisPorExtenso } from '../lib/extenso'
 import { dataBR, formatBRL, formatDoc, formatMeses, formatPct, formatTelefone, mesCurto, nomeMes } from '../lib/format'
 import { Cabecalho, Campo, Documento, Kpi, Secao, Tabela, TextoRico, Titulo, cor, s } from './base'
@@ -117,6 +118,18 @@ export function ContratoPdf({ numero, versao, dados }: { numero: string; versao:
           ]}
           linhas={dados.parcelas.map((p) => [dataBR(p.vencimento), p.descricao, formatBRL(p.valor), p.situacao, p.forma, conta || '—'])}
         />
+        {(dados.cartao ?? []).map((c, i) => {
+          const totalCartao = c.valor + c.juros
+          const parcela = dividirEmParcelas(totalCartao, c.vezes)[c.vezes - 1]
+          return (
+            <Text key={i} style={{ fontSize: 8.4, marginTop: 6 }}>
+              <Text style={s.b}>Pagamento no cartão de crédito em {c.vezes}x: </Text>
+              {c.juros > 0
+                ? `${formatBRL(c.valor)} + juros da operadora do cartão de ${formatBRL(c.juros)}, por conta do Solicitante = ${formatBRL(totalCartao)} (${c.vezes}x de ${formatBRL(parcela)}).`
+                : `${formatBRL(c.valor)} (${c.vezes}x de ${formatBRL(parcela)}), sem juros.`}
+            </Text>
+          )
+        })}
         <View style={[s.kpis, { marginTop: 10 }]} wrap={false}>
           {separar ? <Kpi rotulo="Peças" valor={totalDe(pecas) ? formatBRL(totalDe(pecas)) : "Incluso"} /> : null}
           <Kpi rotulo="Serviços" valor={formatBRL(dados.totais.valor_servicos)} />

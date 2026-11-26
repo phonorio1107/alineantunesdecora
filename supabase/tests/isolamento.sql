@@ -512,6 +512,50 @@ begin
   raise notice 'ok  8. Orçamento sem parcela nem baixa; fechar baixa consumo e cria parcelas; perdas e cancelamento acertam o estoque; estoque isolado';
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- 9. Cartão de crédito: saldo no cartão cai de uma vez, com vezes e juros; juros só no crédito
+-- ---------------------------------------------------------------------------
+reset role;
+set local role authenticated;
+do $$
+declare
+  a constant uuid := 'eeeeeeee-0000-0000-0000-00000000000a';
+  v_ev uuid; v_l public.lancamentos; n int;
+begin
+  perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
+  v_ev := public.criar_evento(a, 'Venda no cartão', 'infantil', 'decoracao', 'cccccccc-0000-0000-0000-00000000000a',
+                              '2026-12-20', 'Louveira', 3300, 30, '2026-11-26', 'aaaaaaaa-0000-0000-0000-00000000000a',
+                              null, null, null, true);
+  begin
+    perform public.fechar_orcamento(v_ev, 3300, null, 30, '2026-11-26', 'aaaaaaaa-0000-0000-0000-00000000000a', 'cartao_credito', 13, 100, null);
+    raise exception 'FALHOU: aceitou 13x no cartão';
+  exception when invalid_parameter_value then null;
+  end;
+  perform public.fechar_orcamento(v_ev, 3300, null, 30, '2026-11-26', 'aaaaaaaa-0000-0000-0000-00000000000a', 'cartao_credito', 10, 168.4, '2026-11-27');
+  select * into v_l from public.lancamentos where evento_id = v_ev and forma_pagamento = 'cartao_credito';
+  if v_l.valor <> 2310 or v_l.cartao_vezes <> 10 or v_l.cartao_juros <> 168.4 or v_l.data_vencimento <> '2026-11-27' or v_l.descricao <> 'Saldo no cartão (10x)' then
+    raise exception 'FALHOU: saldo no cartão errado (% · %x · juros % · %)', v_l.valor, v_l.cartao_vezes, v_l.cartao_juros, v_l.data_vencimento;
+  end if;
+  select count(*) into n from public.lancamentos where evento_id = v_ev;
+  if n <> 2 then raise exception 'FALHOU: venda no cartão gerou % parcela(s), esperado 2', n; end if;
+  if (select valor_fechado from public.resultado_eventos where evento_id = v_ev) <> 3300 then raise exception 'FALHOU: juros entraram no valor da venda'; end if;
+  begin
+    update public.lancamentos set forma_pagamento = 'pix' where id = v_l.id;
+    raise exception 'FALHOU: aceitou juros de cartão numa parcela no Pix';
+  exception when check_violation then null;
+  end;
+  -- Sem os parâmetros novos, o saldo continua como antes (vence dias antes do evento).
+  v_ev := public.criar_evento(a, 'Venda no Pix', 'infantil', 'decoracao', 'cccccccc-0000-0000-0000-00000000000a', '2026-12-20', 'Louveira', 1000, 30, '2026-11-26',
+                              'aaaaaaaa-0000-0000-0000-00000000000a', null, null, null, false);
+  select * into v_l from public.lancamentos where evento_id = v_ev and descricao = 'Saldo';
+  if v_l.data_vencimento <> date '2026-12-20' - 5 or v_l.forma_pagamento is not null then raise exception 'FALHOU: saldo antigo mudou (% · %)', v_l.data_vencimento, v_l.forma_pagamento; end if;
+  -- A outra empresa não vê as parcelas do cartão.
+  perform set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated"}', true);
+  select count(*) into n from public.lancamentos where forma_pagamento is not null;
+  if n <> 0 then raise exception 'FALHOU: outra empresa vê % parcela(s) no cartão', n; end if;
+  raise notice 'ok  9. Saldo no cartão de crédito com vezes e juros, fora do lucro; Pix como antes; isolado';
+end $$;
+
 reset role;
 \echo 'TESTE DE ISOLAMENTO: TUDO OK'
 rollback;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { custoFixoMensal, dividirEmParcelas, fluxoDeCaixa, folego, lucroEvento, lucroPorArea, partesPorArea, areasSomam, valorEstoque, reservadasNoDia, totalItens, parcelasSugeridas, podeRetirar, primeiroMesNegativo, resumoMes } from './calculos'
+import { cartaoComJuros, custoFixoMensal, dividirEmParcelas, fluxoDeCaixa, folego, lucroEvento, lucroPorArea, partesPorArea, areasSomam, valorEstoque, reservadasNoDia, totalItens, parcelasSugeridas, podeRetirar, primeiroMesNegativo, resumoMes } from './calculos'
 import { cnpjValido, cpfValido, esquemaCliente, esquemaLancamento, valorEmReais } from '../data/esquemas'
 import { addMes, fimMes, mascararDoc, nomeMes } from './format'
 import type { Categoria, Lancamento, Recorrencia, ResultadoEvento } from '../data/tipos'
@@ -233,5 +233,25 @@ describe('máscaras', async () => {
   })
   it('nome', () => {
     expect(capitalizarNome('  maria   da silva ')).toBe('Maria da Silva')
+  })
+})
+
+describe('cartão de crédito com juros repassados', () => {
+  it('juros são a diferença entre o total da maquininha e o valor', () => {
+    expect(cartaoComJuros(3300, 3540, 10)).toEqual({ juros: 240, total: 3540, vezes: 10, parcela: 354 })
+  })
+  it('sem total ou total menor que o valor: sem juros', () => {
+    expect(cartaoComJuros(2310, null, 10).juros).toBe(0)
+    expect(cartaoComJuros(2310, 2000, 10)).toMatchObject({ juros: 0, total: 2310 })
+  })
+  it('lançamento no cartão: juros calculados, cai de uma vez e só nas entradas', () => {
+    const base = { tipo: 'entrada', valor: '2.310,00', categoria_id: '00000000-0000-4000-8000-000000000001', conta_id: '00000000-0000-4000-8000-000000000002', data: '2026-11-26', pago: true, repetir: 'parcelado', parcelas: 3 } as const
+    const r = esquemaLancamento.parse({ ...base, forma_pagamento: 'cartao_credito', cartao_vezes: '10', cartao_total: '2.478,40' })
+    expect(r).toMatchObject({ forma_pagamento: 'cartao_credito', cartao_vezes: 10, cartao_juros: 168.4, repetir: 'nao' })
+    expect(esquemaLancamento.safeParse({ ...base, forma_pagamento: 'cartao_credito', cartao_vezes: '10', cartao_total: '2.000,00' }).success).toBe(false)
+    expect(esquemaLancamento.safeParse({ ...base, forma_pagamento: 'cartao_credito' }).success).toBe(false)
+    const pix = esquemaLancamento.parse({ ...base, forma_pagamento: 'pix' })
+    expect(pix).toMatchObject({ forma_pagamento: 'pix', cartao_vezes: null, cartao_juros: null, repetir: 'parcelado' })
+    expect(esquemaLancamento.parse({ ...base, tipo: 'saida', forma_pagamento: 'pix' }).forma_pagamento).toBeNull()
   })
 })

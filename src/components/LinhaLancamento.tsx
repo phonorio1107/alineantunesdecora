@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Lancamento } from '../data/tipos'
+import { FORMA_NOME, type Lancamento } from '../data/tipos'
 import { diaMes, formatBRL, hoje } from '../lib/format'
 import { useFolhas } from '../app/contexto'
 
@@ -18,7 +18,7 @@ export function LinhaLancamento({ l, categoria, evento, acao }: { l: Lancamento;
         <span className={`bolinha ${l.tipo}`} aria-hidden="true">{sinal}</span>
         <span className="cresce">
           <span className="t">{l.descricao || categoria}</span>
-          <span className="s">{categoria}{evento ? ` · ${evento}` : ''} · {diaMes(l.data_pagamento ?? l.data_vencimento)}</span>
+          <span className="s">{categoria}{evento ? ` · ${evento}` : ''} · {diaMes(l.data_pagamento ?? l.data_vencimento)}{l.forma_pagamento ? ` · ${FORMA_NOME[l.forma_pagamento]}${l.cartao_vezes ? ` ${l.cartao_vezes}x` : ''}` : ''}</span>
         </span>
         <span className={`v ${l.tipo}`}>
           <span className="sr-only">{l.tipo === 'entrada' ? 'Entrada de' : 'Saída de'} </span>{sinal} {formatBRL(Number(l.valor))}

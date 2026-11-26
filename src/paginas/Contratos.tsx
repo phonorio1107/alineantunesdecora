@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Check, Download, FileSignature, Trash2 } from 'lucide-react'
 import { useAvisar, useEmpresa } from '../app/contexto'
 import { buscarDadosFiscais, useAtualizarContrato, useClientes, useContratos, useEmitirContrato, useEstoque, useEventos, useItens } from '../data/consultas'
-import type { Contrato, DadosContrato, Evento, Lancamento } from '../data/tipos'
+import { FORMA_NOME, type Contrato, type DadosContrato, type Evento, type Lancamento } from '../data/tipos'
 import { Alerta, Campo, Carregando, Confirmar, ErroCaixa, Folha, Vazio } from '../components/ui'
 import { baixarContrato } from '../export/acoes'
 import { MODELO_CONTRATO } from '../pdf/clausulas'
@@ -122,6 +122,10 @@ export function EmitirFolha({ eventoInicial, aoFechar }: { eventoInicial: string
   const lista = parcelas.data ?? []
   const pago = lista.filter((l) => l.data_pagamento).reduce((t, l) => t + Number(l.valor), 0)
   const somaParcelas = lista.reduce((t, l) => t + Number(l.valor), 0)
+  const semForma = lista.filter((l) => !l.forma_pagamento).length
+  const formaDa = (l: Lancamento) => (l.forma_pagamento ? `${FORMA_NOME[l.forma_pagamento]}${l.cartao_vezes ? ` ${l.cartao_vezes}x` : ''}` : forma)
+  const noCartao = lista.filter((l) => l.forma_pagamento === 'cartao_credito')
+    .map((l) => ({ valor: Number(l.valor), juros: Number(l.cartao_juros ?? 0), vezes: Number(l.cartao_vezes ?? 1) }))
   const faltando = [
     !empresa.cnpj && 'CNPJ da empresa',
     !(empresa.banco_nome && empresa.banco_conta) && 'dados bancários',
@@ -147,7 +151,8 @@ export function EmitirFolha({ eventoInicial, aoFechar }: { eventoInicial: string
       cliente: { nome: cliente.nome, cpf_cnpj: doc.data?.cpf_cnpj ?? null, inscricao_estadual: doc.data?.inscricao_estadual ?? null, telefone: cliente.telefone, endereco: cliente.endereco, cidade: cliente.cidade },
       evento: { titulo: ev.titulo, data_evento: ev.data_evento, local_nome: ev.local_nome, local_endereco: ev.local_endereco, entrega_em: ev.entrega_em, devolucao_em: ev.devolucao_em },
       itens,
-      parcelas: lista.map((l) => ({ vencimento: l.data_vencimento, descricao: l.descricao ?? 'Parcela', valor: Number(l.valor), situacao: l.data_pagamento ? 'Pago' : 'Pendente', forma })),
+      parcelas: lista.map((l) => ({ vencimento: l.data_vencimento, descricao: l.descricao ?? 'Parcela', valor: Number(l.valor), situacao: l.data_pagamento ? 'Pago' : 'Pendente', forma: formaDa(l) })),
+      ...(noCartao.length ? { cartao: noCartao } : {}),
       totais: { valor_servicos: totalServicos, extras: 0, total, pago, pendente: Math.max(0, total - pago) },
     }
     const c = await emitir.mutateAsync({ evento: ev.id, dados })
@@ -196,15 +201,20 @@ export function EmitirFolha({ eventoInicial, aoFechar }: { eventoInicial: string
             )}
             <span className="dica">{itensVenda.data?.length ? 'Para mudar algum item ou o nome dele no contrato, ' : 'Sem lista de peças e serviços: sai um item por área. Para detalhar, '}<Link to={`/vendas/${ev.id}`} onClick={aoFechar}>abra a venda</Link>.</span>
           </div>
-          <Campo id="ct-forma" rotulo="Forma de pagamento das parcelas">
-            <select id="ct-forma" value={forma} onChange={(e) => setForma(e.target.value)}>
-              <option>Transferência</option><option>Pix</option><option>Cartão de crédito</option><option>Dinheiro</option>
-            </select>
-          </Campo>
+          {semForma ? (
+            <Campo id="ct-forma" rotulo={semForma === lista.length ? 'Forma de pagamento das parcelas' : 'Forma das parcelas sem forma definida'}>
+              <select id="ct-forma" value={forma} onChange={(e) => setForma(e.target.value)}>
+                <option>Transferência</option><option>Pix</option><option>Cartão de crédito</option><option>Dinheiro</option>
+              </select>
+            </Campo>
+          ) : null}
           <div className="previa">
             <b>Resumo</b>
             <span className="num">Total dos itens: {formatBRL(total)}</span>
             <span className="num">{lista.length} parcelas somando {formatBRL(somaParcelas)} · já pago {formatBRL(pago)}</span>
+            {noCartao.map((c, i) => (
+              <span key={i} className="num">No cartão: {formatBRL(c.valor)}{c.juros > 0 ? ` + juros ${formatBRL(c.juros)} = ${formatBRL(c.valor + c.juros)}` : ''} em {c.vezes}x</span>
+            ))}
             {Math.abs(somaParcelas - total) > 0.009 && lista.length ? <span style={{ color: 'var(--bad)', fontWeight: 600 }}>As parcelas não somam o total dos itens. Ajuste os itens ou as parcelas na venda antes de gerar.</span> : null}
           </div>
         </>
